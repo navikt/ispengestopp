@@ -1,0 +1,65 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: ispengestopp
+  namespace: default
+  labels:
+    team: teamsykefravr
+spec:
+  image: {{ image }}
+  replicas:
+    min: 1
+    max: 2
+    cpuThresholdPercentage: 90
+  port: 8080
+  liveness:
+    path: /is_alive
+    initialDelay: 10
+    timeout: 5
+    periodSeconds: 5
+    failureThreshold: 30
+  readiness:
+    path: /is_ready
+    initialDelay: 30
+    periodSeconds: 5
+    timeout: 5
+  prometheus:
+    enabled: true
+    path: /prometheus
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  vault:
+    enabled: true
+    paths:
+      - kvPath: serviceuser/data/dev/srvispengestopp
+        mountPath: /secrets/serviceuser
+  ingresses:
+    - "https://ispengestopp.nais.preprod.local"
+  env:
+    - name: KAFKA_BOOTSTRAP_SERVERS_URL
+      value: SSL://b27apvl00045.preprod.local:8443,SSL://b27apvl00046.preprod.local:8443,SSL://b27apvl00047.preprod.local:8443
+    - name: KAFKA_SM2013_MANUELL_BEHANDLING
+      value: privat-syfo-sm2013-manuellBehandling
+    - name: KAFKA_SM2013_AUTOMATISK_BEHANDLING_TOPIC
+      value: privat-syfo-sm2013-automatiskBehandling
+    - name: KAFKA_SMREGISTER_RECIEVED_SYKMELDING_BACKUP_TOPIC
+      value: privat-syfosmregister-received-sykmelding-backup
+    - name: KAFKA_SM2013_BEHANDLINGSUTFALL_TOPIC
+      value: privat-syfo-sm2013-behandlingsUtfall
+    - name: KAFKA_SMREGISTER_BEHANDLINGSUTFALL_BACKUP_TOPIC
+      value: privat-syfosmregister-behandlingsutfall-backup
+    - name: KAFKA_SYFO_SYKMELDINGSTATUS_LEESAH_TOPIC
+      value: aapen-syfo-sykmeldingstatus-leesah-v1
+    - name: KAFKA_SYFO_REGISTER_STATUS_BACKUP_TOPIC
+      value: privat-syfo-register-status-backup
+    - name: DATABASE_MOUNT_PATH_VAULT
+      value: /postgresql/preprod-fss
+    - name: DATABASE_NAME
+      value: ispengestopp
+    - name: ISPENGESTOPP_DB_URL
+      value: jdbc:postgresql://b27dbvl015.preprod.local:5432/ispengestopp
