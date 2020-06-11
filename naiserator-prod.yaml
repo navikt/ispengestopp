@@ -43,20 +43,6 @@ spec:
   env:
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
-    - name: KAFKA_SM2013_MANUELL_BEHANDLING
-      value: privat-syfo-sm2013-manuellBehandling
-    - name: KAFKA_SM2013_AUTOMATISK_BEHANDLING_TOPIC
-      value: privat-syfo-sm2013-automatiskBehandling
-    - name: KAFKA_SMREGISTER_RECIEVED_SYKMELDING_BACKUP_TOPIC
-      value: privat-syfosmregister-received-sykmelding-backup
-    - name: KAFKA_SM2013_BEHANDLINGSUTFALL_TOPIC
-      value: privat-syfo-sm2013-behandlingsUtfall
-    - name: KAFKA_SMREGISTER_BEHANDLINGSUTFALL_BACKUP_TOPIC
-      value: privat-syfosmregister-behandlingsutfall-backup
-    - name: KAFKA_SYFO_SYKMELDINGSTATUS_LEESAH_TOPIC
-      value: aapen-syfo-sykmeldingstatus-leesah-v1
-    - name: KAFKA_SYFO_REGISTER_STATUS_BACKUP_TOPIC
-      value: privat-syfo-register-status-backup
     - name: DATABASE_MOUNT_PATH_VAULT
       value: /postgresql/prod-fss
     - name: DATABASE_NAME

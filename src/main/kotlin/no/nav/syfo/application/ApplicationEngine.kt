@@ -1,11 +1,13 @@
 package no.nav.syfo.application
 
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.syfo.Environment
-import no.nav.syfo.application.api.registerNaisApi
+import no.nav.syfo.api.registerFlaggPerson84
+import no.nav.syfo.api.registerNaisApi
 
 fun createApplicationEngine(
     env: Environment,
@@ -14,5 +16,8 @@ fun createApplicationEngine(
     embeddedServer(Netty, env.applicationPort) {
         routing {
             registerNaisApi(applicationState)
+            route("/api") {
+                registerFlaggPerson84()
+            }
         }
     }

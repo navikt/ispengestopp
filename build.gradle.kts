@@ -14,10 +14,14 @@ val postgresVersion = "42.2.13"
 val prometheusVersion = "0.6.0"
 val smCommonVersion = "1.0.22"
 val vaultJavaDriveVersion = "3.1.0"
+val spekVersion = "2.0.11"
+val spekjunitVersion = "1.1.5"
+val kluentVersion = "1.61"
 
 plugins {
     kotlin("jvm") version "1.3.72"
     id("com.github.johnrengelman.shadow") version "5.2.0"
+
 }
 
 repositories {
@@ -43,6 +47,16 @@ dependencies {
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")
+
+    testImplementation ("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation ("org.amshove.kluent:kluent:$kluentVersion")
+
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
+    testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+        exclude(group = "org.jetbrains.kotlin")
+    }
 }
 
 tasks {
@@ -68,9 +82,9 @@ tasks {
     }
 
     withType<Test> {
-        useJUnit()
-        testLogging {
-            showStandardStreams = true
+        useJUnitPlatform {
+            includeEngines("spek2")
         }
+        testLogging.showStandardStreams = true
     }
 }
