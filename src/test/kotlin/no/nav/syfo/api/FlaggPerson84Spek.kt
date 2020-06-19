@@ -22,12 +22,13 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 
-private val sykmeldtFnr = SykmeldtFnr("123456")
-private val veilederIdent = VeilederIdent("Z999999")
-private val virksomhetNr = VirksomhetNr("123")
 
-class FlaggPerson84 : Spek({
+// TODO jeg endret dette klassenavnet + filnavnet til å ha postfix "Test", deretter kjørte jeg v2 aka FlaggPerson84Spek, og da gikk det gjennom :O :D Woooot!
+class FlaggPerson84Spek : Spek({
 
+    val sykmeldtFnr = SykmeldtFnr("123456")
+    val veilederIdent = VeilederIdent("Z999999")
+    val virksomhetNr = VirksomhetNr("123")
 
     fun withTestApplicationForApi(
         testApp: TestApplicationEngine,
@@ -57,7 +58,6 @@ class FlaggPerson84 : Spek({
             database.connection.dropData()
         }
 
-
         testApp.application.routing {
             registerFlaggPerson84(database)
         }
@@ -66,6 +66,7 @@ class FlaggPerson84 : Spek({
     }
 
     describe("Flag a person to be removed from automatic processing") {
+
         val database by lazy { TestDB() }
 
         afterGroup {
@@ -102,7 +103,7 @@ class FlaggPerson84 : Spek({
                 //database.connection.testInsert(sykmeldtFnr, veilederIdent, virksomhetNr)
 
                 val statusendringListe = database.connection.hentStatusEndringListe(sykmeldtFnr, virksomhetNr)
-                statusendringListe.size shouldBe 1
+                statusendringListe.size shouldBeEqualTo  1
 
                 val statusEndring = statusendringListe[0]
 

@@ -71,7 +71,6 @@ fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: Vi
 }
 
 
-// TODO Jeg har testet litt her, det kan sikkert være lurt å teste insert, men da må det gjøres litt mer ordentlig.
 fun Connection.testInsert(sykmeldtFnr: SykmeldtFnr, veilederIdent: VeilederIdent, virksomhetNr: VirksomhetNr) {
     use { connection ->
         connection.prepareStatement(queryStatusInsertTest).use{
@@ -94,8 +93,7 @@ fun ResultSet.toStatusEndring(): StatusEndring =
         sykmeldtFnr = SykmeldtFnr(getString("sykmeldt_fnr")),
         status = Status.valueOf(getString("status")),
         virksomhetNr = VirksomhetNr(getString("virksomhet_nr")),
-        date = getObject("timestamptz", Timestamp::class.java).toLocalDateTime() /* TODO Endret denne litt. Jeg er usikker på hva som er best, men nå har vi "TIMESTAMP" i tabellen, også plukker vi det ut og gjør om til LocalDateTime.
-                                                                                             Sånn det så ut tidligere med Instant funket ikke, den klagde på at den ikke kunne gjøre Timestamp (eller date) til Instant. */
+        date = getObject("timestamptz", Timestamp::class.java).toLocalDateTime()
     )
 
 

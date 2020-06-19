@@ -22,11 +22,11 @@ fun DatabaseInterface.addFlagg(fnr: SykmeldtFnr, ident: VeilederIdent, virksomhe
     connection.use { connection ->
         connection.prepareStatement(queryStatusInsert).use {
             it.setString(1, uuid)
-            it.setString(3, fnr.value)
-            it.setString(4, ident.value)
-            it.setString(5, Status.STOPP_AUTOMATIKK.toString())
-            it.setString(6, virksomhetNr.value)
-            it.setTimestamp(7, Timestamp.from(Instant.now()))
+            it.setString(2, fnr.value)
+            it.setString(3, ident.value)
+            it.setString(4, Status.STOPP_AUTOMATIKK.toString())
+            it.setString(5, virksomhetNr.value)
+            it.setTimestamp(6, Timestamp.from(Instant.now()))
             it.execute()
         }
     }
