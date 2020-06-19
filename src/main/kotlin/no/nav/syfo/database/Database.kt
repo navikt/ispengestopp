@@ -6,6 +6,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.log
 import org.flywaydb.core.Flyway
 import java.sql.Connection
+import java.sql.ResultSet
 
 enum class Role {
     ADMIN, USER, READONLY;
@@ -13,53 +14,74 @@ enum class Role {
     override fun toString() = name.toLowerCase()
 }
 
-class Database(private val env: Environment, private val vaultCredentialService: VaultCredentialService) :
-    DatabaseInterface {
-    private val dataSource: HikariDataSource
+data class DbConfig(
+    val jdbcUrl: String,
+    val password: String,
+    val username: String,
+    val databaseName: String,
+    val poolSize: Int = 2,
+    val runMigrationsOninit: Boolean = true
+)
 
-    override val connection: Connection
-        get() = dataSource.connection
+class DevDatabase(daoConfig: DbConfig) : Database(daoConfig, null)
+
+class ProdDatabase(daoConfig: DbConfig, initBlock: (context: Database) -> Unit) : Database(daoConfig, initBlock) {
+
+    override fun runFlywayMigrations(jdbcUrl: String, username: String, password: String): Int = Flyway.configure().run {
+        dataSource(jdbcUrl, username, password)
+        initSql("SET ROLE \"${daoConfig.databaseName}-${Role.ADMIN}\"") // required for assigning proper owners for the tables
+        load().migrate()
+    }
+}
+
+abstract class Database(val daoConfig: DbConfig, private val initBlock: ((context: Database) -> Unit)?) : DatabaseInterface {
+
+    var dataSource: HikariDataSource
 
     init {
-        runFlywayMigrations()
 
-        val initialCredentials = vaultCredentialService.getNewCredentials(
-            mountPath = env.databaseMountPathVault,
-            databaseName = env.databaseName,
-            role = Role.USER
-        )
         dataSource = HikariDataSource(HikariConfig().apply {
-            jdbcUrl = env.ispengestoppDBURL
-            username = initialCredentials.username
-            password = initialCredentials.password
-            maximumPoolSize = 3
+            jdbcUrl = daoConfig.jdbcUrl
+            username = daoConfig.username
+            password = daoConfig.password
+            maximumPoolSize = daoConfig.poolSize
             minimumIdle = 1
-            idleTimeout = 10001
-            maxLifetime = 300000
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()
         })
 
-        vaultCredentialService.renewCredentialsTaskData = RenewCredentialsTaskData(
-            dataSource = dataSource,
-            mountPath = env.databaseMountPathVault,
-            databaseName = env.databaseName,
-            role = Role.USER
-        )
+        afterInit()
     }
 
-    private fun runFlywayMigrations() = Flyway.configure().run {
-        log.info("Run flyway migrations")
-        val credentials = vaultCredentialService.getNewCredentials(
-            mountPath = env.databaseMountPathVault,
-            databaseName = env.databaseName,
-            role = Role.ADMIN
-        )
-        dataSource(env.ispengestoppDBURL, credentials.username, credentials.password)
-        // required for assigning proper owners for the tables
-        initSql("SET ROLE \"${env.databaseName}-${Role.ADMIN}\"")
+    fun updateCredentials(username: String, password: String) {
+        dataSource.apply {
+            hikariConfigMXBean.setPassword(password)
+            hikariConfigMXBean.setUsername(username)
+            hikariPoolMXBean.softEvictConnections()
+        }
+    }
+
+    override val connection: Connection
+        get() = dataSource.connection
+
+    private fun afterInit() {
+        if (daoConfig.runMigrationsOninit) {
+            runFlywayMigrations(daoConfig.jdbcUrl, daoConfig.username, daoConfig.password)
+        }
+        initBlock?.let { run(it) }
+    }
+
+    open fun runFlywayMigrations(jdbcUrl: String, username: String, password: String) = Flyway.configure().run {
+        dataSource(jdbcUrl, username, password)
         load().migrate()
+    }
+
+}
+
+fun <T> ResultSet.toList(mapper: ResultSet.() -> T) = mutableListOf<T>().apply {
+    while (next()) {
+        add(mapper())
     }
 }
 
