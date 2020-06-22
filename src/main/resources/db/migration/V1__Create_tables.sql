@@ -5,5 +5,5 @@ CREATE TABLE status_endring (
   veileder_ident           VARCHAR(7)         NOT NULL,
   status                   VARCHAR(99)        NOT NULL,
   virksomhet_nr            VARCHAR(9)         NOT NULL,
-  timestamptz              TIMESTAMP          NOT NULL
+  opprettet                TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

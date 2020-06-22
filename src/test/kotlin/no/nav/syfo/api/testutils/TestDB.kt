@@ -7,11 +7,8 @@ import no.nav.syfo.database.DevDatabase
 import no.nav.syfo.database.toList
 import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
-import java.sql.Date
 import java.sql.ResultSet
 import java.sql.Timestamp
-import java.time.Instant
-import java.time.LocalDateTime
 
 class TestDB : DatabaseInterface {
 
@@ -49,15 +46,6 @@ const val queryStatusEndring = """
     AND virksomhet_nr = ?
 """
 
-const val queryStatusInsertTest = """INSERT INTO status_endring (
-        id,
-        uuid,
-        sykmeldt_fnr,
-        veileder_ident,
-        status,
-        virksomhet_nr,
-        timestamptz) VALUES (?, ?, ?, ?, ?, ?, ?)"""
-
 fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<StatusEndring> {
     return use { connection ->
         connection.prepareStatement(queryStatusEndring).use {
@@ -70,30 +58,13 @@ fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: Vi
     }
 }
 
-
-fun Connection.testInsert(sykmeldtFnr: SykmeldtFnr, veilederIdent: VeilederIdent, virksomhetNr: VirksomhetNr) {
-    use { connection ->
-        connection.prepareStatement(queryStatusInsertTest).use{
-            it.setString(1, "id1")
-            it.setString(2, "uuid1")
-            it.setString(3, sykmeldtFnr.value)
-            it.setString(4, veilederIdent.value)
-            it.setString(5, Status.STOPP_AUTOMATIKK.toString())
-            it.setString(6, virksomhetNr.value)
-            it.setTimestamp(7, Timestamp.from(Instant.now()))
-            it.execute()
-        }
-        connection.commit()
-    }
-}
-
 fun ResultSet.toStatusEndring(): StatusEndring =
     StatusEndring(
-        veilederIdent = VeilederIdent(getString("veileder_ident")),
-        sykmeldtFnr = SykmeldtFnr(getString("sykmeldt_fnr")),
-        status = Status.valueOf(getString("status")),
-        virksomhetNr = VirksomhetNr(getString("virksomhet_nr")),
-        date = getObject("timestamptz", Timestamp::class.java).toLocalDateTime()
+        VeilederIdent(getString("veileder_ident")),
+        SykmeldtFnr(getString("sykmeldt_fnr")),
+        Status.valueOf(getString("status")),
+        VirksomhetNr(getString("virksomhet_nr")),
+        getObject("opprettet", Timestamp::class.java).toLocalDateTime()
     )
 
 
