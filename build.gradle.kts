@@ -4,8 +4,8 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val flywayVersion = "5.2.4"
-val hikariVersion = "3.3.0"
+val flywayVersion = "6.4.4"
+val hikariVersion = "3.4.5"
 val kafkaVersion = "2.3.1"
 val jacksonVersion = "2.11.0"
 val ktorVersion = "1.3.2"
@@ -19,6 +19,7 @@ val spekVersion = "2.0.11"
 val spekjunitVersion = "1.1.5"
 val kluentVersion = "1.61"
 val testcontainerVersion = "1.14.3"
+val NavvaultJdbcVersion = "1.3.7"
 
 plugins {
     kotlin("jvm") version "1.3.72"
@@ -46,6 +47,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
     implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
+    implementation("no.nav:vault-jdbc:$NavvaultJdbcVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")

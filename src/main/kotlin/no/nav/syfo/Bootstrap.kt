@@ -2,16 +2,13 @@ package no.nav.syfo
 
 import io.ktor.util.InternalAPI
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.config.bootstrapDBInit
-import no.nav.syfo.database.*
+import no.nav.syfo.database.VaultCredentialService
 import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.vault.RenewVaultService
 import org.slf4j.Logger
@@ -51,7 +48,9 @@ fun main() {
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
     GlobalScope.launch {
         try {
+            log.info("launch listener før")
             action()
+            log.info("launch listener etter")
         } catch (e: Exception) {
             log.error(
                 "En uhåndtert feil oppstod, applikasjonen restarter {}",
@@ -62,7 +61,6 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         }
     }
 
-
 @InternalAPI
 @KtorExperimentalAPI
 fun launchListeners(
@@ -70,5 +68,16 @@ fun launchListeners(
 ) {
     createListener(applicationState) {
         applicationState.ready = true
+
+        blockingApplicationLogic(applicationState)
+    }
+}
+
+@KtorExperimentalAPI
+suspend fun blockingApplicationLogic(
+    applicationState: ApplicationState
+) {
+    while (applicationState.ready) {
+        delay(100)
     }
 }
