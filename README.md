@@ -8,7 +8,7 @@ TODO
 * Gradle
 * JDK 13
 * Spek
-* Jackson
+* Gson
 
 #### Requirements
 * Adopt-OpenJDK 13
