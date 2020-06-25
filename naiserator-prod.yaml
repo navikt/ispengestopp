@@ -49,3 +49,7 @@ spec:
       value: ispengestopp
     - name: ISPENGESTOPP_DB_URL
       value: jdbc:postgresql://A01DBVL013.adeo.no:5432/ispengestopp
+    - name: JWT_ISSUER
+      value: https://sts.windows.net/62366534-1ec3-4962-8869-9b5535279d0b/
+    - name: LOGINSERVICE_CLIENT_ID
+      value: 9b4e07a3-4f4c-4bab-b866-87f62dff480d

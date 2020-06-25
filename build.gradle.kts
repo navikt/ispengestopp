@@ -11,6 +11,7 @@ val jacksonVersion = "2.11.0"
 val ktorVersion = "1.3.2"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "6.3"
+val nimbusjosejwtVersion = "7.5.1"
 val postgresVersion = "42.2.13"
 val prometheusVersion = "0.6.0"
 val smCommonVersion = "1.0.22"
@@ -36,6 +37,7 @@ dependencies {
     implementation(kotlin("stdlib"))
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
@@ -55,6 +57,7 @@ dependencies {
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainerVersion")
+    testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwtVersion")
 
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
