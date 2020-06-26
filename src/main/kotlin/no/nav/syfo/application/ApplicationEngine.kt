@@ -13,6 +13,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.database.DatabaseInterface
+import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
@@ -22,7 +23,7 @@ fun createApplicationEngine(
     env: Environment
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
-
+        val log = LoggerFactory.getLogger("ktor.application")
         // TODO Her kan man tydeligvis også installere CallID (SyfooversiktApplication.kt linje 202)
         install(ContentNegotiation) {
             gson {

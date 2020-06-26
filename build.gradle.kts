@@ -38,6 +38,7 @@ dependencies {
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
+    implementation("io.ktor:ktor-gson:$ktorVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
@@ -54,6 +55,7 @@ dependencies {
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")
 
+
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainerVersion")
@@ -66,7 +68,6 @@ dependencies {
         exclude(group = "org.jetbrains.kotlin")
     }
 
-    implementation("io.ktor:ktor-gson:$ktorVersion")
 }
 
 tasks {

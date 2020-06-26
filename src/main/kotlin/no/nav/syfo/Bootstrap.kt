@@ -40,7 +40,6 @@ fun main() {
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
     log.info("Hello from ispengestopp")
-
     launchListeners(applicationState)
 }
 

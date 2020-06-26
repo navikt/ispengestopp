@@ -28,7 +28,6 @@ import java.nio.file.Paths
 import java.time.Instant
 import java.time.ZoneId
 
-
 class FlaggPerson84Spek : Spek({
 
     val sykmeldtFnr = SykmeldtFnr("123456")

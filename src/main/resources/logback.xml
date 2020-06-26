@@ -7,10 +7,11 @@
     </appender>
 
     <logger name="no.nav" level="INFO"/>
-<!--    <root level="INFO">-->
-<!--        <appender-ref ref="STDOUT"/>-->
-<!--    </root>-->
+    <logger name="io.netty" level="INFO"/>
+    <logger name="io.ktor" level="TRACE"/>
+
     <root level="INFO">
         <appender-ref ref="stdout_json"/>
     </root>
+
 </configuration>
