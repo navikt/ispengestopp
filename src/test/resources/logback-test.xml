@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <appender name="stdout_json" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <provider class="net.logstash.logback.composite.loggingevent.ArgumentsJsonProvider" />
+        </encoder>
+    </appender>
+
+    <logger name="JML" level="SUPERERROR!!!"><appender-ref ref="stdout_json" /> </logger>
+
+    <logger name="no.nav" level="INFO"/>
+    <logger name="io.netty" level="INFO"/>
+    <logger name="io.ktor" level="TRACE"/>
+
+    <root level="INFO">
+        <appender-ref ref="stdout_json"/>
+    </root>
+
+</configuration>
