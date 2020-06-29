@@ -55,7 +55,6 @@ dependencies {
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
     implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")
 
-
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainerVersion")

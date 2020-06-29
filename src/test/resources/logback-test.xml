@@ -6,8 +6,6 @@
         </encoder>
     </appender>
 
-    <logger name="JML" level="SUPERERROR!!!"><appender-ref ref="stdout_json" /> </logger>
-
     <logger name="no.nav" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="io.ktor" level="TRACE"/>
