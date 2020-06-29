@@ -12,8 +12,10 @@ data class Environment(
     val databaseMountPathVault: String = getEnvVar("DATABASE_MOUNT_PATH_VAULT"),
     val databaseName: String = getEnvVar("DATABASE_NAME", "ispengestopp"),
     val ispengestoppDBURL: String = getEnvVar("ISPENGESTOPP_DB_URL"),
-
-    val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean()
+    val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
+    val jwksUri: String = getEnvVar("JWKS_URI", "https://login.microsoftonline.com/common/discovery/keys"),
+    val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
+    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID", "1234")
 ) : KafkaConfig
 
 data class VaultSecrets(

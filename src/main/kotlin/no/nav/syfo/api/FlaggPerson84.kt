@@ -10,7 +10,10 @@ import io.ktor.routing.route
 import no.nav.syfo.StoppAutomatikk
 import no.nav.syfo.addFlagg
 import no.nav.syfo.database.DatabaseInterface
-import no.nav.syfo.log
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
 
 fun Route.registerFlaggPerson84(
     database: DatabaseInterface
@@ -18,8 +21,7 @@ fun Route.registerFlaggPerson84(
     route("/api/v1") {
         post("/person/flagg") {
             val stoppAutomatikk: StoppAutomatikk = call.receive()
-            log.info("Recived call to /api/v1/person/flagg")
-            log.info("Body $stoppAutomatikk") //TODO: ikke logge dette i prod?
+            log.info("Received call to /api/v1/person/flagg")
 
             stoppAutomatikk.virksomhetNr.forEach {
                 database.addFlagg(stoppAutomatikk.sykmeldtFnr, stoppAutomatikk.veilederIdent, it)

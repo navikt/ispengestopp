@@ -1,6 +1,10 @@
 # ispengestopp
 
-TODO
+ispengestopp is a microservice application that notifies when a Søknad should be
+removed from automatic processing.
+
+The no automatic processing state is set for a person for each work place, stored
+in a database and posted on a kafka queue.
 
 ## Technologies used
 * Kotlin
