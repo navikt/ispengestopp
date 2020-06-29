@@ -20,8 +20,10 @@ fun Application.setupAuth(
     log.info("setup Authentication")
     install(Authentication) {
         jwt {
+
             verifier(jwkProvider, env.jwtIssuer)
             log.info("Done verifying")
+            log.info("jwt issuer: ${env.jwtIssuer}")
             validate { credential ->
                 log.info("Audience:" + credential.payload.audience.toString())
                 if (credential.payload.audience.contains(jwtAudience)) {
