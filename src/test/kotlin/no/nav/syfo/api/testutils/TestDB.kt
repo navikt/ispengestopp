@@ -64,7 +64,8 @@ fun ResultSet.toStatusEndring(): StatusEndring =
         SykmeldtFnr(getString("sykmeldt_fnr")),
         Status.valueOf(getString("status")),
         VirksomhetNr(getString("virksomhet_nr")),
-        getObject("opprettet", Timestamp::class.java).toLocalDateTime()
+        getObject("opprettet", Timestamp::class.java).toLocalDateTime(),
+        EnhetNr(getString("enhet_nr"))
     )
 
 

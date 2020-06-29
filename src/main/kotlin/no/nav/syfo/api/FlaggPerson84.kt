@@ -25,7 +25,7 @@ fun Route.registerFlaggPerson84(
             log.info("Received call to /api/v1/person/flagg")
 
             stoppAutomatikk.virksomhetNr.forEach {
-                database.addFlagg(stoppAutomatikk.sykmeldtFnr, stoppAutomatikk.veilederIdent, it)
+                database.addFlagg(stoppAutomatikk.sykmeldtFnr, stoppAutomatikk.veilederIdent, stoppAutomatikk.enhetNr, it)
             }
 
             COUNT_ENDRE_PERSON_STATUS_SUCCESS.inc()

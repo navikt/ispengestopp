@@ -33,6 +33,7 @@ class FlaggPerson84Spek : Spek({
     val sykmeldtFnr = SykmeldtFnr("123456")
     val veilederIdent = VeilederIdent("Z999999")
     val virksomhetNr = VirksomhetNr("888")
+    val enhetNr = EnhetNr("9999")
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
@@ -92,7 +93,7 @@ class FlaggPerson84Spek : Spek({
             it("response should be unauthorized") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(virksomhetNr), veilederIdent)
+                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(virksomhetNr), veilederIdent, enhetNr)
                     val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
@@ -107,7 +108,7 @@ class FlaggPerson84Spek : Spek({
                         "Authorization",
                         "Bearer ${generateJWT("1234")}"
                     )
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(virksomhetNr), veilederIdent)
+                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(virksomhetNr), veilederIdent, enhetNr)
                     val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
@@ -119,7 +120,7 @@ class FlaggPerson84Spek : Spek({
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(virksomhetNr), veilederIdent)
+                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(virksomhetNr), veilederIdent, enhetNr)
                     val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
@@ -136,6 +137,7 @@ class FlaggPerson84Spek : Spek({
                 statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
                 statusEndring.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
                     .atZone(ZoneId.systemDefault()).dayOfMonth
+                statusEndring.enhetNr shouldBeEqualTo enhetNr
             }
         }
     }
