@@ -22,7 +22,6 @@ fun Route.registerFlaggPerson84(
         post("/person/flagg") {
             val stoppAutomatikk: StoppAutomatikk = call.receive()
             log.info("Received call to /api/v1/person/flagg")
-            log.info("Body $stoppAutomatikk") //TODO: ikke logge dette i prod?
 
             stoppAutomatikk.virksomhetNr.forEach {
                 database.addFlagg(stoppAutomatikk.sykmeldtFnr, stoppAutomatikk.veilederIdent, it)
