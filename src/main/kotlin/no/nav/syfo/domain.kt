@@ -5,7 +5,8 @@ import java.time.LocalDateTime
 data class StoppAutomatikk(
     val sykmeldtFnr: SykmeldtFnr,
     val virksomhetNr: List<VirksomhetNr>,
-    val veilederIdent: VeilederIdent
+    val veilederIdent: VeilederIdent,
+    val enhetNr: EnhetNr
 )
 
 data class StatusEndring(
@@ -13,9 +14,11 @@ data class StatusEndring(
     val sykmeldtFnr: SykmeldtFnr,
     val status: Status,
     val virksomhetNr: VirksomhetNr,
-    val opprettet: LocalDateTime
+    val opprettet: LocalDateTime,
+    val enhetNr: EnhetNr
 )
 
+data class EnhetNr(val value: String)
 data class VeilederIdent(val value: String)
 data class SykmeldtFnr(val value: String)
 data class VirksomhetNr(val value: String)

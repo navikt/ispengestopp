@@ -10,9 +10,10 @@ const val queryStatusInsert = """INSERT INTO status_endring (
         veileder_ident,
         status,
         virksomhet_nr,
-        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, DEFAULT)"""
+        enhet_nr,
+        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, DEFAULT)"""
 
-fun DatabaseInterface.addFlagg(fnr: SykmeldtFnr, ident: VeilederIdent, virksomhetNr: VirksomhetNr) {
+fun DatabaseInterface.addFlagg(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: EnhetNr, virksomhetNr: VirksomhetNr) {
     val uuid = UUID.randomUUID().toString()
     connection.use { connection ->
         connection.prepareStatement(queryStatusInsert).use {
@@ -21,6 +22,7 @@ fun DatabaseInterface.addFlagg(fnr: SykmeldtFnr, ident: VeilederIdent, virksomhe
             it.setString(3, ident.value)
             it.setString(4, Status.STOPP_AUTOMATIKK.toString())
             it.setString(5, virksomhetNr.value)
+            it.setString(6, enhetNr.value)
             it.execute()
         }
         connection.commit()

@@ -7,6 +7,7 @@ import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
+import no.nav.syfo.COUNT_ENDRE_PERSON_STATUS_SUCCESS
 import no.nav.syfo.StoppAutomatikk
 import no.nav.syfo.addFlagg
 import no.nav.syfo.database.DatabaseInterface
@@ -24,9 +25,10 @@ fun Route.registerFlaggPerson84(
             log.info("Received call to /api/v1/person/flagg")
 
             stoppAutomatikk.virksomhetNr.forEach {
-                database.addFlagg(stoppAutomatikk.sykmeldtFnr, stoppAutomatikk.veilederIdent, it)
+                database.addFlagg(stoppAutomatikk.sykmeldtFnr, stoppAutomatikk.veilederIdent, stoppAutomatikk.enhetNr, it)
             }
 
+            COUNT_ENDRE_PERSON_STATUS_SUCCESS.inc()
             call.respondText("{}", status = HttpStatusCode.OK)
         }
     }
