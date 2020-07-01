@@ -23,4 +23,6 @@ data class VeilederIdent(val value: String)
 data class SykmeldtFnr(val value: String)
 data class VirksomhetNr(val value: String)
 
+data class Tilgang(val harTilgang: Boolean, val begrunnelse: String? = null)
+
 enum class Status { NORMAL, STOPP_AUTOMATIKK }

@@ -13,6 +13,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.database.DatabaseInterface
+import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -41,7 +42,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             authenticate {
-                registerFlaggPerson84(database)
+                registerFlaggPerson84(database, TilgangskontrollConsumer())
             }
         }
     }
