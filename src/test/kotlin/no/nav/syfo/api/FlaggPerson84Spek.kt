@@ -15,11 +15,9 @@ import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import no.nav.syfo.*
-import no.nav.syfo.api.testutils.TestDB
-import no.nav.syfo.api.testutils.dropData
-import no.nav.syfo.api.testutils.generateJWT
-import no.nav.syfo.api.testutils.hentStatusEndringListe
+import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.spekframework.spek2.Spek
@@ -31,6 +29,7 @@ import java.time.ZoneId
 class FlaggPerson84Spek : Spek({
 
     val sykmeldtFnr = SykmeldtFnr("123456")
+    val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
     val veilederIdent = VeilederIdent("Z999999")
     val virksomhetNr = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
@@ -47,6 +46,15 @@ class FlaggPerson84Spek : Spek({
                 setPrettyPrinting()
             }
         }
+
+
+        val mockServerPort = 9090
+        val mockHttpServerUrl = "http://localhost:$mockServerPort"
+
+        val mockServer =
+            mockSyfotilgangskontrollServer(mockServerPort, sykmeldtFnr).start(wait = false)
+
+        afterGroup { mockServer.stop(1L, 10L) }
 
         val env = Environment(
             "ispengestopp",
@@ -75,9 +83,13 @@ class FlaggPerson84Spek : Spek({
 
         testApp.application.routing {
             authenticate {
-                registerFlaggPerson84(database)
+                registerFlaggPerson84(
+                    database,
+                    TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
+                )
             }
         }
+
 
         return testApp.block()
     }
@@ -101,6 +113,22 @@ class FlaggPerson84Spek : Spek({
                 }
             }
 
+            it("Forbidden") {
+                with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    addHeader(
+                        "Authorization",
+                        "Bearer ${generateJWT("1234")}"
+                    )
+                    val stoppAutomatikk =
+                        StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(virksomhetNr), veilederIdent, enhetNr)
+                    val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
+                    setBody(stoppAutomatikkJson)
+                }) {
+                    response.status() shouldBe HttpStatusCode.Forbidden
+                }
+            }
+
             it("200 OK") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -112,7 +140,7 @@ class FlaggPerson84Spek : Spek({
                     val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
-                    response.status() shouldBe HttpStatusCode.OK
+                    response.status() shouldBe HttpStatusCode.Created
                 }
             }
 
@@ -124,7 +152,7 @@ class FlaggPerson84Spek : Spek({
                     val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
-                    response.status() shouldBe HttpStatusCode.OK
+                    response.status() shouldBe HttpStatusCode.Created
                 }
 
                 val statusendringListe = database.connection.hentStatusEndringListe(sykmeldtFnr, virksomhetNr)
