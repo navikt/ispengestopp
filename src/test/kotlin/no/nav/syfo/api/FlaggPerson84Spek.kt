@@ -2,7 +2,6 @@ package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.google.gson.Gson
-import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.authenticate
 import io.ktor.features.ContentNegotiation
@@ -11,19 +10,12 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
-import io.ktor.routing.get
 import io.ktor.routing.routing
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import no.nav.syfo.*
-import no.nav.syfo.api.testutils.TestDB
-import no.nav.syfo.api.testutils.dropData
-import no.nav.syfo.api.testutils.generateJWT
-import no.nav.syfo.api.testutils.hentStatusEndringListe
+import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
@@ -55,23 +47,14 @@ class FlaggPerson84Spek : Spek({
             }
         }
 
-        val mockHttpServerUrl = "http://localhost:9090"
-        val mockServer = embeddedServer(Netty, 9090) {
-            install(ContentNegotiation) {
-                gson {
-                    setPrettyPrinting()
-                }
-            }
-            routing {
-                get("/syfo-tilgangskontroll/api/tilgang/bruker") {
-                    if (call.request.queryParameters["fnr"]!! == sykmeldtFnr.value) {
-                        call.respond(Tilgang(true))
-                    } else {
-                        call.respond(Tilgang(false, "Vil ikke"))
-                    }
-                }
-            }
-        }.start(wait = false)
+
+        val mockServerPort = 9090
+        val mockHttpServerUrl = "http://localhost:$mockServerPort"
+
+        val mockServer =
+            mockSyfotilgangskontrollServer(mockServerPort, sykmeldtFnr).start(wait = false)
+
+        afterGroup { mockServer.stop(1L, 10L) }
 
         val env = Environment(
             "ispengestopp",
@@ -107,7 +90,6 @@ class FlaggPerson84Spek : Spek({
             }
         }
 
-        afterGroup { mockServer.stop(1L, 10L) }
 
         return testApp.block()
     }
