@@ -58,6 +58,6 @@ jobs:
         uses: snyk/actions/gradle@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          REPOSITORY: ${{ GITHUB_REPOSITORY }} 
+          REPOSITORY: $GITHUB_REPOSITORY 
         with:
           command: monitor --project-name=$REPOSITORY
