@@ -59,4 +59,5 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          command: monitor
+          command: monitor  --project-name=${GITHUB_REPOSITORY}
+
