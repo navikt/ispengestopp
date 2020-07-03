@@ -60,5 +60,5 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: monitor 
-          args: --project-name=$GITHUB_REPOSITORY
+          args: --project-name=ispengestopp
 
