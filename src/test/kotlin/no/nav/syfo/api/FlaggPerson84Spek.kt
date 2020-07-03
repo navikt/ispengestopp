@@ -14,17 +14,25 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
+import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.kafka.loadBaseConfig
+import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldEqual
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
+import java.util.*
 
 class FlaggPerson84Spek : Spek({
 
@@ -33,6 +41,37 @@ class FlaggPerson84Spek : Spek({
     val veilederIdent = VeilederIdent("Z999999")
     val virksomhetNr = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
+
+
+    val embeddedEnvironment = KafkaEnvironment(
+            autoStart = false,
+            topics = listOf("aapen-isyfo-person-flagget84")
+    )
+
+    val env = Environment(
+            "ispengestopp",
+            8080,
+            embeddedEnvironment.brokersURL,
+            "",
+            "",
+            "",
+            "https://sts.issuer.net/myid",
+            "src/test/resources/jwkset.json",
+            false,
+            "1234"
+    )
+    val credentials = VaultSecrets(
+            "",
+            ""
+    )
+    fun Properties.overrideForTest(): Properties = apply {
+        remove("security.protocol")
+        remove("sasl.mechanism")
+    }
+    val baseConfig = loadBaseConfig(env, credentials).overrideForTest()
+    val consumerProperties = baseConfig
+            .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
+    val consumer = KafkaConsumer<String, String>(consumerProperties)
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
@@ -56,18 +95,7 @@ class FlaggPerson84Spek : Spek({
 
         afterGroup { mockServer.stop(1L, 10L) }
 
-        val env = Environment(
-            "ispengestopp",
-            8080,
-            "",
-            "",
-            "",
-            "",
-            "https://sts.issuer.net/myid",
-            "src/test/resources/jwkset.json",
-            false,
-            "1234"
-        )
+
 
         val uri = Paths.get(env.jwksUri).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
@@ -90,14 +118,17 @@ class FlaggPerson84Spek : Spek({
             }
         }
 
-
         return testApp.block()
     }
 
     describe("Flag a person to be removed from automatic processing") {
         val database by lazy { TestDB() }
+        beforeGroup {
+            embeddedEnvironment.start()
+        }
         afterGroup {
             database.stop()
+            embeddedEnvironment.tearDown()
         }
 
         withTestApplicationForApi(TestApplicationEngine(), database) {
@@ -166,6 +197,15 @@ class FlaggPerson84Spek : Spek({
                 statusEndring.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
                     .atZone(ZoneId.systemDefault()).dayOfMonth
                 statusEndring.enhetNr shouldBeEqualTo enhetNr
+
+                val messages: ArrayList<KFlaggperson84Hendelse> = arrayListOf()
+                consumer.poll(Duration.ofMillis(5000)).forEach {
+                    val hendelse: KFlaggperson84Hendelse = objectMapper.readValue(it.value())
+                    messages.add(hendelse)
+
+                }
+                messages.size shouldBeEqualTo  1
+                messages.first() shouldBeEqualTo flaggperson84Hendelse
             }
         }
     }

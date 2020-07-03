@@ -21,6 +21,7 @@ val spekjunitVersion = "1.1.5"
 val kluentVersion = "1.61"
 val testcontainerVersion = "1.14.3"
 val NavvaultJdbcVersion = "1.3.7"
+val kafkaEmbeddedEnvVersion = "2.4.0"
 
 plugins {
     kotlin("jvm") version "1.3.72"
@@ -61,6 +62,7 @@ dependencies {
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainerVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwtVersion")
+    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
 
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
