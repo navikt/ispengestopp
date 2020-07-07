@@ -32,6 +32,7 @@ plugins {
 repositories {
     mavenCentral()
     jcenter()
+    maven(url = "http://packages.confluent.io/maven/")
 }
 
 dependencies {

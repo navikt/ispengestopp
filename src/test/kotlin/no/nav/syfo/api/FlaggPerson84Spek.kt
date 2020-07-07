@@ -23,7 +23,6 @@ import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldEqual
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
@@ -44,34 +43,38 @@ class FlaggPerson84Spek : Spek({
 
 
     val embeddedEnvironment = KafkaEnvironment(
-            autoStart = false,
-            topics = listOf("aapen-isyfo-person-flagget84")
+        autoStart = false,
+        topicNames = listOf("aapen-isyfo-person-flagget84")
     )
 
     val env = Environment(
-            "ispengestopp",
-            8080,
-            embeddedEnvironment.brokersURL,
-            "",
-            "",
-            "",
-            "https://sts.issuer.net/myid",
-            "src/test/resources/jwkset.json",
-            false,
-            "1234"
+        "ispengestopp",
+        8080,
+        embeddedEnvironment.brokersURL,
+        "",
+        "",
+        "",
+        "https://sts.issuer.net/myid",
+        "src/test/resources/jwkset.json",
+        false,
+        "1234",
+        "aapen-isyfo-person-flagget84"
     )
     val credentials = VaultSecrets(
-            "",
-            ""
+        "",
+        ""
     )
+
     fun Properties.overrideForTest(): Properties = apply {
         remove("security.protocol")
         remove("sasl.mechanism")
     }
+
     val baseConfig = loadBaseConfig(env, credentials).overrideForTest()
     val consumerProperties = baseConfig
-            .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
+        .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
     val consumer = KafkaConsumer<String, String>(consumerProperties)
+    consumer.subscribe(listOf(env.flaggPerson84Topic))
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
@@ -94,8 +97,6 @@ class FlaggPerson84Spek : Spek({
             mockSyfotilgangskontrollServer(mockServerPort, sykmeldtFnr).start(wait = false)
 
         afterGroup { mockServer.stop(1L, 10L) }
-
-
 
         val uri = Paths.get(env.jwksUri).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
@@ -200,12 +201,14 @@ class FlaggPerson84Spek : Spek({
 
                 val messages: ArrayList<KFlaggperson84Hendelse> = arrayListOf()
                 consumer.poll(Duration.ofMillis(5000)).forEach {
-                    val hendelse: KFlaggperson84Hendelse = objectMapper.readValue(it.value())
+                    val hendelse: KFlaggperson84Hendelse =
+                        Gson().fromJson(it.value(), KFlaggperson84Hendelse::class.java)
                     messages.add(hendelse)
 
                 }
-                messages.size shouldBeEqualTo  1
-                messages.first() shouldBeEqualTo flaggperson84Hendelse
+                messages.size shouldBeEqualTo 1
+                val flaggperson84Hendelse = messages.first()
+                flaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
             }
         }
     }
