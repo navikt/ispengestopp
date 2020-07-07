@@ -4,6 +4,7 @@ import com.auth0.jwk.JwkProviderBuilder
 import com.google.gson.Gson
 import io.ktor.application.install
 import io.ktor.auth.authenticate
+import io.ktor.client.features.json.GsonSerializer
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.http.ContentType
@@ -14,17 +15,22 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
+import kotlinx.serialization.serializer
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.common.serialization.Serializer
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
@@ -42,7 +48,7 @@ class FlaggPerson84Spek : Spek({
     val enhetNr = EnhetNr("9999")
 
 
-    val embeddedEnvironment = KafkaEnvironment(
+    val embeddedEnvironment = KafkaEnvironment( // TODO Kan vi endre navn på denne? Jeg synes det er vanskeligere å skjønne hva embeddedEnvironment er lenger ned i koden.
         autoStart = false,
         topicNames = listOf("aapen-isyfo-person-flagget84")
     )
@@ -76,6 +82,10 @@ class FlaggPerson84Spek : Spek({
     val consumer = KafkaConsumer<String, String>(consumerProperties)
     consumer.subscribe(listOf(env.flaggPerson84Topic))
 
+    val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
+
+    val personFlagget84Producer = KafkaProducer<String, KFlaggperson84Hendelse>(producerProperties)
+
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
         testApp: TestApplicationEngine,
@@ -104,16 +114,20 @@ class FlaggPerson84Spek : Spek({
         testApp.application.setupAuth(env, jwkProvider)
 
         beforeEachTest {
+            embeddedEnvironment.start()
         }
 
         afterEachTest {
             database.connection.dropData()
+            embeddedEnvironment.tearDown() // TODO Jeg tror dette er en teit måte å gjøre det på, men hvis vi har flere tester som kommer til kafka-delen, vil vi får flere elemtener på køen, og dette kan tømme den. Men nå fikk jeg tom liste i assertion :(
         }
 
         testApp.application.routing {
             authenticate {
                 registerFlaggPerson84(
                     database,
+                    env,
+                    personFlagget84Producer,
                     TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
                 )
             }
@@ -214,3 +228,10 @@ class FlaggPerson84Spek : Spek({
     }
 })
 
+// TODO Jeg vet ikke helt hva vi skal gjøre med denne! :( Jeg vet ikke hvorfor "toProducerConfig" trenger en så rar serializer-klasse.
+// TODO Den ekte Producer-genereringen bruker ikke denn nå, men "StringSerializer::class", og det vil nok ikke fungere, siden vi sender inn et objekt.
+class GsonKafkaSerializer(): Serializer<Any> {
+    private val gsonMapper = Gson()
+    override fun serialize(topic: String?, data: Any?): ByteArray = gsonMapper.toJson(data).toByteArray()
+    override fun close() {}
+}

@@ -9,6 +9,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.config.bootstrapDBInit
 import no.nav.syfo.database.VaultCredentialService
+import no.nav.syfo.kafka.createPersonFlagget84Producer
 import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.vault.RenewVaultService
 import org.slf4j.Logger
@@ -29,11 +30,16 @@ fun main() {
     val applicationState = ApplicationState()
     val database = bootstrapDBInit(env, applicationState, vaultCredentialService)
 
+    val personFlagget84Producer = createPersonFlagget84Producer(env, vaultSecrets)
+
     val applicationEngine = createApplicationEngine(
         applicationState,
         database,
-        env
+        env,
+        personFlagget84Producer
     )
+
+
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
 

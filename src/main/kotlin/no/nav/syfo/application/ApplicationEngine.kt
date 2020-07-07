@@ -10,10 +10,12 @@ import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.syfo.Environment
+import no.nav.syfo.KFlaggperson84Hendelse
 import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -21,7 +23,8 @@ import java.util.concurrent.TimeUnit
 fun createApplicationEngine(
     applicationState: ApplicationState,
     database: DatabaseInterface,
-    env: Environment
+    env: Environment,
+    personFlagget84Producer: KafkaProducer<String, KFlaggperson84Hendelse>
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         val log = LoggerFactory.getLogger("ktor.application")
@@ -42,7 +45,7 @@ fun createApplicationEngine(
         routing {
             registerNaisApi(applicationState)
             authenticate {
-                registerFlaggPerson84(database, TilgangskontrollConsumer())
+                registerFlaggPerson84(database, env, personFlagget84Producer, TilgangskontrollConsumer())
             }
         }
     }
