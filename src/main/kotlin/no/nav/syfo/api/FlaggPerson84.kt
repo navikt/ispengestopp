@@ -47,8 +47,18 @@ fun Route.registerFlaggPerson84(
                         LocalDateTime.now(),
                         stoppAutomatikk.enhetNr
                     )
-                    personFlagget84Producer.send(ProducerRecord(env.flaggPerson84Topic, "${stoppAutomatikk.sykmeldtFnr}-$it", kFlaggperson84Hendelse)) // TODO Jeg er usikker på om dette logges noe sted, i så fall logger vi jo fnr i nøkkelen, og det er vel dumt?
-                    database.addFlagg( // TODO Fjerne skriving til DB, siden vi heller skal lese topicen.
+
+                    personFlagget84Producer.send(
+                        ProducerRecord(
+                            env.flaggPerson84Topic,
+                            "${stoppAutomatikk.sykmeldtFnr}-$it",
+                            kFlaggperson84Hendelse
+                        )
+                    )
+
+                    log.info("Lagt melding på kafka: Topic: {}", env.flaggPerson84Topic)
+
+                    database.addFlagg(
                         stoppAutomatikk.sykmeldtFnr,
                         stoppAutomatikk.veilederIdent,
                         stoppAutomatikk.enhetNr,

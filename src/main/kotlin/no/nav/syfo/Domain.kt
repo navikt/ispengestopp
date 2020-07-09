@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 data class EnhetNr(val value: String)
 
-data class KFlaggperson84Hendelse( // TODO Er det overflødig å kalle dette for "Hendelse" er ikke det implisitt når det er et Kafka-objekt?
+data class KFlaggperson84Hendelse(
         val veilederIdent: VeilederIdent,
         val sykmeldtFnr: SykmeldtFnr,
         val status: Status,
