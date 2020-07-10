@@ -15,7 +15,8 @@ data class Environment(
     val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
     val jwksUri: String = getEnvVar("JWKS_URI", "https://login.microsoftonline.com/common/discovery/keys"),
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
-    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID", "1234")
+    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID", "1234"),
+    val flaggPerson84Topic: String = getEnvVar("FLAGG_PERSON84_TOPIC", "aapen-isyfo-person-flagget84")
 ) : KafkaConfig
 
 data class VaultSecrets(

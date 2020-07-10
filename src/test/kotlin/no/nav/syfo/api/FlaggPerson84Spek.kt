@@ -14,17 +14,28 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
+import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.kafka.GsonKafkaSerializer
+import no.nav.syfo.kafka.loadBaseConfig
+import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import org.amshove.kluent.`should be greater or equal to`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
+import java.util.*
 
 class FlaggPerson84Spek : Spek({
 
@@ -33,6 +44,44 @@ class FlaggPerson84Spek : Spek({
     val veilederIdent = VeilederIdent("Z999999")
     val virksomhetNr = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
+
+
+    val embeddedKafkaEnvironment = KafkaEnvironment(
+        autoStart = false,
+        topicNames = listOf("aapen-isyfo-person-flagget84")
+    )
+
+    val env = Environment(
+        "ispengestopp",
+        8080,
+        embeddedKafkaEnvironment.brokersURL,
+        "",
+        "",
+        "",
+        "https://sts.issuer.net/myid",
+        "src/test/resources/jwkset.json",
+        false,
+        "1234",
+        "aapen-isyfo-person-flagget84"
+    )
+    val credentials = VaultSecrets(
+        "",
+        ""
+    )
+
+    fun Properties.overrideForTest(): Properties = apply {
+        remove("security.protocol")
+        remove("sasl.mechanism")
+    }
+
+    val baseConfig = loadBaseConfig(env, credentials).overrideForTest()
+    val consumerProperties = baseConfig
+        .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
+    val consumer = KafkaConsumer<String, String>(consumerProperties)
+    consumer.subscribe(listOf(env.flaggPerson84Topic))
+
+    val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
+    val personFlagget84Producer = KafkaProducer<String, KFlaggperson84Hendelse>(producerProperties)
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
@@ -56,19 +105,6 @@ class FlaggPerson84Spek : Spek({
 
         afterGroup { mockServer.stop(1L, 10L) }
 
-        val env = Environment(
-            "ispengestopp",
-            8080,
-            "",
-            "",
-            "",
-            "",
-            "https://sts.issuer.net/myid",
-            "src/test/resources/jwkset.json",
-            false,
-            "1234"
-        )
-
         val uri = Paths.get(env.jwksUri).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
 
@@ -85,19 +121,24 @@ class FlaggPerson84Spek : Spek({
             authenticate {
                 registerFlaggPerson84(
                     database,
+                    env,
+                    personFlagget84Producer,
                     TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
                 )
             }
         }
-
 
         return testApp.block()
     }
 
     describe("Flag a person to be removed from automatic processing") {
         val database by lazy { TestDB() }
+        beforeGroup {
+            embeddedKafkaEnvironment.start()
+        }
         afterGroup {
             database.stop()
+            embeddedKafkaEnvironment.tearDown()
         }
 
         withTestApplicationForApi(TestApplicationEngine(), database) {
@@ -166,8 +207,27 @@ class FlaggPerson84Spek : Spek({
                 statusEndring.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
                     .atZone(ZoneId.systemDefault()).dayOfMonth
                 statusEndring.enhetNr shouldBeEqualTo enhetNr
+
+                val messages: ArrayList<KFlaggperson84Hendelse> = arrayListOf()
+                consumer.poll(Duration.ofMillis(5000)).forEach {
+                    val hendelse: KFlaggperson84Hendelse =
+                        Gson().fromJson(it.value(), KFlaggperson84Hendelse::class.java)
+                    messages.add(hendelse)
+
+                }
+
+                messages.size `should be greater or equal to` 1
+
+                val latestFlaggperson84Hendelse = messages.last()
+
+                latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+                latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
+                latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo virksomhetNr
+                latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
+                latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
+                    .atZone(ZoneId.systemDefault()).dayOfMonth
+                latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
             }
         }
     }
 })
-
