@@ -53,9 +53,7 @@ fun main() {
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
     GlobalScope.launch {
         try {
-            log.info("launch listener før")
             action()
-            log.info("launch listener etter")
         } catch (e: Exception) {
             log.error(
                 "En uhåndtert feil oppstod, applikasjonen restarter {}",

@@ -27,7 +27,7 @@ fun Route.registerFlaggPerson84(
     route("/api/v1") {
         post("/person/flagg") {
             val stoppAutomatikk: StoppAutomatikk = call.receive()
-            log.info("Received call to /api/v1/person/flagg")
+            log.info("Received post request to /api/v1/person/flagg")
 
             val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
 
