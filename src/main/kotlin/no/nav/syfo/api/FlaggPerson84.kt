@@ -83,7 +83,7 @@ fun Route.registerFlaggPerson84(
 
                     log.info("Lagt melding på kafka: Topic: {}", env.flaggPerson84Topic)
 
-                    database.addFlagg(
+                    database.addStatus(
                         stoppAutomatikk.sykmeldtFnr,
                         stoppAutomatikk.veilederIdent,
                         stoppAutomatikk.enhetNr,

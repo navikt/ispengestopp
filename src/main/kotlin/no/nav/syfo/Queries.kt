@@ -23,7 +23,7 @@ const val queryStatusRetrieve = """
     ORDER BY sykmeldt_fnr, virksomhet_nr, opprettet DESC
 """
 
-fun DatabaseInterface.addFlagg(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: EnhetNr, virksomhetNr: VirksomhetNr) {
+fun DatabaseInterface.addStatus(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: EnhetNr, virksomhetNr: VirksomhetNr) {
     val uuid = UUID.randomUUID().toString()
     connection.use { connection ->
         connection.prepareStatement(queryStatusInsert).use {

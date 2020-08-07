@@ -34,6 +34,7 @@ class TestDB : DatabaseInterface {
         )
     }
 
+
     fun stop() {
         container.stop()
     }
@@ -46,6 +47,17 @@ const val queryStatusEndring = """
     AND virksomhet_nr = ?
 """
 
+const val queryStatusAdd = """INSERT INTO status_endring (
+        id,
+        uuid,
+        sykmeldt_fnr,
+        veileder_ident,
+        status,
+        virksomhet_nr,
+        enhet_nr,
+        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)"""
+
+
 fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<StatusEndring> {
     return use { connection ->
         connection.prepareStatement(queryStatusEndring).use {
@@ -55,6 +67,22 @@ fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: Vi
                 toStatusEndring()
             }
         }
+    }
+}
+
+fun Connection.addStatus(dbStatusChangeTest: DBStatusChangeTest) {
+    use { connection ->
+        connection.prepareStatement(queryStatusAdd).use {
+            it.setString(1, dbStatusChangeTest.uuid)
+            it.setString(2, dbStatusChangeTest.sykmeldt_fnr.value)
+            it.setString(3, dbStatusChangeTest.veilederIdent.value)
+            it.setString(4, dbStatusChangeTest.status.toString())
+            it.setString(5, dbStatusChangeTest.virksomhetNr.value)
+            it.setString(6, dbStatusChangeTest.enhetNr.value)
+            it.setObject(7, dbStatusChangeTest.opprettet)
+            it.execute()
+        }
+        connection.commit()
     }
 }
 
