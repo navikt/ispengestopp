@@ -131,6 +131,59 @@ class FlaggPerson84Spek : Spek({
         return testApp.block()
     }
 
+    describe("Get person flag status") {
+        val database by lazy { TestDB() }
+        afterGroup {
+            database.stop()
+        }
+
+        withTestApplicationForApi(TestApplicationEngine(), database) {
+            it("reject request without bearer token") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    val requestBody = StatusReq(sykmeldtFnr)
+                    setBody(Gson().toJson(requestBody))
+                }) {
+                    response.status() shouldBe io.ktor.http.HttpStatusCode.Unauthorized
+                }
+            }
+            it("reject request to forbidden user") {
+                with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    addHeader(
+                        "Authorization",
+                        "Bearer ${generateJWT("1234")}"
+                    )
+                    val requestBody = StatusReq(sykmeldtFnrIkkeTilgang)
+                    setBody(Gson().toJson(requestBody))
+                }) {
+                    response.status() shouldBe HttpStatusCode.Forbidden
+                }
+            }
+            it("return correct content") {
+                database.addFlagg(
+                    sykmeldtFnr,
+                    veilederIdent,
+                    enhetNr,
+                    virksomhetNr
+                )
+                with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    addHeader(
+                        "Authorization",
+                        "Bearer ${generateJWT("1234")}"
+                    )
+                    val stoppAutomatikk = StatusReq(sykmeldtFnr)
+                    val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
+                    setBody(stoppAutomatikkJson)
+                }) {
+                    response.status() shouldBe HttpStatusCode.OK
+                    val flags = Gson().fromJson(response.content!!, Array<StatusEndring>::class.java).toList()
+                    flags[0].sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
+                }
+            }
+        }
+    }
     describe("Flag a person to be removed from automatic processing") {
         val database by lazy { TestDB() }
         beforeGroup {

@@ -29,6 +29,7 @@ data class StoppAutomatikk(
         val enhetNr: EnhetNr
 )
 
+data class StatusReq(val sykmeldtFnr: SykmeldtFnr)
 data class SykmeldtFnr(val value: String)
 data class Tilgang(val harTilgang: Boolean, val begrunnelse: String? = null)
 data class VeilederIdent(val value: String)

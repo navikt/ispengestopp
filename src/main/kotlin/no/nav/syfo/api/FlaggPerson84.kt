@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.syfo.*
@@ -25,6 +26,30 @@ fun Route.registerFlaggPerson84(
     tilgangskontroll: TilgangskontrollConsumer
 ) {
     route("/api/v1") {
+        get("/person/status"){
+            val statusReq: StatusReq = call.receive()
+            log.info("Received get request to /api/v1/person/status")
+
+            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            if (token == null) { // TODO: Trengs denne? Uten token så kommer vel ikke koden så langt som dette?
+                call.respond(HttpStatusCode.Forbidden)
+            }
+
+            val hasAccess = tilgangskontroll.harTilgangTilBruker(statusReq.sykmeldtFnr, token!!)
+            if (hasAccess){
+                println("Get active flags for sykmeldt")
+                val flags: List<StatusEndring> = database.getActiveFlags(statusReq.sykmeldtFnr)
+                when{
+                    flags.isNotEmpty() -> call.respond(flags)
+                    else -> call.respond(HttpStatusCode.NoContent)
+                }
+
+            } else {
+                COUNT_GET_PERSON_STATUS_FAIL.inc()
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+
         post("/person/flagg") {
             val stoppAutomatikk: StoppAutomatikk = call.receive()
             log.info("Received post request to /api/v1/person/flagg")

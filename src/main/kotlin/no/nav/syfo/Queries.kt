@@ -1,6 +1,9 @@
 package no.nav.syfo
 
 import no.nav.syfo.database.DatabaseInterface
+import no.nav.syfo.database.toList
+import java.sql.ResultSet
+import java.sql.Timestamp
 import java.util.*
 
 const val queryStatusInsert = """INSERT INTO status_endring (
@@ -12,6 +15,13 @@ const val queryStatusInsert = """INSERT INTO status_endring (
         virksomhet_nr,
         enhet_nr,
         opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, DEFAULT)"""
+
+const val queryStatusRetrieve = """
+    SELECT DISTINCT ON (sykmeldt_fnr, virksomhet_nr) *
+    FROM status_endring
+    WHERE sykmeldt_fnr = ?
+    ORDER BY sykmeldt_fnr, virksomhet_nr, opprettet DESC
+"""
 
 fun DatabaseInterface.addFlagg(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: EnhetNr, virksomhetNr: VirksomhetNr) {
     val uuid = UUID.randomUUID().toString()
@@ -26,5 +36,27 @@ fun DatabaseInterface.addFlagg(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: 
             it.execute()
         }
         connection.commit()
+    }
+}
+//TODO bruk denne funksjonen i testDB også
+fun ResultSet.toStatusEndring(): StatusEndring =
+    StatusEndring(
+        VeilederIdent(getString("veileder_ident")),
+        SykmeldtFnr(getString("sykmeldt_fnr")),
+        Status.valueOf(getString("status")),
+        VirksomhetNr(getString("virksomhet_nr")),
+        getObject("opprettet", Timestamp::class.java).toLocalDateTime(),
+        EnhetNr(getString("enhet_nr"))
+    )
+
+fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryStatusRetrieve).use {
+            it.setString(1, fnr.value)
+            it.executeQuery().toList {
+                toStatusEndring()
+            }
+        }
+
     }
 }
