@@ -74,7 +74,7 @@ fun Connection.addStatus(dbStatusChangeTest: DBStatusChangeTest) {
     use { connection ->
         connection.prepareStatement(queryStatusAdd).use {
             it.setString(1, dbStatusChangeTest.uuid)
-            it.setString(2, dbStatusChangeTest.sykmeldt_fnr.value)
+            it.setString(2, dbStatusChangeTest.sykmeldtFnr.value)
             it.setString(3, dbStatusChangeTest.veilederIdent.value)
             it.setString(4, dbStatusChangeTest.status.toString())
             it.setString(5, dbStatusChangeTest.virksomhetNr.value)
