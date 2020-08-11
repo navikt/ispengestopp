@@ -6,7 +6,8 @@ const val METRICS_NS = "ispengestopp"
 
 
 const val ENDRE_PERSON_STATUS_SUCCESS = "endre_person_status_success_count"
-const val ENDRE_PERSON_STATUS_FORBIDDEN = "tilgangskontroll_forbidden"
+const val ENDRE_PERSON_STATUS_FORBIDDEN = "endre_person_status_forbidden_count"
+const val GET_PERSON_STATUS_FORBIDDEN = "get_person_status_forbidden_count"
 
 const val TILGANGSKONTROLL_OK = "tilgangskontroll_ok"
 const val TILGANGSKONTROLL_FAIL = "tilgangskontroll_fail"
@@ -21,6 +22,12 @@ val COUNT_ENDRE_PERSON_STATUS_FORBIDDEN: Counter = Counter.build()
     .namespace(METRICS_NS)
     .name(ENDRE_PERSON_STATUS_FORBIDDEN)
     .help("Counts the number of forbidden flaggings")
+    .register()
+
+val COUNT_GET_PERSON_STATUS_FORBIDDEN: Counter = Counter.build()
+    .namespace(METRICS_NS)
+    .name(GET_PERSON_STATUS_FORBIDDEN)
+    .help("Counts the number of forbidden status checks")
     .register()
 
 val COUNT_TILGANGSKONTROLL_OK: Counter = Counter.build()

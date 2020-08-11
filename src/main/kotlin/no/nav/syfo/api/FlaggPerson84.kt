@@ -5,6 +5,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import no.nav.syfo.*
@@ -25,9 +26,30 @@ fun Route.registerFlaggPerson84(
     tilgangskontroll: TilgangskontrollConsumer
 ) {
     route("/api/v1") {
+        get("/person/status"){
+            log.info("Received get request to /api/v1/person/status")
+
+            if (call.request.headers.contains("fnr") == false) call.respond(HttpStatusCode.BadRequest)
+            val sykmeldtFnr = SykmeldtFnr(call.request.headers["fnr"]!!)
+
+            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token!!)
+            if (hasAccess){
+                println("Get active flags for sykmeldt")
+                val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
+                when{
+                    flags.isNotEmpty() -> call.respond(flags)
+                    else -> call.respond(HttpStatusCode.NoContent)
+                }
+            } else {
+                COUNT_GET_PERSON_STATUS_FORBIDDEN.inc()
+                call.respond(HttpStatusCode.Forbidden)
+            }
+        }
+
         post("/person/flagg") {
             val stoppAutomatikk: StoppAutomatikk = call.receive()
-            log.info("Received call to /api/v1/person/flagg")
+            log.info("Received post request to /api/v1/person/flagg")
 
             val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
 
@@ -58,7 +80,7 @@ fun Route.registerFlaggPerson84(
 
                     log.info("Lagt melding på kafka: Topic: {}", env.flaggPerson84Topic)
 
-                    database.addFlagg(
+                    database.addStatus(
                         stoppAutomatikk.sykmeldtFnr,
                         stoppAutomatikk.veilederIdent,
                         stoppAutomatikk.enhetNr,
