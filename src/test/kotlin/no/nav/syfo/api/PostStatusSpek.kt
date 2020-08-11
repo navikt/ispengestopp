@@ -91,7 +91,6 @@ class PostStatusSpek : Spek({
             }
         }
 
-
         val mockServerPort = 9091
         val mockHttpServerUrl = "http://localhost:$mockServerPort"
 

@@ -34,7 +34,6 @@ class TestDB : DatabaseInterface {
         )
     }
 
-
     fun stop() {
         container.stop()
     }

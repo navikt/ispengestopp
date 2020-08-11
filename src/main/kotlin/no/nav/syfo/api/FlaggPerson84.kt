@@ -42,7 +42,7 @@ fun Route.registerFlaggPerson84(
                     else -> call.respond(HttpStatusCode.NoContent)
                 }
             } else {
-                COUNT_GET_PERSON_STATUS_FAIL.inc()
+                COUNT_GET_PERSON_STATUS_FORBIDDEN.inc()
                 call.respond(HttpStatusCode.Forbidden)
             }
         }
