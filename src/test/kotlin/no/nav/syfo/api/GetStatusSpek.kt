@@ -47,7 +47,6 @@ class GetStatusSpek : Spek({
     val firstCreated = LocalDateTime.of(2020, Month.JULY, 8, 9, 9)
     val database by lazy { TestDB() }
 
-
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
         topicNames = listOf("aapen-isyfo-person-flagget84")
@@ -97,7 +96,6 @@ class GetStatusSpek : Spek({
                 setPrettyPrinting()
             }
         }
-
 
         val mockServerPort = 9090
         val mockHttpServerUrl = "http://localhost:$mockServerPort"

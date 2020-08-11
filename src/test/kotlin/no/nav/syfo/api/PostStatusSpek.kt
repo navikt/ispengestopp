@@ -42,13 +42,10 @@ class PostStatusSpek : Spek({
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
-
-
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
         topicNames = listOf("aapen-isyfo-person-flagget84")
     )
-
     val env = Environment(
         "ispengestopp",
         8080,
