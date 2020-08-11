@@ -27,23 +27,20 @@ fun Route.registerFlaggPerson84(
 ) {
     route("/api/v1") {
         get("/person/status"){
-            val statusReq: StatusReq = call.receive()
             log.info("Received get request to /api/v1/person/status")
 
-            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-            if (token == null) { // TODO: Trengs denne? Uten token så kommer vel ikke koden så langt som dette?
-                call.respond(HttpStatusCode.Forbidden)
-            }
+            if (call.request.headers.contains("fnr") == false) call.respond(HttpStatusCode.BadRequest)
+            val sykmeldtFnr = SykmeldtFnr(call.request.headers["fnr"]!!)
 
-            val hasAccess = tilgangskontroll.harTilgangTilBruker(statusReq.sykmeldtFnr, token!!)
+            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+            val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token!!)
             if (hasAccess){
                 println("Get active flags for sykmeldt")
-                val flags: List<StatusEndring> = database.getActiveFlags(statusReq.sykmeldtFnr)
+                val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
                 when{
                     flags.isNotEmpty() -> call.respond(flags)
                     else -> call.respond(HttpStatusCode.NoContent)
                 }
-
             } else {
                 COUNT_GET_PERSON_STATUS_FAIL.inc()
                 call.respond(HttpStatusCode.Forbidden)

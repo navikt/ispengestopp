@@ -139,8 +139,7 @@ class GetStatusSpek : Spek({
             it("reject request without bearer token") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    val requestBody = StatusReq(sykmeldtFnr)
-                    setBody(Gson().toJson(requestBody))
+                    addHeader("fnr", sykmeldtFnr.value)
                 }) {
                     response.status() shouldBe io.ktor.http.HttpStatusCode.Unauthorized
                 }
@@ -148,12 +147,8 @@ class GetStatusSpek : Spek({
             it("reject request to forbidden user") {
                 with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader(
-                        "Authorization",
-                        "Bearer ${generateJWT("1234")}"
-                    )
-                    val requestBody = StatusReq(sykmeldtFnrIkkeTilgang)
-                    setBody(Gson().toJson(requestBody))
+                    addHeader("Authorization", "Bearer ${generateJWT("1234")}")
+                    addHeader("fnr", sykmeldtFnrIkkeTilgang.value)
                 }) {
                     response.status() shouldBe HttpStatusCode.Forbidden
                 }
@@ -168,13 +163,8 @@ class GetStatusSpek : Spek({
 
                 with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader(
-                        "Authorization",
-                        "Bearer ${generateJWT("1234")}"
-                    )
-                    val stoppAutomatikk = StatusReq(sykmeldtFnr)
-                    val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
-                    setBody(stoppAutomatikkJson)
+                    addHeader("Authorization", "Bearer ${generateJWT("1234")}")
+                    addHeader("fnr", sykmeldtFnr.value)
                 }) {
                     response.status() shouldBe HttpStatusCode.OK
                     val flags = Gson().fromJson(response.content!!, Array<StatusEndring>::class.java).toList()

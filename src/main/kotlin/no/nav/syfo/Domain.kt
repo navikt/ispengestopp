@@ -29,10 +29,10 @@ data class StoppAutomatikk(
         val enhetNr: EnhetNr
 )
 
-data class StatusReq(val sykmeldtFnr: SykmeldtFnr)
+data class StatusRequestBody(val sykmeldtFnr: SykmeldtFnr)
 data class DBStatusChangeTest(
         val uuid: String,
-        val sykmeldt_fnr: SykmeldtFnr,
+        val sykmeldtFnr: SykmeldtFnr,
         val veilederIdent: VeilederIdent,
         val status: Status,
         val virksomhetNr: VirksomhetNr,
