@@ -17,6 +17,7 @@ import io.ktor.server.testing.setBody
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
+import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.kafka.GsonKafkaSerializer
 import no.nav.syfo.kafka.loadBaseConfig
@@ -32,7 +33,9 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
-import java.time.*
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
 import java.util.*
 
 class PostStatusSpek : Spek({
@@ -41,6 +44,7 @@ class PostStatusSpek : Spek({
     val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
+    val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
@@ -63,6 +67,7 @@ class PostStatusSpek : Spek({
         "",
         ""
     )
+    val applicationState = ApplicationState()
 
     fun Properties.overrideForTest(): Properties = apply {
         remove("security.protocol")
@@ -70,10 +75,13 @@ class PostStatusSpek : Spek({
     }
 
     val baseConfig = loadBaseConfig(env, credentials).overrideForTest()
-    val consumerProperties = baseConfig
+    val testConsumerProperties = baseConfig
         .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
-    val consumer = KafkaConsumer<String, String>(consumerProperties)
-    consumer.subscribe(listOf(env.flaggPerson84Topic))
+    val testConsumer = KafkaConsumer<String, String>(testConsumerProperties)
+    testConsumer.subscribe(listOf(env.flaggPerson84Topic))
+
+    val prodConsumerProperties = baseConfig
+        .toConsumerConfig("prodConsumer", valueDeserializer = StringDeserializer::class)
 
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, KFlaggperson84Hendelse>(producerProperties)
@@ -104,12 +112,18 @@ class PostStatusSpek : Spek({
 
         testApp.application.setupAuth(env, jwkProvider)
 
-        beforeEachTest {
-        }
-
+        val prodConsumer = KafkaConsumer<String, String>(prodConsumerProperties)
         afterEachTest {
             database.connection.dropData()
         }
+        prodConsumer.subscribe(listOf(env.flaggPerson84Topic))
+        applicationState.ready = true
+
+        launchListeners(
+            applicationState,
+            database,
+            prodConsumer
+        )
 
         testApp.application.routing {
             authenticate {
@@ -136,7 +150,7 @@ class PostStatusSpek : Spek({
         }
 
         withTestApplicationForApi(TestApplicationEngine(), database) {
-            it("unauthorized response") {
+            it("reject post request without token") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
@@ -146,7 +160,7 @@ class PostStatusSpek : Spek({
                     response.status() shouldBe HttpStatusCode.Unauthorized
                 }
             }
-            it("forbidden response") {
+            it("reject post request to forbidden user") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(
@@ -161,21 +175,21 @@ class PostStatusSpek : Spek({
                     response.status() shouldBe HttpStatusCode.Forbidden
                 }
             }
-            it("reponse 200 OK") {
+            it("return correct status code") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(
                         "Authorization",
                         "Bearer ${generateJWT("1234")}"
                     )
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
+                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(secondaryJob), veilederIdent, enhetNr)
                     val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Created
                 }
             }
-            it("store in database") {
+            it("persist status change to kafka and database") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
@@ -186,19 +200,8 @@ class PostStatusSpek : Spek({
                     response.status() shouldBe HttpStatusCode.Created
                 }
 
-                val statusendringListe = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
-                statusendringListe.size shouldBeEqualTo 1
-
-                val statusEndring = statusendringListe[0]
-                statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
-                statusEndring.veilederIdent shouldBeEqualTo veilederIdent
-                statusEndring.virksomhetNr shouldBeEqualTo primaryJob
-                statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
-                statusEndring.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
-                    .atZone(ZoneId.systemDefault()).dayOfMonth
-                statusEndring.enhetNr shouldBeEqualTo enhetNr
                 val messages: ArrayList<KFlaggperson84Hendelse> = arrayListOf()
-                consumer.poll(Duration.ofMillis(5000)).forEach {
+                testConsumer.poll(Duration.ofMillis(5000)).forEach {
                     val hendelse: KFlaggperson84Hendelse =
                         Gson().fromJson(it.value(), KFlaggperson84Hendelse::class.java)
                     messages.add(hendelse)
@@ -214,6 +217,20 @@ class PostStatusSpek : Spek({
                 latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
                     .atZone(ZoneId.systemDefault()).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
+
+                Thread.sleep(1500) // Make sure the listener coroutine is done reading from the kafka topic
+
+                val statusendringListe = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+                statusendringListe.size shouldBeEqualTo 1
+
+                val statusEndring = statusendringListe[0]
+                statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+                statusEndring.veilederIdent shouldBeEqualTo veilederIdent
+                statusEndring.virksomhetNr shouldBeEqualTo primaryJob
+                statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
+                statusEndring.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
+                    .atZone(ZoneId.systemDefault()).dayOfMonth
+                statusEndring.enhetNr shouldBeEqualTo enhetNr
             }
         }
     }

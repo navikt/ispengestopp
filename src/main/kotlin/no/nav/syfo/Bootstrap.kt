@@ -1,6 +1,6 @@
 package no.nav.syfo
 
-import io.ktor.util.InternalAPI
+import com.google.gson.Gson
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArguments
@@ -8,16 +8,19 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.config.bootstrapDBInit
+import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.VaultCredentialService
+import no.nav.syfo.kafka.createPersonFlagget84Consumer
 import no.nav.syfo.kafka.createPersonFlagget84Producer
 import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.vault.RenewVaultService
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.BootstrapKt")
 
-@InternalAPI
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
@@ -31,6 +34,7 @@ fun main() {
     val database = bootstrapDBInit(env, applicationState, vaultCredentialService)
 
     val personFlagget84Producer = createPersonFlagget84Producer(env, vaultSecrets)
+    val personFlagget84Consumer = createPersonFlagget84Consumer(env, vaultSecrets)
 
     val applicationEngine = createApplicationEngine(
         applicationState,
@@ -39,17 +43,19 @@ fun main() {
         personFlagget84Producer
     )
 
-
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
 
     RenewVaultService(vaultCredentialService, applicationState).startRenewTasks()
 
     log.info("Hello from ispengestopp")
-    launchListeners(applicationState)
+    launchListeners(
+        applicationState,
+        database,
+        personFlagget84Consumer
+    )
 }
 
-@InternalAPI
 fun createListener(applicationState: ApplicationState, action: suspend CoroutineScope.() -> Unit): Job =
     GlobalScope.launch {
         try {
@@ -64,23 +70,40 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         }
     }
 
-@InternalAPI
 @KtorExperimentalAPI
 fun launchListeners(
-    applicationState: ApplicationState
+    applicationState: ApplicationState,
+    database: DatabaseInterface,
+    personFlagget84Consumer: KafkaConsumer<String, String>
 ) {
     createListener(applicationState) {
         applicationState.ready = true
 
-        blockingApplicationLogic(applicationState)
+        blockingApplicationLogic(
+            applicationState,
+            database,
+            personFlagget84Consumer
+        )
     }
 }
 
 @KtorExperimentalAPI
 suspend fun blockingApplicationLogic(
-    applicationState: ApplicationState
+    applicationState: ApplicationState,
+    database: DatabaseInterface,
+    personFlagget84Consumer: KafkaConsumer<String, String>
 ) {
     while (applicationState.ready) {
+        personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
+            val hendelse: KFlaggperson84Hendelse =
+                Gson().fromJson(consumerRecord.value(), KFlaggperson84Hendelse::class.java)
+            database.addStatus(
+                hendelse.sykmeldtFnr,
+                hendelse.veilederIdent,
+                hendelse.enhetNr,
+                hendelse.virksomhetNr
+            )
+        }
         delay(100)
     }
 }
