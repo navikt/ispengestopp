@@ -2,8 +2,6 @@ package no.nav.syfo.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import no.nav.syfo.Environment
-import no.nav.syfo.log
 import org.flywaydb.core.Flyway
 import java.sql.Connection
 import java.sql.ResultSet

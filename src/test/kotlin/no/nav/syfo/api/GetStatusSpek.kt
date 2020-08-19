@@ -13,7 +13,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
@@ -31,7 +30,8 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
-import java.time.*
+import java.time.LocalDateTime
+import java.time.Month
 import java.util.*
 
 class GetStatusSpek : Spek({
@@ -45,6 +45,7 @@ class GetStatusSpek : Spek({
     val enhetNr = EnhetNr("9999")
     val lastCreated = LocalDateTime.of(2020, Month.AUGUST, 7, 10, 10)
     val firstCreated = LocalDateTime.of(2020, Month.JULY, 8, 9, 9)
+    val lastCreatedStringISO = "2020-08-07T10:10:00"
     val database by lazy { TestDB() }
 
     val embeddedKafkaEnvironment = KafkaEnvironment(
@@ -168,7 +169,7 @@ class GetStatusSpek : Spek({
                     val flags = Gson().fromJson(response.content!!, Array<StatusEndring>::class.java).toList()
                     flags.size shouldBeEqualTo 2
                     flags[0].sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
-                    flags[0].opprettet shouldBeEqualTo lastCreated
+                    flags[0].opprettet shouldBeEqualTo lastCreatedStringISO
                 }
             }
         }
