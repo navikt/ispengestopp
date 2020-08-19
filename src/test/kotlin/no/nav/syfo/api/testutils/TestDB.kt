@@ -9,6 +9,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
+import java.time.format.DateTimeFormatter
 
 class TestDB : DatabaseInterface {
 
@@ -91,7 +92,7 @@ fun ResultSet.toStatusEndring(): StatusEndring =
         SykmeldtFnr(getString("sykmeldt_fnr")),
         Status.valueOf(getString("status")),
         VirksomhetNr(getString("virksomhet_nr")),
-        getObject("opprettet", Timestamp::class.java).toLocalDateTime(),
+        getObject("opprettet", Timestamp::class.java).toLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
         EnhetNr(getString("enhet_nr"))
     )
 

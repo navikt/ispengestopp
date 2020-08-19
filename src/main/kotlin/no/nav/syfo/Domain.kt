@@ -13,12 +13,12 @@ data class KFlaggperson84Hendelse(
         val enhetNr: EnhetNr
 )
 
-data class StatusEndring( //Todo: denne trengs antagelig ikke  når vi tar i bruk KFlaggperson84Hendelse
+data class StatusEndring(
         val veilederIdent: VeilederIdent,
         val sykmeldtFnr: SykmeldtFnr,
         val status: Status,
         val virksomhetNr: VirksomhetNr,
-        val opprettet: LocalDateTime,
+        val opprettet: String,
         val enhetNr: EnhetNr
 )
 
@@ -29,7 +29,6 @@ data class StoppAutomatikk(
         val enhetNr: EnhetNr
 )
 
-data class StatusRequestBody(val sykmeldtFnr: SykmeldtFnr)
 data class DBStatusChangeTest(
         val uuid: String,
         val sykmeldtFnr: SykmeldtFnr,

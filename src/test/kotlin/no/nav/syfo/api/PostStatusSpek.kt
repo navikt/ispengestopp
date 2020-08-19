@@ -14,6 +14,8 @@ import io.ktor.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
+import io.ktor.util.InternalAPI
+import io.ktor.util.KtorExperimentalAPI
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
@@ -33,11 +35,12 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
-import java.time.Duration
-import java.time.Instant
-import java.time.ZoneId
+import java.text.SimpleDateFormat
+import java.time.*
+import java.time.format.DateTimeFormatter
 import java.util.*
 
+@KtorExperimentalAPI
 class PostStatusSpek : Spek({
 
     val sykmeldtFnr = SykmeldtFnr("123456")
@@ -228,8 +231,8 @@ class PostStatusSpek : Spek({
                 statusEndring.veilederIdent shouldBeEqualTo veilederIdent
                 statusEndring.virksomhetNr shouldBeEqualTo primaryJob
                 statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
-                statusEndring.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
-                    .atZone(ZoneId.systemDefault()).dayOfMonth
+                LocalDate.parse(statusEndring.opprettet, DateTimeFormatter.ISO_LOCAL_DATE_TIME) shouldBeEqualTo
+                        Instant.now().atZone(ZoneId.systemDefault()).toLocalDate()
                 statusEndring.enhetNr shouldBeEqualTo enhetNr
             }
         }
