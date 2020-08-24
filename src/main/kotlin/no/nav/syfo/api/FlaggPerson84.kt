@@ -18,10 +18,10 @@ import java.time.ZoneOffset
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
 
 fun Route.registerFlaggPerson84(
-        database: DatabaseInterface,
-        env: Environment,
-        personFlagget84Producer: KafkaProducer<String, KFlaggperson84Hendelse>,
-        tilgangskontroll: TilgangskontrollConsumer
+    database: DatabaseInterface,
+    env: Environment,
+    personFlagget84Producer: KafkaProducer<String, KFlaggperson84Hendelse>,
+    tilgangskontroll: TilgangskontrollConsumer
 ) {
     route("/api/v1") {
         get("/person/status") {
@@ -60,20 +60,20 @@ fun Route.registerFlaggPerson84(
             if (harTilgang) {
                 stoppAutomatikk.virksomhetNr.forEach {
                     val kFlaggperson84Hendelse = KFlaggperson84Hendelse(
-                            stoppAutomatikk.veilederIdent,
-                            stoppAutomatikk.sykmeldtFnr,
-                            Status.STOPP_AUTOMATIKK,
-                            it,
-                            OffsetDateTime.now(ZoneOffset.UTC),
-                            stoppAutomatikk.enhetNr
+                        stoppAutomatikk.veilederIdent,
+                        stoppAutomatikk.sykmeldtFnr,
+                        Status.STOPP_AUTOMATIKK,
+                        it,
+                        OffsetDateTime.now(ZoneOffset.UTC),
+                        stoppAutomatikk.enhetNr
                     )
 
                     personFlagget84Producer.send(
-                            ProducerRecord(
-                                    env.flaggPerson84Topic,
-                                    "${stoppAutomatikk.sykmeldtFnr}-$it",
-                                    kFlaggperson84Hendelse
-                            )
+                        ProducerRecord(
+                            env.flaggPerson84Topic,
+                            "${stoppAutomatikk.sykmeldtFnr}-$it",
+                            kFlaggperson84Hendelse
+                        )
                     )
 
                     log.info("Lagt melding på kafka: Topic: {}", env.flaggPerson84Topic)

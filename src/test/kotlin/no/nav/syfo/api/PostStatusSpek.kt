@@ -1,7 +1,7 @@
 package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
@@ -20,6 +20,7 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.util.OffsetDateTimeConverter
 import org.amshove.kluent.`should be greater or equal to`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
@@ -31,11 +32,16 @@ import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 
 @KtorExperimentalAPI
 class PostStatusSpek : Spek({
+    val gson = GsonBuilder()
+        .setPrettyPrinting()
+        .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+        .create()
 
     val sykmeldtFnr = SykmeldtFnr("123456")
     val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
@@ -44,25 +50,25 @@ class PostStatusSpek : Spek({
     val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
     val embeddedKafkaEnvironment = KafkaEnvironment(
-            autoStart = false,
-            topicNames = listOf("aapen-isyfo-person-flagget84")
+        autoStart = false,
+        topicNames = listOf("aapen-isyfo-person-flagget84")
     )
     val env = Environment(
-            "ispengestopp",
-            8080,
-            embeddedKafkaEnvironment.brokersURL,
-            "",
-            "",
-            "",
-            "https://sts.issuer.net/myid",
-            "src/test/resources/jwkset.json",
-            false,
-            "1234",
-            "aapen-isyfo-person-flagget84"
+        "ispengestopp",
+        8080,
+        embeddedKafkaEnvironment.brokersURL,
+        "",
+        "",
+        "",
+        "https://sts.issuer.net/myid",
+        "src/test/resources/jwkset.json",
+        false,
+        "1234",
+        "aapen-isyfo-person-flagget84"
     )
     val credentials = VaultSecrets(
-            "",
-            ""
+        "",
+        ""
     )
     val applicationState = ApplicationState()
 
@@ -73,26 +79,27 @@ class PostStatusSpek : Spek({
 
     val baseConfig = loadBaseConfig(env, credentials).overrideForTest()
     val testConsumerProperties = baseConfig
-            .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
+        .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
     val testConsumer = KafkaConsumer<String, String>(testConsumerProperties)
     testConsumer.subscribe(listOf(env.flaggPerson84Topic))
 
     val prodConsumerProperties = baseConfig
-            .toConsumerConfig("prodConsumer", valueDeserializer = StringDeserializer::class)
+        .toConsumerConfig("prodConsumer", valueDeserializer = StringDeserializer::class)
 
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, KFlaggperson84Hendelse>(producerProperties)
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
-            testApp: TestApplicationEngine,
-            database: TestDB,
-            block: TestApplicationEngine.() -> Unit
+        testApp: TestApplicationEngine,
+        database: TestDB,
+        block: TestApplicationEngine.() -> Unit
     ) {
         testApp.start()
         testApp.application.install(ContentNegotiation) {
             gson {
                 setPrettyPrinting()
+                registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
             }
         }
 
@@ -100,7 +107,7 @@ class PostStatusSpek : Spek({
         val mockHttpServerUrl = "http://localhost:$mockServerPort"
 
         val mockServer =
-                mockSyfotilgangskontrollServer(mockServerPort, sykmeldtFnr).start(wait = false)
+            mockSyfotilgangskontrollServer(mockServerPort, sykmeldtFnr).start(wait = false)
 
         afterGroup { mockServer.stop(1L, 10L) }
 
@@ -117,18 +124,18 @@ class PostStatusSpek : Spek({
         applicationState.ready = true
 
         launchListeners(
-                applicationState,
-                database,
-                prodConsumer
+            applicationState,
+            database,
+            prodConsumer
         )
 
         testApp.application.routing {
             authenticate {
                 registerFlaggPerson84(
-                        database,
-                        env,
-                        personFlagget84Producer,
-                        TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
+                    database,
+                    env,
+                    personFlagget84Producer,
+                    TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
                 )
             }
         }
@@ -151,7 +158,7 @@ class PostStatusSpek : Spek({
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
+                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Unauthorized
@@ -161,12 +168,12 @@ class PostStatusSpek : Spek({
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(
-                            "Authorization",
-                            "Bearer ${generateJWT("1234")}"
+                        "Authorization",
+                        "Bearer ${generateJWT("1234")}"
                     )
                     val stoppAutomatikk =
-                            StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
+                        StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), veilederIdent, enhetNr)
+                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Forbidden
@@ -176,11 +183,11 @@ class PostStatusSpek : Spek({
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(
-                            "Authorization",
-                            "Bearer ${generateJWT("1234")}"
+                        "Authorization",
+                        "Bearer ${generateJWT("1234")}"
                     )
                     val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(secondaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
+                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Created
@@ -191,7 +198,7 @@ class PostStatusSpek : Spek({
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
                     val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = Gson().toJson(stoppAutomatikk)
+                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Created
@@ -201,7 +208,7 @@ class PostStatusSpek : Spek({
 
                 testConsumer.poll(Duration.ofMillis(5000)).forEach {
                     val hendelse: KFlaggperson84Hendelse =
-                            Gson().fromJson(it.value(), KFlaggperson84Hendelse::class.java)
+                        gson.fromJson(it.value(), KFlaggperson84Hendelse::class.java)
                     messages.add(hendelse)
                 }
 
@@ -215,7 +222,7 @@ class PostStatusSpek : Spek({
                 latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
                 latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
                 latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
-                        .atZone(ZoneOffset.UTC).dayOfMonth
+                    .atZone(ZoneOffset.UTC).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
 
                 val statusendringListe: List<KFlaggperson84Hendelse> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
@@ -228,7 +235,7 @@ class PostStatusSpek : Spek({
                 statusEndring.virksomhetNr shouldBeEqualTo primaryJob
                 statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
                 statusEndring.opprettet.dayOfMonth shouldBeEqualTo
-                        Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
+                    Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
                 statusEndring.enhetNr shouldBeEqualTo enhetNr
             }
         }

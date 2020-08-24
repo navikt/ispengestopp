@@ -1,9 +1,7 @@
 package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
@@ -44,7 +42,7 @@ class GetStatusSpek : Spek({
     val primaryJob = VirksomhetNr("888")
     val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
-    val lastCreated = OffsetDateTime.of(2020, Month.AUGUST.value, 7, 10, 10, 0,0, ZoneOffset.UTC)
+    val lastCreated = OffsetDateTime.of(2020, Month.AUGUST.value, 7, 10, 10, 0, 0, ZoneOffset.UTC)
     val firstCreated = OffsetDateTime.of(2020, Month.JULY.value, 8, 9, 9, 0, 0, ZoneOffset.UTC)
     val lastCreatedStringISO = "2020-08-07T10:10Z"
     val database by lazy { TestDB() }
@@ -160,7 +158,7 @@ class GetStatusSpek : Spek({
                     DBStatusChangeTest("2", sykmeldtFnr, veilederIdent, Status.STOPP_AUTOMATIKK, primaryJob, enhetNr, firstCreated),
                     DBStatusChangeTest("3", sykmeldtFnr, veilederIdent, Status.STOPP_AUTOMATIKK, secondaryJob, enhetNr, lastCreated),
                     DBStatusChangeTest("4", sykmeldtFnrFiller, veilederIdent, Status.STOPP_AUTOMATIKK, primaryJob, enhetNr, lastCreated))
-                statusList.forEach {database.connection.addStatus(it)}
+                statusList.forEach { database.connection.addStatus(it) }
 
                 with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -170,9 +168,9 @@ class GetStatusSpek : Spek({
                     response.status() shouldBe HttpStatusCode.OK
 
                     val gson = GsonBuilder()
-                            .setPrettyPrinting()
-                            .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
-                            .create()
+                        .setPrettyPrinting()
+                        .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+                        .create()
 
                     val flags = gson.fromJson(response.content!!, Array<KFlaggperson84Hendelse>::class.java).toList()
 

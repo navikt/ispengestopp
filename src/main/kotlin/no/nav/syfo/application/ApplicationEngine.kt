@@ -1,14 +1,13 @@
 package no.nav.syfo.application
 
 import com.auth0.jwk.JwkProviderBuilder
-import io.ktor.application.install
-import io.ktor.auth.authenticate
-import io.ktor.features.ContentNegotiation
-import io.ktor.gson.gson
-import io.ktor.routing.routing
-import io.ktor.server.engine.ApplicationEngine
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.features.*
+import io.ktor.gson.*
+import io.ktor.routing.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import no.nav.syfo.Environment
 import no.nav.syfo.KFlaggperson84Hendelse
 import no.nav.syfo.api.registerFlaggPerson84
