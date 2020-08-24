@@ -10,7 +10,6 @@ import io.ktor.http.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
-import kotlinx.coroutines.delay
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
@@ -219,8 +218,7 @@ class PostStatusSpek : Spek({
                         .atZone(ZoneOffset.UTC).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
 
-                val statusendringListe: List<KFlaggperson84Hendelse>
-                        = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+                val statusendringListe: List<KFlaggperson84Hendelse> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
 
                 statusendringListe.size shouldBeEqualTo 1
 
