@@ -1,6 +1,5 @@
 package no.nav.syfo
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.ktor.util.*
 import kotlinx.coroutines.*
@@ -96,10 +95,14 @@ suspend fun blockingApplicationLogic(
     database: DatabaseInterface,
     personFlagget84Consumer: KafkaConsumer<String, String>
 ) {
+    val gson = GsonBuilder()
+        .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+        .create()
+    
     while (applicationState.ready) {
         personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
             val hendelse: KFlaggperson84Hendelse =
-                GsonBuilder().registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter()).create().fromJson(consumerRecord.value(), KFlaggperson84Hendelse::class.java)
+                gson.fromJson(consumerRecord.value(), KFlaggperson84Hendelse::class.java)
             database.addStatus(
                 hendelse.sykmeldtFnr,
                 hendelse.veilederIdent,
