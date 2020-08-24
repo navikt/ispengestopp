@@ -3,8 +3,7 @@ package no.nav.syfo
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.toList
 import java.sql.ResultSet
-import java.sql.Timestamp
-import java.time.format.DateTimeFormatter
+import java.time.ZoneOffset
 import java.util.*
 
 const val queryStatusInsert = """INSERT INTO status_endring (
@@ -39,23 +38,23 @@ fun DatabaseInterface.addStatus(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr:
         connection.commit()
     }
 }
-//TODO bruk denne funksjonen i testDB også
-fun ResultSet.toStatusEndring(): StatusEndring =
-    StatusEndring(
-        VeilederIdent(getString("veileder_ident")),
-        SykmeldtFnr(getString("sykmeldt_fnr")),
-        Status.valueOf(getString("status")),
-        VirksomhetNr(getString("virksomhet_nr")),
-        getObject("opprettet", Timestamp::class.java).toLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-        EnhetNr(getString("enhet_nr"))
-    )
 
-fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
+fun ResultSet.toKFlaggperson84Hendelse(): KFlaggperson84Hendelse =
+        KFlaggperson84Hendelse(
+                VeilederIdent(getString("veileder_ident")),
+                SykmeldtFnr(getString("sykmeldt_fnr")),
+                Status.valueOf(getString("status")),
+                VirksomhetNr(getString("virksomhet_nr")),
+                getTimestamp("opprettet" ).toInstant().atOffset(ZoneOffset.UTC),
+                EnhetNr(getString("enhet_nr"))
+        )
+
+fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<KFlaggperson84Hendelse> {
     return connection.use { connection ->
         connection.prepareStatement(queryStatusRetrieve).use {
             it.setString(1, fnr.value)
             it.executeQuery().toList {
-                toStatusEndring()
+                toKFlaggperson84Hendelse()
             }
         }
 

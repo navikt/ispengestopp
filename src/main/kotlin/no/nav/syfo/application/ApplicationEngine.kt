@@ -15,9 +15,11 @@ import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.util.OffsetDateTimeConverter
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.net.URL
+import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
 fun createApplicationEngine(
@@ -32,6 +34,7 @@ fun createApplicationEngine(
         install(ContentNegotiation) {
             gson {
                 setPrettyPrinting()
+                registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
             }
         }
 

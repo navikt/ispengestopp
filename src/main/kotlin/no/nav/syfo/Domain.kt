@@ -1,6 +1,6 @@
 package no.nav.syfo
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 data class EnhetNr(val value: String)
 
@@ -9,16 +9,7 @@ data class KFlaggperson84Hendelse(
         val sykmeldtFnr: SykmeldtFnr,
         val status: Status,
         val virksomhetNr: VirksomhetNr,
-        val opprettet: LocalDateTime,
-        val enhetNr: EnhetNr
-)
-
-data class StatusEndring(
-        val veilederIdent: VeilederIdent,
-        val sykmeldtFnr: SykmeldtFnr,
-        val status: Status,
-        val virksomhetNr: VirksomhetNr,
-        val opprettet: String,
+        val opprettet: OffsetDateTime,
         val enhetNr: EnhetNr
 )
 
@@ -36,7 +27,7 @@ data class DBStatusChangeTest(
         val status: Status,
         val virksomhetNr: VirksomhetNr,
         val enhetNr: EnhetNr,
-        val opprettet: LocalDateTime
+        val opprettet: OffsetDateTime
 )
 
 data class SykmeldtFnr(val value: String)

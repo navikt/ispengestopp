@@ -1,13 +1,10 @@
 package no.nav.syfo.api
 
-import io.ktor.application.call
-import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
-import io.ktor.response.respond
-import io.ktor.routing.Route
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.route
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
 import no.nav.syfo.*
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
@@ -15,15 +12,16 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
 
 fun Route.registerFlaggPerson84(
-    database: DatabaseInterface,
-    env: Environment,
-    personFlagget84Producer: KafkaProducer<String, KFlaggperson84Hendelse>,
-    tilgangskontroll: TilgangskontrollConsumer
+        database: DatabaseInterface,
+        env: Environment,
+        personFlagget84Producer: KafkaProducer<String, KFlaggperson84Hendelse>,
+        tilgangskontroll: TilgangskontrollConsumer
 ) {
     route("/api/v1") {
         get("/person/status") {
@@ -36,7 +34,7 @@ fun Route.registerFlaggPerson84(
             val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token!!)
             if (hasAccess) {
                 println("Get active flags for sykmeldt")
-                val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
+                val flags: List<KFlaggperson84Hendelse> = database.getActiveFlags(sykmeldtFnr)
                 when {
                     flags.isNotEmpty() -> call.respond(flags)
                     else -> call.respond(HttpStatusCode.NoContent)
@@ -62,20 +60,20 @@ fun Route.registerFlaggPerson84(
             if (harTilgang) {
                 stoppAutomatikk.virksomhetNr.forEach {
                     val kFlaggperson84Hendelse = KFlaggperson84Hendelse(
-                        stoppAutomatikk.veilederIdent,
-                        stoppAutomatikk.sykmeldtFnr,
-                        Status.STOPP_AUTOMATIKK,
-                        it,
-                        LocalDateTime.now(),
-                        stoppAutomatikk.enhetNr
+                            stoppAutomatikk.veilederIdent,
+                            stoppAutomatikk.sykmeldtFnr,
+                            Status.STOPP_AUTOMATIKK,
+                            it,
+                            OffsetDateTime.now(ZoneOffset.UTC),
+                            stoppAutomatikk.enhetNr
                     )
 
                     personFlagget84Producer.send(
-                        ProducerRecord(
-                            env.flaggPerson84Topic,
-                            "${stoppAutomatikk.sykmeldtFnr}-$it",
-                            kFlaggperson84Hendelse
-                        )
+                            ProducerRecord(
+                                    env.flaggPerson84Topic,
+                                    "${stoppAutomatikk.sykmeldtFnr}-$it",
+                                    kFlaggperson84Hendelse
+                            )
                     )
 
                     log.info("Lagt melding på kafka: Topic: {}", env.flaggPerson84Topic)

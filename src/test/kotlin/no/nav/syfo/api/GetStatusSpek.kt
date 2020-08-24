@@ -2,17 +2,15 @@ package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.google.gson.Gson
-import io.ktor.application.install
-import io.ktor.auth.authenticate
-import io.ktor.features.ContentNegotiation
-import io.ktor.gson.gson
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
+import io.ktor.application.*
+import io.ktor.auth.*
+import io.ktor.features.*
+import io.ktor.gson.*
+import io.ktor.http.*
+import io.ktor.routing.*
+import io.ktor.server.testing.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
@@ -22,6 +20,7 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.util.OffsetDateTimeConverter
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -30,9 +29,11 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
-import java.time.LocalDateTime
 import java.time.Month
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.util.*
+
 
 class GetStatusSpek : Spek({
 
@@ -43,9 +44,9 @@ class GetStatusSpek : Spek({
     val primaryJob = VirksomhetNr("888")
     val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
-    val lastCreated = LocalDateTime.of(2020, Month.AUGUST, 7, 10, 10)
-    val firstCreated = LocalDateTime.of(2020, Month.JULY, 8, 9, 9)
-    val lastCreatedStringISO = "2020-08-07T10:10:00"
+    val lastCreated = OffsetDateTime.of(2020, Month.AUGUST.value, 7, 10, 10, 0,0, ZoneOffset.UTC)
+    val firstCreated = OffsetDateTime.of(2020, Month.JULY.value, 8, 9, 9, 0, 0, ZoneOffset.UTC)
+    val lastCreatedStringISO = "2020-08-07T10:10Z"
     val database by lazy { TestDB() }
 
     val embeddedKafkaEnvironment = KafkaEnvironment(
@@ -95,6 +96,7 @@ class GetStatusSpek : Spek({
         testApp.application.install(ContentNegotiation) {
             gson {
                 setPrettyPrinting()
+                registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
             }
         }
 
@@ -140,7 +142,7 @@ class GetStatusSpek : Spek({
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader("fnr", sykmeldtFnr.value)
                 }) {
-                    response.status() shouldBe io.ktor.http.HttpStatusCode.Unauthorized
+                    response.status() shouldBe HttpStatusCode.Unauthorized
                 }
             }
             it("reject request to forbidden user") {
@@ -166,10 +168,17 @@ class GetStatusSpek : Spek({
                     addHeader("fnr", sykmeldtFnr.value)
                 }) {
                     response.status() shouldBe HttpStatusCode.OK
-                    val flags = Gson().fromJson(response.content!!, Array<StatusEndring>::class.java).toList()
+
+                    val gson = GsonBuilder()
+                            .setPrettyPrinting()
+                            .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+                            .create()
+
+                    val flags = gson.fromJson(response.content!!, Array<KFlaggperson84Hendelse>::class.java).toList()
+
                     flags.size shouldBeEqualTo 2
                     flags[0].sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
-                    flags[0].opprettet shouldBeEqualTo lastCreatedStringISO
+                    flags[0].opprettet.toString() shouldBeEqualTo lastCreatedStringISO
                 }
             }
         }

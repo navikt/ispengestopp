@@ -8,8 +8,8 @@ import no.nav.syfo.database.toList
 import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
 import java.sql.ResultSet
-import java.sql.Timestamp
-import java.time.format.DateTimeFormatter
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class TestDB : DatabaseInterface {
 
@@ -26,12 +26,12 @@ class TestDB : DatabaseInterface {
     init {
         container.start()
         db = DevDatabase(
-            DbConfig(
-                jdbcUrl = container.jdbcUrl,
-                username = "username",
-                password = "password",
-                databaseName = "db_test"
-            )
+                DbConfig(
+                        jdbcUrl = container.jdbcUrl,
+                        username = "username",
+                        password = "password",
+                        databaseName = "db_test"
+                )
         )
     }
 
@@ -58,13 +58,13 @@ const val queryStatusAdd = """INSERT INTO status_endring (
         opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)"""
 
 
-fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<StatusEndring> {
+fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<KFlaggperson84Hendelse> {
     return use { connection ->
         connection.prepareStatement(queryStatusEndring).use {
             it.setString(1, sykmeldtFnr.value)
             it.setString(2, virksomhetNr.value)
             it.executeQuery().toList {
-                toStatusEndring()
+                toKFlaggperson84Hendelse()
             }
         }
     }
@@ -86,15 +86,15 @@ fun Connection.addStatus(dbStatusChangeTest: DBStatusChangeTest) {
     }
 }
 
-fun ResultSet.toStatusEndring(): StatusEndring =
-    StatusEndring(
-        VeilederIdent(getString("veileder_ident")),
-        SykmeldtFnr(getString("sykmeldt_fnr")),
-        Status.valueOf(getString("status")),
-        VirksomhetNr(getString("virksomhet_nr")),
-        getObject("opprettet", Timestamp::class.java).toLocalDateTime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-        EnhetNr(getString("enhet_nr"))
-    )
+fun ResultSet.toKFlaggperson84Hendelse(): KFlaggperson84Hendelse =
+        KFlaggperson84Hendelse(
+                VeilederIdent(getString("veileder_ident")),
+                SykmeldtFnr(getString("sykmeldt_fnr")),
+                Status.valueOf(getString("status")),
+                VirksomhetNr(getString("virksomhet_nr")),
+                OffsetDateTime.ofInstant(getTimestamp("opprettet").toInstant(), ZoneOffset.UTC),
+                EnhetNr(getString("enhet_nr"))
+        )
 
 
 fun Connection.dropData() {
