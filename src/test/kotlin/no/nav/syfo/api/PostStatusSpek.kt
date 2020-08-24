@@ -225,7 +225,7 @@ class PostStatusSpek : Spek({
                     .atZone(ZoneOffset.UTC).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
 
-                Thread.sleep(1500) // Make sure the listener coroutine is done reading from the kafka topic
+                Thread.sleep(2000) // Make sure the listener coroutine is done reading from the kafka topic
 
                 val statusendringListe: List<KFlaggperson84Hendelse> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
 
