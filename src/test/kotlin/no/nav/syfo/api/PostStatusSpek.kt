@@ -10,6 +10,8 @@ import io.ktor.http.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
@@ -212,8 +214,6 @@ class PostStatusSpek : Spek({
                     messages.add(hendelse)
                 }
 
-                Thread.sleep(1500) // TODO: dette funker ikke helt optimatl. Hvis ting er treigt feiler testen. :(
-
                 messages.size `should be greater or equal to` 1
 
                 val latestFlaggperson84Hendelse = messages.last()
@@ -224,6 +224,8 @@ class PostStatusSpek : Spek({
                 latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
                     .atZone(ZoneOffset.UTC).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
+
+                Thread.sleep(1500) // Make sure the listener coroutine is done reading from the kafka topic
 
                 val statusendringListe: List<KFlaggperson84Hendelse> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
 

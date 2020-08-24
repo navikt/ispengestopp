@@ -1,7 +1,7 @@
 package no.nav.syfo
 
 import com.google.gson.Gson
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.util.*
 import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationServer
