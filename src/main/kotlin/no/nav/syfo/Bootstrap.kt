@@ -1,7 +1,7 @@
 package no.nav.syfo
 
-import com.google.gson.Gson
-import io.ktor.util.KtorExperimentalAPI
+import com.google.gson.GsonBuilder
+import io.ktor.util.*
 import kotlinx.coroutines.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationServer
@@ -12,12 +12,14 @@ import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.VaultCredentialService
 import no.nav.syfo.kafka.createPersonFlagget84Consumer
 import no.nav.syfo.kafka.createPersonFlagget84Producer
+import no.nav.syfo.util.OffsetDateTimeConverter
 import no.nav.syfo.util.getFileAsString
 import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.time.OffsetDateTime
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.BootstrapKt")
 
@@ -93,10 +95,14 @@ suspend fun blockingApplicationLogic(
     database: DatabaseInterface,
     personFlagget84Consumer: KafkaConsumer<String, String>
 ) {
+    val gson = GsonBuilder()
+        .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+        .create()
+
     while (applicationState.ready) {
         personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
-            val hendelse: KFlaggperson84Hendelse =
-                Gson().fromJson(consumerRecord.value(), KFlaggperson84Hendelse::class.java)
+            val hendelse: StatusEndring =
+                gson.fromJson(consumerRecord.value(), StatusEndring::class.java)
             database.addStatus(
                 hendelse.sykmeldtFnr,
                 hendelse.veilederIdent,

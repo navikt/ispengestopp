@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.engine.*
 import java.util.concurrent.TimeUnit
 
 class ApplicationServer(
