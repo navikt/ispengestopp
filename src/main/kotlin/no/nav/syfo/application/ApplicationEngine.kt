@@ -9,7 +9,7 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.Environment
-import no.nav.syfo.KFlaggperson84Hendelse
+import no.nav.syfo.StatusEndring
 import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.database.DatabaseInterface
@@ -25,7 +25,7 @@ fun createApplicationEngine(
     applicationState: ApplicationState,
     database: DatabaseInterface,
     env: Environment,
-    personFlagget84Producer: KafkaProducer<String, KFlaggperson84Hendelse>
+    personFlagget84Producer: KafkaProducer<String, StatusEndring>
 ): ApplicationEngine =
     embeddedServer(Netty, env.applicationPort) {
         val log = LoggerFactory.getLogger("ktor.application")

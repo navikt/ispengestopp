@@ -10,8 +10,6 @@ import io.ktor.http.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
@@ -89,7 +87,7 @@ class PostStatusSpek : Spek({
         .toConsumerConfig("prodConsumer", valueDeserializer = StringDeserializer::class)
 
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
-    val personFlagget84Producer = KafkaProducer<String, KFlaggperson84Hendelse>(producerProperties)
+    val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
@@ -206,11 +204,11 @@ class PostStatusSpek : Spek({
                     response.status() shouldBe HttpStatusCode.Created
                 }
 
-                val messages: MutableList<KFlaggperson84Hendelse> = mutableListOf()
+                val messages: MutableList<StatusEndring> = mutableListOf()
 
                 testConsumer.poll(Duration.ofMillis(5000)).forEach {
-                    val hendelse: KFlaggperson84Hendelse =
-                        gson.fromJson(it.value(), KFlaggperson84Hendelse::class.java)
+                    val hendelse: StatusEndring =
+                        gson.fromJson(it.value(), StatusEndring::class.java)
                     messages.add(hendelse)
                 }
 
@@ -227,7 +225,7 @@ class PostStatusSpek : Spek({
 
                 Thread.sleep(2000) // Make sure the listener coroutine is done reading from the kafka topic
 
-                val statusendringListe: List<KFlaggperson84Hendelse> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+                val statusendringListe: List<StatusEndring> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
 
                 statusendringListe.size shouldBeEqualTo 1
 

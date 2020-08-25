@@ -20,7 +20,7 @@ val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
 fun Route.registerFlaggPerson84(
     database: DatabaseInterface,
     env: Environment,
-    personFlagget84Producer: KafkaProducer<String, KFlaggperson84Hendelse>,
+    personFlagget84Producer: KafkaProducer<String, StatusEndring>,
     tilgangskontroll: TilgangskontrollConsumer
 ) {
     route("/api/v1") {
@@ -34,7 +34,7 @@ fun Route.registerFlaggPerson84(
             val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token!!)
             if (hasAccess) {
                 println("Get active flags for sykmeldt")
-                val flags: List<KFlaggperson84Hendelse> = database.getActiveFlags(sykmeldtFnr)
+                val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
                 when {
                     flags.isNotEmpty() -> call.respond(flags)
                     else -> call.respond(HttpStatusCode.NoContent)
@@ -59,7 +59,7 @@ fun Route.registerFlaggPerson84(
 
             if (harTilgang) {
                 stoppAutomatikk.virksomhetNr.forEach {
-                    val kFlaggperson84Hendelse = KFlaggperson84Hendelse(
+                    val kFlaggperson84Hendelse = StatusEndring(
                         stoppAutomatikk.veilederIdent,
                         stoppAutomatikk.sykmeldtFnr,
                         Status.STOPP_AUTOMATIKK,

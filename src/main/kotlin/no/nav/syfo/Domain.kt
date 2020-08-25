@@ -4,7 +4,7 @@ import java.time.OffsetDateTime
 
 data class EnhetNr(val value: String)
 
-data class KFlaggperson84Hendelse(
+data class StatusEndring(
     val veilederIdent: VeilederIdent,
     val sykmeldtFnr: SykmeldtFnr,
     val status: Status,

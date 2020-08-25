@@ -82,7 +82,7 @@ class GetStatusSpek : Spek({
     consumer.subscribe(listOf(env.flaggPerson84Topic))
 
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
-    val personFlagget84Producer = KafkaProducer<String, KFlaggperson84Hendelse>(producerProperties)
+    val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
@@ -172,7 +172,7 @@ class GetStatusSpek : Spek({
                         .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
                         .create()
 
-                    val flags = gson.fromJson(response.content!!, Array<KFlaggperson84Hendelse>::class.java).toList()
+                    val flags = gson.fromJson(response.content!!, Array<StatusEndring>::class.java).toList()
 
                     flags.size shouldBeEqualTo 2
                     flags[0].sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value

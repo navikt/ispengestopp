@@ -58,13 +58,13 @@ const val queryStatusAdd = """INSERT INTO status_endring (
         opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)"""
 
 
-fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<KFlaggperson84Hendelse> {
+fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<StatusEndring> {
     return use { connection ->
         connection.prepareStatement(queryStatusEndring).use {
             it.setString(1, sykmeldtFnr.value)
             it.setString(2, virksomhetNr.value)
             it.executeQuery().toList {
-                toKFlaggperson84Hendelse()
+                statusEndring()
             }
         }
     }
@@ -86,8 +86,8 @@ fun Connection.addStatus(dbStatusChangeTest: DBStatusChangeTest) {
     }
 }
 
-fun ResultSet.toKFlaggperson84Hendelse(): KFlaggperson84Hendelse =
-        KFlaggperson84Hendelse(
+fun ResultSet.statusEndring(): StatusEndring =
+        StatusEndring(
                 VeilederIdent(getString("veileder_ident")),
                 SykmeldtFnr(getString("sykmeldt_fnr")),
                 Status.valueOf(getString("status")),

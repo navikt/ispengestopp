@@ -39,8 +39,8 @@ fun DatabaseInterface.addStatus(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr:
     }
 }
 
-fun ResultSet.toKFlaggperson84Hendelse(): KFlaggperson84Hendelse =
-        KFlaggperson84Hendelse(
+fun ResultSet.statusEndring(): StatusEndring =
+        StatusEndring(
                 VeilederIdent(getString("veileder_ident")),
                 SykmeldtFnr(getString("sykmeldt_fnr")),
                 Status.valueOf(getString("status")),
@@ -49,12 +49,12 @@ fun ResultSet.toKFlaggperson84Hendelse(): KFlaggperson84Hendelse =
                 EnhetNr(getString("enhet_nr"))
         )
 
-fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<KFlaggperson84Hendelse> {
+fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
     return connection.use { connection ->
         connection.prepareStatement(queryStatusRetrieve).use {
             it.setString(1, fnr.value)
             it.executeQuery().toList {
-                toKFlaggperson84Hendelse()
+                statusEndring()
             }
         }
 

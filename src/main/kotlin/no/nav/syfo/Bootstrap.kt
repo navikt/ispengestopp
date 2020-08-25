@@ -98,11 +98,11 @@ suspend fun blockingApplicationLogic(
     val gson = GsonBuilder()
         .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
         .create()
-    
+
     while (applicationState.ready) {
         personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
-            val hendelse: KFlaggperson84Hendelse =
-                gson.fromJson(consumerRecord.value(), KFlaggperson84Hendelse::class.java)
+            val hendelse: StatusEndring =
+                gson.fromJson(consumerRecord.value(), StatusEndring::class.java)
             database.addStatus(
                 hendelse.sykmeldtFnr,
                 hendelse.veilederIdent,
