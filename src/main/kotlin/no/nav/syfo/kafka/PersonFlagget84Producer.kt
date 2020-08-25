@@ -12,7 +12,7 @@ fun createPersonFlagget84Producer(
     val kafkaBaseConfig = loadBaseConfig(env, vaultSecrets)
     val properties = kafkaBaseConfig.toProducerConfig(
         env.applicationName,
-        GsonKafkaSerializer::class
+        JacksonKafkaSerializer::class
     )
 
     return KafkaProducer(properties)

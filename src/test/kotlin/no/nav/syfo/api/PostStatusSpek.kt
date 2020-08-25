@@ -1,12 +1,15 @@
 package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.google.gson.GsonBuilder
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
-import io.ktor.gson.*
 import io.ktor.http.*
+import io.ktor.jackson.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
@@ -15,12 +18,11 @@ import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
-import no.nav.syfo.kafka.GsonKafkaSerializer
+import no.nav.syfo.kafka.JacksonKafkaSerializer
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
-import no.nav.syfo.util.OffsetDateTimeConverter
 import org.amshove.kluent.`should be greater or equal to`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
@@ -32,17 +34,11 @@ import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
-import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 
 @KtorExperimentalAPI
 class PostStatusSpek : Spek({
-    val gson = GsonBuilder()
-        .setPrettyPrinting()
-        .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
-        .create()
-
     val sykmeldtFnr = SykmeldtFnr("123456")
     val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
     val veilederIdent = VeilederIdent("Z999999")
@@ -86,7 +82,7 @@ class PostStatusSpek : Spek({
     val prodConsumerProperties = baseConfig
         .toConsumerConfig("prodConsumer", valueDeserializer = StringDeserializer::class)
 
-    val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
+    val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", JacksonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
@@ -97,9 +93,10 @@ class PostStatusSpek : Spek({
     ) {
         testApp.start()
         testApp.application.install(ContentNegotiation) {
-            gson {
-                setPrettyPrinting()
-                registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+            jackson {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             }
         }
 
@@ -158,7 +155,7 @@ class PostStatusSpek : Spek({
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
+                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Unauthorized
@@ -173,7 +170,7 @@ class PostStatusSpek : Spek({
                     )
                     val stoppAutomatikk =
                         StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
+                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Forbidden
@@ -187,7 +184,7 @@ class PostStatusSpek : Spek({
                         "Bearer ${generateJWT("1234")}"
                     )
                     val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(secondaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
+                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Created
@@ -198,7 +195,7 @@ class PostStatusSpek : Spek({
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
                     val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = gson.toJson(stoppAutomatikk)
+                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
                     response.status() shouldBe HttpStatusCode.Created
@@ -208,7 +205,7 @@ class PostStatusSpek : Spek({
 
                 testConsumer.poll(Duration.ofMillis(5000)).forEach {
                     val hendelse: StatusEndring =
-                        gson.fromJson(it.value(), StatusEndring::class.java)
+                        objectMapper.readValue(it.value())
                     messages.add(hendelse)
                 }
 
@@ -225,7 +222,8 @@ class PostStatusSpek : Spek({
 
                 Thread.sleep(2000) // Make sure the listener coroutine is done reading from the kafka topic
 
-                val statusendringListe: List<StatusEndring> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+                val statusendringListe: List<StatusEndring> =
+                    database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
 
                 statusendringListe.size shouldBeEqualTo 1
 
@@ -235,7 +233,7 @@ class PostStatusSpek : Spek({
                 statusEndring.virksomhetNr shouldBeEqualTo primaryJob
                 statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
                 statusEndring.opprettet.dayOfMonth shouldBeEqualTo
-                    Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
+                        Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
                 statusEndring.enhetNr shouldBeEqualTo enhetNr
             }
         }

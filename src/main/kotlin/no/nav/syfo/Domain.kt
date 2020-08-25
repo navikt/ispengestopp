@@ -10,7 +10,7 @@ data class StatusEndring(
     val status: Status,
     val virksomhetNr: VirksomhetNr,
     val opprettet: OffsetDateTime,
-    val enhetNr: EnhetNr
+    val enhetNr: EnhetNr // For å holde oversikt over hvem som bruker tjenesten
 )
 
 data class StoppAutomatikk(

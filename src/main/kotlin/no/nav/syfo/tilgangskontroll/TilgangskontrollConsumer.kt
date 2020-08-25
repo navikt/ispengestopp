@@ -1,18 +1,13 @@
 package no.nav.syfo.tilgangskontroll
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.json.GsonSerializer
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.request.accept
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.features.json.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.util.*
 import no.nav.syfo.COUNT_TILGANGSKONTROLL_FAIL
 import no.nav.syfo.COUNT_TILGANGSKONTROLL_OK
 import no.nav.syfo.SykmeldtFnr
@@ -25,10 +20,7 @@ class TilgangskontrollConsumer(private val url: String = "http://syfo-tilgangsko
     @KtorExperimentalAPI
     private val httpClient = HttpClient(CIO) {
         install(JsonFeature) {
-            serializer = GsonSerializer {
-                serializeNulls()
-                disableHtmlEscaping()
-            }
+            serializer = JacksonSerializer()
         }
     }
 

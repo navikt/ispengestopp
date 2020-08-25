@@ -1,24 +1,26 @@
 package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.google.gson.GsonBuilder
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
-import io.ktor.gson.*
 import io.ktor.http.*
+import io.ktor.jackson.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.setupAuth
-import no.nav.syfo.kafka.GsonKafkaSerializer
+import no.nav.syfo.kafka.JacksonKafkaSerializer
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
-import no.nav.syfo.util.OffsetDateTimeConverter
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -81,7 +83,7 @@ class GetStatusSpek : Spek({
     val consumer = KafkaConsumer<String, String>(consumerProperties)
     consumer.subscribe(listOf(env.flaggPerson84Topic))
 
-    val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", GsonKafkaSerializer::class)
+    val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", JacksonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
@@ -92,9 +94,10 @@ class GetStatusSpek : Spek({
     ) {
         testApp.start()
         testApp.application.install(ContentNegotiation) {
-            gson {
-                setPrettyPrinting()
-                registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+            jackson {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             }
         }
 
@@ -154,10 +157,43 @@ class GetStatusSpek : Spek({
             }
             it("return correct content") {
                 val statusList = listOf(
-                    DBStatusChangeTest("1", sykmeldtFnr, veilederIdent, Status.STOPP_AUTOMATIKK, primaryJob, enhetNr, lastCreated),
-                    DBStatusChangeTest("2", sykmeldtFnr, veilederIdent, Status.STOPP_AUTOMATIKK, primaryJob, enhetNr, firstCreated),
-                    DBStatusChangeTest("3", sykmeldtFnr, veilederIdent, Status.STOPP_AUTOMATIKK, secondaryJob, enhetNr, lastCreated),
-                    DBStatusChangeTest("4", sykmeldtFnrFiller, veilederIdent, Status.STOPP_AUTOMATIKK, primaryJob, enhetNr, lastCreated))
+                    DBStatusChangeTest(
+                        "1",
+                        sykmeldtFnr,
+                        veilederIdent,
+                        Status.STOPP_AUTOMATIKK,
+                        primaryJob,
+                        enhetNr,
+                        lastCreated
+                    ),
+                    DBStatusChangeTest(
+                        "2",
+                        sykmeldtFnr,
+                        veilederIdent,
+                        Status.STOPP_AUTOMATIKK,
+                        primaryJob,
+                        enhetNr,
+                        firstCreated
+                    ),
+                    DBStatusChangeTest(
+                        "3",
+                        sykmeldtFnr,
+                        veilederIdent,
+                        Status.STOPP_AUTOMATIKK,
+                        secondaryJob,
+                        enhetNr,
+                        lastCreated
+                    ),
+                    DBStatusChangeTest(
+                        "4",
+                        sykmeldtFnrFiller,
+                        veilederIdent,
+                        Status.STOPP_AUTOMATIKK,
+                        primaryJob,
+                        enhetNr,
+                        lastCreated
+                    )
+                )
                 statusList.forEach { database.connection.addStatus(it) }
 
                 with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
@@ -167,18 +203,14 @@ class GetStatusSpek : Spek({
                 }) {
                     response.status() shouldBe HttpStatusCode.OK
 
-                    val gson = GsonBuilder()
-                        .setPrettyPrinting()
-                        .registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
-                        .create()
-
-                    val flags = gson.fromJson(response.content!!, Array<StatusEndring>::class.java).toList()
+                    val flags: List<StatusEndring> = objectMapper.readValue(response.content!!)
 
                     flags.size shouldBeEqualTo 2
                     flags[0].sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
                     flags[0].opprettet.toString() shouldBeEqualTo lastCreatedStringISO
                 }
             }
+
         }
     }
 })
