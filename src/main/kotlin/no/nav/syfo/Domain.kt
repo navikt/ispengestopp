@@ -1,8 +1,13 @@
 package no.nav.syfo
 
+import no.nav.syfo.util.nrValidator
 import java.time.OffsetDateTime
 
-data class EnhetNr(val value: String)
+data class EnhetNr(val value: String) {
+    init {
+        nrValidator(value);
+    }
+}
 
 data class StatusEndring(
     val veilederIdent: VeilederIdent,
@@ -33,6 +38,10 @@ data class DBStatusChangeTest(
 data class SykmeldtFnr(val value: String)
 data class Tilgang(val harTilgang: Boolean, val begrunnelse: String? = null)
 data class VeilederIdent(val value: String)
-data class VirksomhetNr(val value: String)
+data class VirksomhetNr(val value: String) {
+    init {
+        nrValidator(value);
+    }
+}
 
 enum class Status { NORMAL, STOPP_AUTOMATIKK }
