@@ -1,10 +1,13 @@
 package no.nav.syfo.application
 
 import com.auth0.jwk.JwkProviderBuilder
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
-import io.ktor.gson.*
+import io.ktor.jackson.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -14,11 +17,9 @@ import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
-import no.nav.syfo.util.OffsetDateTimeConverter
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.net.URL
-import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
 
 fun createApplicationEngine(
@@ -31,9 +32,10 @@ fun createApplicationEngine(
         val log = LoggerFactory.getLogger("ktor.application")
         // TODO Her kan man tydeligvis også installere CallID (SyfooversiktApplication.kt linje 202)
         install(ContentNegotiation) {
-            gson {
-                setPrettyPrinting()
-                registerTypeAdapter(OffsetDateTime::class.java, OffsetDateTimeConverter())
+            jackson {
+                registerKotlinModule()
+                registerModule(JavaTimeModule())
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             }
         }
 
