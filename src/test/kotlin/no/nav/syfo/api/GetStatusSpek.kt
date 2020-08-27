@@ -51,7 +51,7 @@ class GetStatusSpek : Spek({
 
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
-        topicNames = listOf("aapen-isyfo-person-flagget84")
+        topicNames = listOf("apen-isyfo-stoppautomatikk")
     )
 
     val env = Environment(
@@ -65,7 +65,7 @@ class GetStatusSpek : Spek({
         "src/test/resources/jwkset.json",
         false,
         "1234",
-        "aapen-isyfo-person-flagget84"
+        "apen-isyfo-stoppautomatikk"
     )
     val credentials = VaultSecrets(
         "",
@@ -81,7 +81,7 @@ class GetStatusSpek : Spek({
     val consumerProperties = baseConfig
         .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
     val consumer = KafkaConsumer<String, String>(consumerProperties)
-    consumer.subscribe(listOf(env.flaggPerson84Topic))
+    consumer.subscribe(listOf(env.stoppAutomatikkTopic))
 
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", JacksonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)

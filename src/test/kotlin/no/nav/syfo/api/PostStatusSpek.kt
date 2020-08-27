@@ -47,7 +47,7 @@ class PostStatusSpek : Spek({
     val enhetNr = EnhetNr("9999")
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
-        topicNames = listOf("aapen-isyfo-person-flagget84")
+        topicNames = listOf("apen-isyfo-stoppautomatikk")
     )
     val env = Environment(
         "ispengestopp",
@@ -60,7 +60,7 @@ class PostStatusSpek : Spek({
         "src/test/resources/jwkset.json",
         false,
         "1234",
-        "aapen-isyfo-person-flagget84"
+        "apen-isyfo-stoppautomatikk"
     )
     val credentials = VaultSecrets(
         "",
@@ -77,7 +77,7 @@ class PostStatusSpek : Spek({
     val testConsumerProperties = baseConfig
         .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
     val testConsumer = KafkaConsumer<String, String>(testConsumerProperties)
-    testConsumer.subscribe(listOf(env.flaggPerson84Topic))
+    testConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
 
     val prodConsumerProperties = baseConfig
         .toConsumerConfig("prodConsumer", valueDeserializer = StringDeserializer::class)
@@ -117,7 +117,7 @@ class PostStatusSpek : Spek({
         afterEachTest {
             database.connection.dropData()
         }
-        prodConsumer.subscribe(listOf(env.flaggPerson84Topic))
+        prodConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
         applicationState.ready = true
 
         launchListeners(
