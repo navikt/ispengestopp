@@ -16,7 +16,7 @@ fun createPersonFlagget84Consumer(
     )
 
     val personFlagget84Consumer = KafkaConsumer<String, String>(properties)
-    personFlagget84Consumer.subscribe(listOf(env.flaggPerson84Topic))
+    personFlagget84Consumer.subscribe(listOf(env.stoppAutomatikkTopic))
 
     return personFlagget84Consumer
 }

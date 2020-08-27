@@ -70,13 +70,13 @@ fun Route.registerFlaggPerson84(
 
                     personFlagget84Producer.send(
                         ProducerRecord(
-                            env.flaggPerson84Topic,
+                            env.stoppAutomatikkTopic,
                             "${stoppAutomatikk.sykmeldtFnr}-$it",
                             kFlaggperson84Hendelse
                         )
                     )
 
-                    log.info("Lagt melding på kafka: Topic: {}", env.flaggPerson84Topic)
+                    log.info("Lagt melding på kafka: Topic: {}", env.stoppAutomatikkTopic)
                 }
                 COUNT_ENDRE_PERSON_STATUS_SUCCESS.inc()
                 call.respond(HttpStatusCode.Created)

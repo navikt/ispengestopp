@@ -23,7 +23,6 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
-import org.amshove.kluent.`should be greater or equal to`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -47,7 +46,7 @@ class PostStatusSpek : Spek({
     val enhetNr = EnhetNr("9999")
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
-        topicNames = listOf("aapen-isyfo-person-flagget84")
+        topicNames = listOf("apen-isyfo-stoppautomatikk")
     )
     val env = Environment(
         "ispengestopp",
@@ -60,7 +59,7 @@ class PostStatusSpek : Spek({
         "src/test/resources/jwkset.json",
         false,
         "1234",
-        "aapen-isyfo-person-flagget84"
+        "apen-isyfo-stoppautomatikk"
     )
     val credentials = VaultSecrets(
         "",
@@ -77,7 +76,7 @@ class PostStatusSpek : Spek({
     val testConsumerProperties = baseConfig
         .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
     val testConsumer = KafkaConsumer<String, String>(testConsumerProperties)
-    testConsumer.subscribe(listOf(env.flaggPerson84Topic))
+    testConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
 
     val prodConsumerProperties = baseConfig
         .toConsumerConfig("prodConsumer", valueDeserializer = StringDeserializer::class)
@@ -117,7 +116,7 @@ class PostStatusSpek : Spek({
         afterEachTest {
             database.connection.dropData()
         }
-        prodConsumer.subscribe(listOf(env.flaggPerson84Topic))
+        prodConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
         applicationState.ready = true
 
         launchListeners(
@@ -176,20 +175,6 @@ class PostStatusSpek : Spek({
                     response.status() shouldBe HttpStatusCode.Forbidden
                 }
             }
-            it("return correct status code") {
-                with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader(
-                        "Authorization",
-                        "Bearer ${generateJWT("1234")}"
-                    )
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(secondaryJob), veilederIdent, enhetNr)
-                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                    setBody(stoppAutomatikkJson)
-                }) {
-                    response.status() shouldBe HttpStatusCode.Created
-                }
-            }
             it("persist status change to kafka and database") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -209,16 +194,16 @@ class PostStatusSpek : Spek({
                     messages.add(hendelse)
                 }
 
-                messages.size `should be greater or equal to` 1
+                messages.size shouldBeEqualTo 1
 
                 val latestFlaggperson84Hendelse = messages.last()
                 latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
                 latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
-                latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
                 latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
                 latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
                     .atZone(ZoneOffset.UTC).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
+                latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
 
                 Thread.sleep(2000) // Make sure the listener coroutine is done reading from the kafka topic
 
