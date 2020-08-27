@@ -2,12 +2,12 @@ package no.nav.syfo.util
 
 fun nrValidator(value: String) {
     if (value.isBlank()) {
-        throw IllegalArgumentException("VirksomhetNr cannot be empty")
+        throw IllegalArgumentException("Nr cannot be empty")
     }
     try {
         Integer.parseInt(value)
     } catch (e: NumberFormatException) {
-        throw IllegalArgumentException("VirksomhetNr must be numerical")
+        throw IllegalArgumentException("Nr must be numerical")
 
     }
 }
