@@ -21,7 +21,6 @@ data class StatusEndring(
 data class StoppAutomatikk(
     val sykmeldtFnr: SykmeldtFnr,
     val virksomhetNr: List<VirksomhetNr>,
-    val veilederIdent: VeilederIdent,
     val enhetNr: EnhetNr
 )
 

@@ -37,6 +37,7 @@ fun generateJWT(
         .withClaim("nbf", now)
         .withClaim("iat", now)
         .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
+        .withClaim("NAVident", "Z999999")
         .sign(alg)
 }
 

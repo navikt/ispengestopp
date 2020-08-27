@@ -6,6 +6,7 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.*
+import no.nav.syfo.application.getVeilederIdentFromToken
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -50,17 +51,16 @@ fun Route.registerFlaggPerson84(
             log.info("Received post request to /api/v1/person/flagg")
 
             val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-
             if (token == null) {
                 call.respond(HttpStatusCode.Forbidden)
             }
 
+            val ident = getVeilederIdentFromToken(token!!)
             val harTilgang = tilgangskontroll.harTilgangTilBruker(stoppAutomatikk.sykmeldtFnr, token!!)
-
             if (harTilgang) {
                 stoppAutomatikk.virksomhetNr.forEach {
                     val kFlaggperson84Hendelse = StatusEndring(
-                        stoppAutomatikk.veilederIdent,
+                        ident,
                         stoppAutomatikk.sykmeldtFnr,
                         Status.STOPP_AUTOMATIKK,
                         it,

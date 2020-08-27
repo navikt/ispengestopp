@@ -23,6 +23,7 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import org.amshove.kluent.`should be greater or equal to`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -153,7 +154,7 @@ class PostStatusSpek : Spek({
             it("reject post request without token") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
+                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
                     val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
@@ -168,7 +169,7 @@ class PostStatusSpek : Spek({
                         "Bearer ${generateJWT("1234")}"
                     )
                     val stoppAutomatikk =
-                        StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), veilederIdent, enhetNr)
+                        StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), enhetNr)
                     val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
@@ -179,7 +180,7 @@ class PostStatusSpek : Spek({
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), veilederIdent, enhetNr)
+                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
                     val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                     setBody(stoppAutomatikkJson)
                 }) {
