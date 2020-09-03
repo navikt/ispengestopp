@@ -13,6 +13,7 @@ import io.ktor.jackson.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
+import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
@@ -23,7 +24,6 @@ import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
-import org.amshove.kluent.`should be greater or equal to`
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -37,13 +37,13 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.util.*
 
+@InternalCoroutinesApi
 @KtorExperimentalAPI
 class PostStatusSpek : Spek({
     val sykmeldtFnr = SykmeldtFnr("123456")
     val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
-    val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
@@ -60,7 +60,8 @@ class PostStatusSpek : Spek({
         "src/test/resources/jwkset.json",
         false,
         "1234",
-        "apen-isyfo-stoppautomatikk"
+        "apen-isyfo-stoppautomatikk",
+        0L
     )
     val credentials = VaultSecrets(
         "",
@@ -85,10 +86,9 @@ class PostStatusSpek : Spek({
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", JacksonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
-    //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
         testApp: TestApplicationEngine,
-        database: TestDB,
+        testDB: TestDB,
         block: TestApplicationEngine.() -> Unit
     ) {
         testApp.start()
@@ -115,21 +115,22 @@ class PostStatusSpek : Spek({
 
         val prodConsumer = KafkaConsumer<String, String>(prodConsumerProperties)
         afterEachTest {
-            database.connection.dropData()
+            testDB.connection.dropData()
         }
         prodConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
         applicationState.ready.set(true)
 
         launchListeners(
             applicationState,
-            database,
-            prodConsumer
+            testDB,
+            prodConsumer,
+            env
         )
 
         testApp.application.routing {
             authenticate {
                 registerFlaggPerson84(
-                    database,
+                    testDB,
                     env,
                     personFlagget84Producer,
                     TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
@@ -206,22 +207,8 @@ class PostStatusSpek : Spek({
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
                 latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
 
-                Thread.sleep(2000) // Make sure the listener coroutine is done reading from the kafka topic
-
-                val statusendringListe: List<StatusEndring> =
-                    database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
-
-                statusendringListe.size shouldBeEqualTo 1
-
-                val statusEndring = statusendringListe[0]
-                statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
-                statusEndring.veilederIdent shouldBeEqualTo veilederIdent
-                statusEndring.virksomhetNr shouldBeEqualTo primaryJob
-                statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
-                statusEndring.opprettet.dayOfMonth shouldBeEqualTo
-                        Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
-                statusEndring.enhetNr shouldBeEqualTo enhetNr
             }
         }
     }
 })
+
