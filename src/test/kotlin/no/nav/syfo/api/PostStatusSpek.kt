@@ -118,7 +118,7 @@ class PostStatusSpek : Spek({
             database.connection.dropData()
         }
         prodConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
-        applicationState.ready = true
+        applicationState.ready.set(true)
 
         launchListeners(
             applicationState,

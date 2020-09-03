@@ -13,7 +13,7 @@ class VaultCredentialService {
 
     suspend fun runRenewCredentialsTask(applicationState: ApplicationState) {
         delay(leaseDuration)
-        while (applicationState.ready) {
+        while (applicationState.ready.get()) {
             renewCredentialsTaskData?.run {
                 val credentials = getNewCredentials(
                     mountPath,

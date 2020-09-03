@@ -29,7 +29,7 @@ object Vault {
         val lookupSelf = client.auth().lookupSelf()
         if (lookupSelf.isRenewable) {
             delay(suggestedRefreshIntervalInMillis(lookupSelf.ttl * 1000))
-            while (applicationState.ready) {
+            while (applicationState.ready.get()) {
                 try {
                     log.debug("Refreshing Vault token (old TTL: ${client.auth().lookupSelf().ttl} seconds)")
                     val response = client.auth().renewSelf()

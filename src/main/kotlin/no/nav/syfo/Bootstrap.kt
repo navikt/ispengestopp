@@ -75,7 +75,7 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
                 StructuredArguments.fields(e.message), e.cause
             )
         } finally {
-            applicationState.alive = false
+            applicationState.alive.set(false)
         }
     }
 
@@ -86,7 +86,7 @@ fun launchListeners(
     personFlagget84Consumer: KafkaConsumer<String, String>
 ) {
     createListener(applicationState) {
-        applicationState.ready = true
+        applicationState.ready.set(true)
 
         blockingApplicationLogic(
             applicationState,
@@ -103,7 +103,7 @@ suspend fun blockingApplicationLogic(
     personFlagget84Consumer: KafkaConsumer<String, String>
 ) {
 
-    while (applicationState.ready) {
+    while (applicationState.ready.get()) {
         personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
             val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
             database.addStatus(

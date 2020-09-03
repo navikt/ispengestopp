@@ -24,6 +24,6 @@ fun bootstrapDBInit(env: Environment, applicationState: ApplicationState, vaultC
                 prodDatabase.updateCredentials(username = it.username, password = it.password)
             }
 
-        applicationState.ready = true
+        applicationState.ready.set(true)
     }
 }
