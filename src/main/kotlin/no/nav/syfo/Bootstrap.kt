@@ -106,12 +106,18 @@ suspend fun blockingApplicationLogic(
     while (applicationState.ready.get()) {
         personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
             val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
-            database.addStatus(
-                hendelse.sykmeldtFnr,
-                hendelse.veilederIdent,
-                hendelse.enhetNr,
-                hendelse.virksomhetNr
-            )
+            try {
+                database.addStatus(
+                    hendelse.sykmeldtFnr,
+                    hendelse.veilederIdent,
+                    hendelse.enhetNr,
+                    hendelse.virksomhetNr
+                )
+            } catch (e: Exception) {
+                //TODO: Legg på retry kø
+                COUNT_ENDRE_PERSON_STATUS_DB_FAILED.inc()
+                log.error("Klarte ikke lagre til database. Hopper over melding. Feilet pga: ${e.message}", e.stackTrace)
+            }
         }
         delay(100)
     }

@@ -1,4 +1,8 @@
 package no.nav.syfo.api
+/*
+// NOTE: This test runs successfully alone. However, we haven't been able to get the coroutines to consistently play
+// nicely during testing. When we run all tests in succession this test makes the PostStatusSpek test check for results
+// before the production code is done. Concurrency is hard.
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -13,14 +17,15 @@ import io.ktor.jackson.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
-import kotlinx.coroutines.Delay
-import kotlinx.coroutines.InternalCoroutinesApi
-import kotlinx.coroutines.delay
+import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
-import no.nav.syfo.api.testutils.*
+import no.nav.syfo.api.testutils.TestDB
+import no.nav.syfo.api.testutils.generateJWT
+import no.nav.syfo.api.testutils.mockSyfotilgangskontrollServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.kafka.JacksonKafkaSerializer
 import no.nav.syfo.kafka.loadBaseConfig
 import no.nav.syfo.kafka.toConsumerConfig
@@ -35,15 +40,11 @@ import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
 import java.time.Duration
-import java.time.Instant
-import java.time.ZoneOffset
 import java.util.*
 
 @KtorExperimentalAPI
-class PostStatusSpek : Spek({
+class HandleDBErrorSpek : Spek({
     val sykmeldtFnr = SykmeldtFnr("123456")
-    val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
-    val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
     val embeddedKafkaEnvironment = KafkaEnvironment(
@@ -89,7 +90,7 @@ class PostStatusSpek : Spek({
     //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
         testApp: TestApplicationEngine,
-        testDB: TestDB,
+        database: TestDB,
         block: TestApplicationEngine.() -> Unit
     ) {
         testApp.start()
@@ -101,7 +102,7 @@ class PostStatusSpek : Spek({
             }
         }
 
-        val mockServerPort = 9091
+        val mockServerPort = 9092
         val mockHttpServerUrl = "http://localhost:$mockServerPort"
 
         val mockServer =
@@ -115,22 +116,20 @@ class PostStatusSpek : Spek({
         testApp.application.setupAuth(env, jwkProvider)
 
         val prodConsumer = KafkaConsumer<String, String>(prodConsumerProperties)
-        afterEachTest {
-            testDB.connection.dropData()
-        }
+
         prodConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
         applicationState.ready.set(true)
 
         launchListeners(
             applicationState,
-            testDB,
+            database,
             prodConsumer
         )
 
         testApp.application.routing {
             authenticate {
                 registerFlaggPerson84(
-                    testDB,
+                    database,
                     env,
                     personFlagget84Producer,
                     TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
@@ -141,43 +140,20 @@ class PostStatusSpek : Spek({
         return testApp.block()
     }
 
-    describe("Flag a person to be removed from automatic processing") {
-        val database by lazy { TestDB() }
+    describe("Fail persisting to database") {
+        val testDatabase = TestDB()
+        mockkStatic("no.nav.syfo.QueriesKt")
+        every { any<DatabaseInterface>().addStatus(any(), any(), any(), any()) } throws Exception()
+
         beforeGroup {
             embeddedKafkaEnvironment.start()
         }
         afterGroup {
-            database.stop()
             embeddedKafkaEnvironment.tearDown()
         }
 
-        withTestApplicationForApi(TestApplicationEngine(), database) {
-            it("reject post request without token") {
-                with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
-                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                    setBody(stoppAutomatikkJson)
-                }) {
-                    response.status() shouldBe HttpStatusCode.Unauthorized
-                }
-            }
-            it("reject post request to forbidden user") {
-                with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader(
-                        "Authorization",
-                        "Bearer ${generateJWT("1234")}"
-                    )
-                    val stoppAutomatikk =
-                        StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), enhetNr)
-                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                    setBody(stoppAutomatikkJson)
-                }) {
-                    response.status() shouldBe HttpStatusCode.Forbidden
-                }
-            }
-            it("persist status change to kafka and database") {
+        withTestApplicationForApi(TestApplicationEngine(), testDatabase) {
+            it("Catch exception and don't rethrow it") {
                 with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                     addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                     addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
@@ -189,48 +165,19 @@ class PostStatusSpek : Spek({
                 }
 
                 val messages: MutableList<StatusEndring> = mutableListOf()
-
                 testConsumer.poll(Duration.ofMillis(5000)).forEach {
                     val hendelse: StatusEndring =
                         objectMapper.readValue(it.value())
                     messages.add(hendelse)
                 }
-
                 messages.size shouldBeEqualTo 1
-
                 val latestFlaggperson84Hendelse = messages.last()
                 latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
-                latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
-                latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
-                latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
-                    .atZone(ZoneOffset.UTC).dayOfMonth
-                latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
-                latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
+                Thread.sleep(2000)
+                verify { any<DatabaseInterface>().addStatus(any(), any(), any(), any()) }
 
-                //TODO: Jo mer kode vi skriver, jo lenger må denne vente :(
 
-                var statusendringListe: List<StatusEndring>  = mutableListOf()
-                for (i in 1..10) {
-                    statusendringListe = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
-                    if (statusendringListe.size > 0) break
-                    else {
-                        println("Results might not be in yet, sleep and retry... ")
-                        Thread.sleep(500)
-                    }
-
-                }
-
-                statusendringListe.size shouldBeEqualTo 1
-
-                val statusEndring = statusendringListe[0]
-                statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
-                statusEndring.veilederIdent shouldBeEqualTo veilederIdent
-                statusEndring.virksomhetNr shouldBeEqualTo primaryJob
-                statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
-                statusEndring.opprettet.dayOfMonth shouldBeEqualTo
-                        Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
-                statusEndring.enhetNr shouldBeEqualTo enhetNr
             }
         }
     }
-})
+}) */
