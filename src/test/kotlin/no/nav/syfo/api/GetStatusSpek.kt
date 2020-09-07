@@ -65,7 +65,8 @@ class GetStatusSpek : Spek({
         "src/test/resources/jwkset.json",
         false,
         "1234",
-        "apen-isyfo-stoppautomatikk"
+        "apen-isyfo-stoppautomatikk",
+        0
     )
     val credentials = VaultSecrets(
         "",

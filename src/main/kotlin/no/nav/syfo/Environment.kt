@@ -16,7 +16,9 @@ data class Environment(
     val jwksUri: String = getEnvVar("JWKS_URI", "https://login.microsoftonline.com/common/discovery/keys"),
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
     val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID", "1234"),
-    val stoppAutomatikkTopic: String = getEnvVar("STOPP_AUTOMATIKK_TOPIC", "apen-isyfo-stoppautomatikk")
+    val stoppAutomatikkTopic: String = getEnvVar("STOPP_AUTOMATIKK_TOPIC", "apen-isyfo-stoppautomatikk"),
+    val pollTimeOutMs: Long = 0
+
 ) : KafkaConfig
 
 data class VaultSecrets(

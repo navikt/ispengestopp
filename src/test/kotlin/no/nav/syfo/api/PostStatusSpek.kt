@@ -1,5 +1,4 @@
 package no.nav.syfo.api
-
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -60,7 +59,8 @@ class PostStatusSpek : Spek({
         "src/test/resources/jwkset.json",
         false,
         "1234",
-        "apen-isyfo-stoppautomatikk"
+        "apen-isyfo-stoppautomatikk",
+        0L
     )
     val credentials = VaultSecrets(
         "",

@@ -109,7 +109,7 @@ suspend fun blockingApplicationLogic(
     env: Environment
 ) {
     while (applicationState.ready.get()) {
-        personFlagget84Consumer.poll(Duration.ofMillis(1000)).forEach { consumerRecord ->
+        personFlagget84Consumer.poll(Duration.ofMillis(env.pollTimeOutMs)).forEach { consumerRecord ->
             val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
             log.info("Offset for topic: ${env.stoppAutomatikkTopic}, offset: ${consumerRecord.offset()}")
             try {
