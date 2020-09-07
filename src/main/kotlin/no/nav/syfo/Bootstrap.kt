@@ -30,6 +30,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.BootstrapKt")
 
+@InternalCoroutinesApi
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
@@ -61,7 +62,8 @@ fun main() {
     launchListeners(
         applicationState,
         database,
-        personFlagget84Consumer
+        personFlagget84Consumer,
+        env
     )
 }
 
@@ -79,11 +81,13 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         }
     }
 
+@InternalCoroutinesApi
 @KtorExperimentalAPI
 fun launchListeners(
     applicationState: ApplicationState,
     database: DatabaseInterface,
-    personFlagget84Consumer: KafkaConsumer<String, String>
+    personFlagget84Consumer: KafkaConsumer<String, String>,
+    env: Environment
 ) {
     createListener(applicationState) {
         applicationState.ready.set(true)
@@ -91,7 +95,8 @@ fun launchListeners(
         blockingApplicationLogic(
             applicationState,
             database,
-            personFlagget84Consumer
+            personFlagget84Consumer,
+            env
         )
     }
 }
@@ -100,12 +105,13 @@ fun launchListeners(
 suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     database: DatabaseInterface,
-    personFlagget84Consumer: KafkaConsumer<String, String>
+    personFlagget84Consumer: KafkaConsumer<String, String>,
+    env: Environment
 ) {
-
     while (applicationState.ready.get()) {
-        personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
+        personFlagget84Consumer.poll(Duration.ofMillis(1000)).forEach { consumerRecord ->
             val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
+            log.info("Offset for topic: ${env.stoppAutomatikkTopic}, offset: ${consumerRecord.offset()}")
             try {
                 database.addStatus(
                     hendelse.sykmeldtFnr,
