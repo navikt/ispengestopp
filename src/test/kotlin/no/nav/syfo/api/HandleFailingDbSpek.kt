@@ -30,7 +30,7 @@ import java.util.*
 
 @InternalCoroutinesApi
 @ExperimentalCoroutinesApi
-object CatchDbErrorsSpek : Spek({
+object HandleFailingDbSpek : Spek({
     var applicationState = ApplicationState()
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
@@ -47,7 +47,8 @@ object CatchDbErrorsSpek : Spek({
         "src/test/resources/jwkset.json",
         false,
         "1234",
-        "apen-isyfo-stoppautomatikk"
+        "apen-isyfo-stoppautomatikk",
+        1000L
     )
     val credentials = VaultSecrets(
         "",

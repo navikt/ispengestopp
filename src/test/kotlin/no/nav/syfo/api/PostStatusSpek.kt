@@ -1,4 +1,5 @@
 package no.nav.syfo.api
+
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -85,7 +86,6 @@ class PostStatusSpek : Spek({
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", JacksonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
-    //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
         testApp: TestApplicationEngine,
         testDB: TestDB,
@@ -206,32 +206,9 @@ class PostStatusSpek : Spek({
                     .atZone(ZoneOffset.UTC).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
                 latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
-/*
-                //TODO: Jo mer kode vi skriver, jo lenger må denne vente :(
 
-                var statusendringListe: List<StatusEndring>  = mutableListOf()
-                for (i in 1..10) {
-                    statusendringListe = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
-                    if (statusendringListe.size > 0) break
-                    else {
-                        println("Results might not be in yet, sleep and retry... ")
-                        Thread.sleep(500)
-                    }
-
-                }
-
-                statusendringListe.size shouldBeEqualTo 1
-
-                val statusEndring = statusendringListe[0]
-                statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
-                statusEndring.veilederIdent shouldBeEqualTo veilederIdent
-                statusEndring.virksomhetNr shouldBeEqualTo primaryJob
-                statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
-                statusEndring.opprettet.dayOfMonth shouldBeEqualTo
-                        Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
-                statusEndring.enhetNr shouldBeEqualTo enhetNr
-                */
             }
         }
     }
 })
+
