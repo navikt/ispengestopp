@@ -1,9 +1,10 @@
 package no.nav.syfo.api
 
+import no.nav.syfo.api.testutils.hentStatusEndringListe
+import org.amshove.kluent.shouldBeEqualTo
+
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
-import io.mockk.verify
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.withTimeout
@@ -11,22 +12,25 @@ import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.TestDB
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.database.DatabaseInterface
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.sql.SQLException
 import org.apache.kafka.common.TopicPartition
-import java.time.Duration
+import java.time.*
 
-object HandleFailingDbSpek : Spek({
+object PersistHendelseSpek : Spek({
     var applicationState = ApplicationState()
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
         topicNames = listOf("apen-isyfo-stoppautomatikk")
     )
+
+    val sykmeldtFnr = SykmeldtFnr("123456")
+    val veilederIdent = VeilederIdent("Z999999")
+    val primaryJob = VirksomhetNr("888")
+    val enhetNr = EnhetNr("9999")
     val env = Environment(
         "ispengestopp",
         8080,
@@ -51,31 +55,41 @@ object HandleFailingDbSpek : Spek({
     val hendelseRecord = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelse )
 
     describe("Handle errors when storing kafka event to database") {
-        val mockDatabase = TestDB()
+        val database = TestDB()
 
         afterGroup {
-            mockDatabase.stop()
+            database.stop()
         }
 
-        mockkStatic("no.nav.syfo.QueriesKt")
-        every { any<DatabaseInterface>().addStatus(any(), any(), any(), any()) } throws SQLException("Sql er feil")
 
         val mockConsumer = mockk<KafkaConsumer<String, String>>()
-        every { mockConsumer.poll(Duration.ZERO) } returns ConsumerRecords( mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecord)))
+        every { mockConsumer.poll(Duration.ZERO) } returns ConsumerRecords(
+            mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecord))) andThen ConsumerRecords.empty()
 
         applicationState.ready.set(true)
 
         it("Catch thrown exception") {
             runBlockingTest {
                 try {
-                    withTimeout(100L) { // Cancel coroutine after a certain time
-                        blockingApplicationLogic(applicationState, mockDatabase, mockConsumer, env)
+                    withTimeout(1000L) { // Cancel coroutine after a certain time
+                        blockingApplicationLogic(applicationState, database, mockConsumer, env)
                     }
                 } catch (e: CancellationException) {
                     println("Cancellation exception for suspended thread")
                 }
             }
-            verify { any<DatabaseInterface>().addStatus(any(), any(), any(), any()) }
+            var statusendringListe: List<StatusEndring> = database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+            statusendringListe.size shouldBeEqualTo 1
+
+            val statusEndring = statusendringListe[0]
+            statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+            statusEndring.veilederIdent shouldBeEqualTo veilederIdent
+            statusEndring.virksomhetNr shouldBeEqualTo primaryJob
+            statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
+            statusEndring.opprettet.dayOfMonth shouldBeEqualTo
+                    Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
+            statusEndring.enhetNr shouldBeEqualTo enhetNr
+
         }
     }
 

@@ -122,7 +122,7 @@ suspend fun blockingApplicationLogic(
             } catch (e: Exception) {
                 //TODO: Legg på retry kø
                 COUNT_ENDRE_PERSON_STATUS_DB_FAILED.inc()
-                log.error("Klarte ikke lagre til database. Hopper over melding. Feilet pga: ${e.message}", e.stackTrace)
+                log.error("Klarte ikke lagre til database. Hopper over melding. Feilet pga: ${e.javaClass}")
             }
         }
         delay(100)
