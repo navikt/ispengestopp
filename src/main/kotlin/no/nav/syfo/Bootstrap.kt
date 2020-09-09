@@ -17,6 +17,7 @@ import no.nav.syfo.database.VaultCredentialService
 import no.nav.syfo.kafka.createPersonFlagget84Consumer
 import no.nav.syfo.kafka.createPersonFlagget84Producer
 import no.nav.syfo.util.getFileAsString
+import no.nav.syfo.util.pollAndPersist
 import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
@@ -109,22 +110,7 @@ suspend fun blockingApplicationLogic(
     env: Environment
 ) {
     while (applicationState.ready.get()) {
-        personFlagget84Consumer.poll(Duration.ofMillis(env.pollTimeOutMs)).forEach { consumerRecord ->
-            val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
-            log.info("Offset for topic: ${env.stoppAutomatikkTopic}, offset: ${consumerRecord.offset()}")
-            try {
-                database.addStatus(
-                    hendelse.sykmeldtFnr,
-                    hendelse.veilederIdent,
-                    hendelse.enhetNr,
-                    hendelse.virksomhetNr
-                )
-            } catch (e: Exception) {
-                //TODO: Legg på retry kø
-                COUNT_ENDRE_PERSON_STATUS_DB_FAILED.inc()
-                log.error("Klarte ikke lagre til database. Hopper over melding. Feilet pga: ${e.javaClass}")
-            }
-        }
+        pollAndPersist(personFlagget84Consumer, database, env)
         delay(100)
     }
 }
