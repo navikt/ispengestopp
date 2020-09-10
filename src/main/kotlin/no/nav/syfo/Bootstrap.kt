@@ -17,6 +17,7 @@ import no.nav.syfo.database.VaultCredentialService
 import no.nav.syfo.kafka.createPersonFlagget84Consumer
 import no.nav.syfo.kafka.createPersonFlagget84Producer
 import no.nav.syfo.util.getFileAsString
+import no.nav.syfo.util.pollAndPersist
 import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
@@ -30,6 +31,7 @@ val objectMapper: ObjectMapper = ObjectMapper()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.BootstrapKt")
 
+@InternalCoroutinesApi
 @KtorExperimentalAPI
 fun main() {
     val env = Environment()
@@ -61,7 +63,8 @@ fun main() {
     launchListeners(
         applicationState,
         database,
-        personFlagget84Consumer
+        personFlagget84Consumer,
+        env
     )
 }
 
@@ -75,23 +78,26 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
                 StructuredArguments.fields(e.message), e.cause
             )
         } finally {
-            applicationState.alive = false
+            applicationState.alive.set(false)
         }
     }
 
+@InternalCoroutinesApi
 @KtorExperimentalAPI
 fun launchListeners(
     applicationState: ApplicationState,
     database: DatabaseInterface,
-    personFlagget84Consumer: KafkaConsumer<String, String>
+    personFlagget84Consumer: KafkaConsumer<String, String>,
+    env: Environment
 ) {
     createListener(applicationState) {
-        applicationState.ready = true
+        applicationState.ready.set(true)
 
         blockingApplicationLogic(
             applicationState,
             database,
-            personFlagget84Consumer
+            personFlagget84Consumer,
+            env
         )
     }
 }
@@ -100,19 +106,11 @@ fun launchListeners(
 suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
     database: DatabaseInterface,
-    personFlagget84Consumer: KafkaConsumer<String, String>
+    personFlagget84Consumer: KafkaConsumer<String, String>,
+    env: Environment
 ) {
-
-    while (applicationState.ready) {
-        personFlagget84Consumer.poll(Duration.ofMillis(0)).forEach { consumerRecord ->
-            val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
-            database.addStatus(
-                hendelse.sykmeldtFnr,
-                hendelse.veilederIdent,
-                hendelse.enhetNr,
-                hendelse.virksomhetNr
-            )
-        }
+    while (applicationState.ready.get()) {
+        pollAndPersist(personFlagget84Consumer, database, env)
         delay(100)
     }
 }

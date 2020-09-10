@@ -14,7 +14,7 @@ class RenewVaultService(private val vaultCredentialService: VaultCredentialServi
             } catch (e: Exception) {
                 log.error("Noe gikk galt ved fornying av vault-token", e.message)
             } finally {
-                applicationState.ready = false
+                applicationState.ready.set(false)
             }
         }
 
@@ -24,7 +24,7 @@ class RenewVaultService(private val vaultCredentialService: VaultCredentialServi
             } catch (e: Exception) {
                 log.error("Noe gikk galt ved fornying av vault-credentials", e.message)
             } finally {
-                applicationState.ready = false
+                applicationState.ready.set(false)
             }
         }
     }
