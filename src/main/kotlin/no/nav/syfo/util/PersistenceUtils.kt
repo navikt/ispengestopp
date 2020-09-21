@@ -18,7 +18,7 @@ fun pollAndPersist(consumer: KafkaConsumer<String, String>, database: DatabaseIn
                 hendelse.virksomhetNr
             )
         } catch (e: Exception) {
-            //TODO: Legg på retry kø
+            // TODO: Legg på retry kø
             COUNT_ENDRE_PERSON_STATUS_DB_FAILED.inc()
             log.error("Klarte ikke lagre til database. Hopper over melding. Feilet pga: ${e.javaClass}")
         }

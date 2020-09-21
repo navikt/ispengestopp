@@ -1,7 +1,6 @@
 package no.nav.syfo.database
 
 import com.bettercloud.vault.VaultException
-import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.delay
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.log

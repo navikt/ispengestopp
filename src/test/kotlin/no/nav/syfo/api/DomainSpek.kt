@@ -18,7 +18,6 @@ object DomainSpek : Spek({
                 VirksomhetNr("")
             }
         }
-
     }
     describe("EnhetNr") {
         it("Should not be non-numerical") {
@@ -32,5 +31,4 @@ object DomainSpek : Spek({
             }
         }
     }
-
 })

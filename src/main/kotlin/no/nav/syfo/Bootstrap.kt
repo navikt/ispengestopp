@@ -3,7 +3,6 @@ package no.nav.syfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.util.*
 import kotlinx.coroutines.*
@@ -22,7 +21,6 @@ import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.Duration
 
 val objectMapper: ObjectMapper = ObjectMapper()
     .registerModule(JavaTimeModule())
@@ -75,7 +73,8 @@ fun createListener(applicationState: ApplicationState, action: suspend Coroutine
         } catch (e: Exception) {
             log.error(
                 "En uhåndtert feil oppstod, applikasjonen restarter {}",
-                StructuredArguments.fields(e.message), e.cause
+                StructuredArguments.fields(e.message),
+                e.cause
             )
         } finally {
             applicationState.alive.set(false)

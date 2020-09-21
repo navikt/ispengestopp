@@ -28,7 +28,7 @@ val coroutinesVersion = "1.3.9"
 plugins {
     kotlin("jvm") version "1.4.0"
     id("com.github.johnrengelman.shadow") version "5.2.0"
-
+    id("org.jlleitschuh.gradle.ktlint") version "9.4.0"
 }
 
 repositories {
@@ -48,7 +48,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-jackson:$ktorVersion")
 
-    implementation( "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
@@ -79,7 +79,6 @@ dependencies {
     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
         exclude(group = "org.jetbrains.kotlin")
     }
-
 }
 
 tasks {

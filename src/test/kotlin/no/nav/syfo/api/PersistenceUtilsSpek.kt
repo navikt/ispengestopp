@@ -9,7 +9,6 @@ import no.nav.syfo.*
 import no.nav.syfo.api.testutils.TestDB
 import no.nav.syfo.api.testutils.dropData
 import no.nav.syfo.api.testutils.hentStatusEndringListe
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.util.pollAndPersist
 import org.amshove.kluent.shouldBeEqualTo
@@ -103,7 +102,7 @@ object PersistenceUtilsSpek : Spek({
             statusEndring.virksomhetNr shouldBeEqualTo primaryJob
             statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
             statusEndring.opprettet.dayOfMonth shouldBeEqualTo
-                    Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
+                Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
             statusEndring.enhetNr shouldBeEqualTo enhetNr
         }
 

@@ -25,20 +25,19 @@ class DevDatabase(daoConfig: DbConfig) : Database(daoConfig, null)
 
 class ProdDatabase(daoConfig: DbConfig, initBlock: (context: Database) -> Unit) : Database(daoConfig, initBlock) {
 
-    override fun runFlywayMigrations(jdbcUrl: String, username: String, password: String): Int = Flyway.configure().run {
-        dataSource(jdbcUrl, username, password)
-        initSql("SET ROLE \"${daoConfig.databaseName}-${Role.ADMIN}\"") // required for assigning proper owners for the tables
-        load().migrate()
-    }
+    override fun runFlywayMigrations(jdbcUrl: String, username: String, password: String): Int =
+        Flyway.configure().run {
+            dataSource(jdbcUrl, username, password)
+            initSql("SET ROLE \"${daoConfig.databaseName}-${Role.ADMIN}\"") // required for assigning proper owners for the tables
+            load().migrate()
+        }
 }
 
-abstract class Database(val daoConfig: DbConfig, private val initBlock: ((context: Database) -> Unit)?) : DatabaseInterface {
+abstract class Database(val daoConfig: DbConfig, private val initBlock: ((context: Database) -> Unit)?) :
+    DatabaseInterface {
 
-    var dataSource: HikariDataSource
-
-    init {
-
-        dataSource = HikariDataSource(HikariConfig().apply {
+    var dataSource: HikariDataSource = HikariDataSource(
+        HikariConfig().apply {
             jdbcUrl = daoConfig.jdbcUrl
             username = daoConfig.username
             password = daoConfig.password
@@ -47,7 +46,10 @@ abstract class Database(val daoConfig: DbConfig, private val initBlock: ((contex
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()
-        })
+        }
+    )
+
+    init {
 
         afterInit()
     }
@@ -74,7 +76,6 @@ abstract class Database(val daoConfig: DbConfig, private val initBlock: ((contex
         dataSource(jdbcUrl, username, password)
         load().migrate()
     }
-
 }
 
 fun <T> ResultSet.toList(mapper: ResultSet.() -> T) = mutableListOf<T>().apply {
