@@ -20,6 +20,9 @@ in a database and posted on a kafka queue.
 #### Build and run tests
 To build locally and run the integration tests you can simply run `./gradlew test`
 
+#### Lint
+Run `./gradlew --continue ktlintCheck`
+
 #### Running locally
 `docker compose up`
 

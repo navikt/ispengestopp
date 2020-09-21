@@ -8,6 +8,5 @@ fun nrValidator(value: String) {
         Integer.parseInt(value)
     } catch (e: NumberFormatException) {
         throw IllegalArgumentException("Nr must be numerical")
-
     }
 }

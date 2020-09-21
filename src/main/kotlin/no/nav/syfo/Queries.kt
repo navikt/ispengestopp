@@ -6,7 +6,8 @@ import java.sql.ResultSet
 import java.time.ZoneOffset
 import java.util.*
 
-const val queryStatusInsert = """INSERT INTO status_endring (
+const val queryStatusInsert =
+    """INSERT INTO status_endring (
         id,
         uuid,
         sykmeldt_fnr,
@@ -16,7 +17,8 @@ const val queryStatusInsert = """INSERT INTO status_endring (
         enhet_nr,
         opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, DEFAULT)"""
 
-const val queryStatusRetrieve = """
+const val queryStatusRetrieve =
+    """
     SELECT DISTINCT ON (sykmeldt_fnr, virksomhet_nr) *
     FROM status_endring
     WHERE sykmeldt_fnr = ?
@@ -40,14 +42,16 @@ fun DatabaseInterface.addStatus(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr:
 }
 
 fun ResultSet.statusEndring(): StatusEndring =
-        StatusEndring(
-                VeilederIdent(getString("veileder_ident")),
-                SykmeldtFnr(getString("sykmeldt_fnr")),
-                Status.valueOf(getString("status")),
-                VirksomhetNr(getString("virksomhet_nr")),
-                getTimestamp("opprettet" ).toInstant().atOffset(ZoneOffset.UTC),
-                EnhetNr(getString("enhet_nr"))
+    StatusEndring(
+        VeilederIdent(getString("veileder_ident")),
+        SykmeldtFnr(getString("sykmeldt_fnr")),
+        Status.valueOf(getString("status")),
+        VirksomhetNr(getString("virksomhet_nr")),
+        getTimestamp("opprettet").toInstant().atOffset(ZoneOffset.UTC),
+        EnhetNr(
+            getString("enhet_nr")
         )
+    )
 
 fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
     return connection.use { connection ->
@@ -57,6 +61,5 @@ fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
                 statusEndring()
             }
         }
-
     }
 }

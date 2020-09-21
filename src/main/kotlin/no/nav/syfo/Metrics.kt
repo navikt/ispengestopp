@@ -4,7 +4,6 @@ import io.prometheus.client.Counter
 
 const val METRICS_NS = "ispengestopp"
 
-
 const val ENDRE_PERSON_STATUS_SUCCESS = "endre_person_status_success_count"
 const val ENDRE_PERSON_STATUS_FORBIDDEN = "endre_person_status_forbidden_count"
 const val GET_PERSON_STATUS_FORBIDDEN = "get_person_status_forbidden_count"
@@ -49,4 +48,3 @@ val COUNT_TILGANGSKONTROLL_FAIL: Counter = Counter.build()
     .name(TILGANGSKONTROLL_FAIL)
     .help("Counts the number of failing requests to tilgangskontroll")
     .register()
-

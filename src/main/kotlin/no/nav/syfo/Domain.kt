@@ -5,7 +5,7 @@ import java.time.OffsetDateTime
 
 data class EnhetNr(val value: String) {
     init {
-        nrValidator(value);
+        nrValidator(value)
     }
 }
 
@@ -39,7 +39,7 @@ data class Tilgang(val harTilgang: Boolean, val begrunnelse: String? = null)
 data class VeilederIdent(val value: String)
 data class VirksomhetNr(val value: String) {
     init {
-        nrValidator(value);
+        nrValidator(value)
     }
 }
 

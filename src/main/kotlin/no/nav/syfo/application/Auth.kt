@@ -3,9 +3,8 @@ package no.nav.syfo.application
 import com.auth0.jwk.JwkProvider
 import io.ktor.application.Application
 import io.ktor.application.install
-import io.ktor.auth.Authentication
-import io.ktor.auth.jwt.JWTPrincipal
-import io.ktor.auth.jwt.jwt
+import io.ktor.auth.*
+import io.ktor.auth.jwt.*
 import no.nav.syfo.Environment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -35,6 +34,4 @@ fun Application.setupAuth(
             }
         }
     }
-
-
 }

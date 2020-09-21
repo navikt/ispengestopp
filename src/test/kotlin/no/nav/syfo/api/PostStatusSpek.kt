@@ -16,7 +16,10 @@ import io.ktor.util.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
-import no.nav.syfo.api.testutils.*
+import no.nav.syfo.api.testutils.TestDB
+import no.nav.syfo.api.testutils.dropData
+import no.nav.syfo.api.testutils.generateJWT
+import no.nav.syfo.api.testutils.mockSyfotilgangskontrollServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.kafka.JacksonKafkaSerializer
@@ -153,38 +156,44 @@ class PostStatusSpek : Spek({
 
         withTestApplicationForApi(TestApplicationEngine(), database) {
             it("reject post request without token") {
-                with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
-                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                    setBody(stoppAutomatikkJson)
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
+                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
+                        setBody(stoppAutomatikkJson)
+                    }
+                ) {
                     response.status() shouldBe HttpStatusCode.Unauthorized
                 }
             }
             it("reject post request to forbidden user") {
-                with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader(
-                        "Authorization",
-                        "Bearer ${generateJWT("1234")}"
-                    )
-                    val stoppAutomatikk =
-                        StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), enhetNr)
-                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                    setBody(stoppAutomatikkJson)
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        addHeader(
+                            "Authorization",
+                            "Bearer ${generateJWT("1234")}"
+                        )
+                        val stoppAutomatikk =
+                            StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), enhetNr)
+                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
+                        setBody(stoppAutomatikkJson)
+                    }
+                ) {
                     response.status() shouldBe HttpStatusCode.Forbidden
                 }
             }
             it("persist status change to kafka and database") {
-                with(handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
-                    val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
-                    val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                    setBody(stoppAutomatikkJson)
-                }) {
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
+                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
+                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
+                        setBody(stoppAutomatikkJson)
+                    }
+                ) {
                     response.status() shouldBe HttpStatusCode.Created
                 }
 
@@ -206,9 +215,7 @@ class PostStatusSpek : Spek({
                     .atZone(ZoneOffset.UTC).dayOfMonth
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
                 latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
-
             }
         }
     }
 })
-

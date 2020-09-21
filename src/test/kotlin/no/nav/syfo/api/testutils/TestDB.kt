@@ -13,7 +13,7 @@ import java.time.ZoneOffset
 
 class TestDB : DatabaseInterface {
 
-    val container = PostgreSQLContainer<Nothing>("postgres").apply {
+    private val container = PostgreSQLContainer<Nothing>("postgres").apply {
         withDatabaseName("db_test")
         withUsername("username")
         withPassword("password")
@@ -26,12 +26,12 @@ class TestDB : DatabaseInterface {
     init {
         container.start()
         db = DevDatabase(
-                DbConfig(
-                        jdbcUrl = container.jdbcUrl,
-                        username = "username",
-                        password = "password",
-                        databaseName = "db_test"
-                )
+            DbConfig(
+                jdbcUrl = container.jdbcUrl,
+                username = "username",
+                password = "password",
+                databaseName = "db_test"
+            )
         )
     }
 
@@ -40,14 +40,16 @@ class TestDB : DatabaseInterface {
     }
 }
 
-const val queryStatusEndring = """
+const val queryStatusEndring =
+    """
     SELECT * 
     FROM status_endring
     WHERE sykmeldt_fnr = ?
     AND virksomhet_nr = ?
 """
 
-const val queryStatusAdd = """INSERT INTO status_endring (
+const val queryStatusAdd =
+    """INSERT INTO status_endring (
         id,
         uuid,
         sykmeldt_fnr,
@@ -56,7 +58,6 @@ const val queryStatusAdd = """INSERT INTO status_endring (
         virksomhet_nr,
         enhet_nr,
         opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)"""
-
 
 fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<StatusEndring> {
     return use { connection ->
@@ -87,15 +88,14 @@ fun Connection.addStatus(dbStatusChangeTest: DBStatusChangeTest) {
 }
 
 fun ResultSet.statusEndring(): StatusEndring =
-        StatusEndring(
-                VeilederIdent(getString("veileder_ident")),
-                SykmeldtFnr(getString("sykmeldt_fnr")),
-                Status.valueOf(getString("status")),
-                VirksomhetNr(getString("virksomhet_nr")),
-                OffsetDateTime.ofInstant(getTimestamp("opprettet").toInstant(), ZoneOffset.UTC),
-                EnhetNr(getString("enhet_nr"))
-        )
-
+    StatusEndring(
+        VeilederIdent(getString("veileder_ident")),
+        SykmeldtFnr(getString("sykmeldt_fnr")),
+        Status.valueOf(getString("status")),
+        VirksomhetNr(getString("virksomhet_nr")),
+        OffsetDateTime.ofInstant(getTimestamp("opprettet").toInstant(), ZoneOffset.UTC),
+        EnhetNr(getString("enhet_nr"))
+    )
 
 fun Connection.dropData() {
     val query = "DELETE FROM status_endring"

@@ -34,7 +34,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 
-
 class GetStatusSpek : Spek({
 
     val sykmeldtFnr = SykmeldtFnr("123456")
@@ -87,7 +86,7 @@ class GetStatusSpek : Spek({
     val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", JacksonKafkaSerializer::class)
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
-    //TODO gjøre database delen av testen om til å gi mer test coverage av prodkoden
+    // TODO: gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
         testApp: TestApplicationEngine,
         database: TestDB,
@@ -140,19 +139,23 @@ class GetStatusSpek : Spek({
 
         withTestApplicationForApi(TestApplicationEngine(), database) {
             it("reject request without bearer token") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader("fnr", sykmeldtFnr.value)
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        addHeader("fnr", sykmeldtFnr.value)
+                    }
+                ) {
                     response.status() shouldBe HttpStatusCode.Unauthorized
                 }
             }
             it("reject request to forbidden user") {
-                with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${generateJWT("1234")}")
-                    addHeader("fnr", sykmeldtFnrIkkeTilgang.value)
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        addHeader("Authorization", "Bearer ${generateJWT("1234")}")
+                        addHeader("fnr", sykmeldtFnrIkkeTilgang.value)
+                    }
+                ) {
                     response.status() shouldBe HttpStatusCode.Forbidden
                 }
             }
@@ -197,11 +200,13 @@ class GetStatusSpek : Spek({
                 )
                 statusList.forEach { database.connection.addStatus(it) }
 
-                with(handleRequest(HttpMethod.Get, "/api/v1/person/status") {
-                    addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                    addHeader("Authorization", "Bearer ${generateJWT("1234")}")
-                    addHeader("fnr", sykmeldtFnr.value)
-                }) {
+                with(
+                    handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        addHeader("Authorization", "Bearer ${generateJWT("1234")}")
+                        addHeader("fnr", sykmeldtFnr.value)
+                    }
+                ) {
                     response.status() shouldBe HttpStatusCode.OK
 
                     val flags: List<StatusEndring> = objectMapper.readValue(response.content!!)
@@ -211,7 +216,6 @@ class GetStatusSpek : Spek({
                     flags[0].opprettet.toString() shouldBeEqualTo lastCreatedStringISO
                 }
             }
-
         }
     }
 })
