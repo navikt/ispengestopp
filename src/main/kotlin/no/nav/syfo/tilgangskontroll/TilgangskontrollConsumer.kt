@@ -25,9 +25,11 @@ class TilgangskontrollConsumer(private val url: String = "http://syfo-tilgangsko
     }
 
     suspend fun harTilgangTilBruker(fnr: SykmeldtFnr, token: String): Boolean {
-        val response: HttpResponse = httpClient.get("$url?fnr=${fnr.value}") {
-            header(HttpHeaders.Authorization, "Bearer $token")
-            accept(ContentType.Application.Json)
+        val response: HttpResponse = httpClient.use {
+            it.get("$url?fnr=${fnr.value}") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                accept(ContentType.Application.Json)
+            }
         }
 
         return when (response.status) {
