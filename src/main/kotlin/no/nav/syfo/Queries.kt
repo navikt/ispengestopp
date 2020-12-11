@@ -25,8 +25,7 @@ const val queryStatusRetrieve =
     ORDER BY sykmeldt_fnr, virksomhet_nr, opprettet DESC
 """
 
-fun DatabaseInterface.addStatus(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: EnhetNr, virksomhetNr: VirksomhetNr) {
-    val uuid = UUID.randomUUID().toString()
+fun DatabaseInterface.addStatus(uuid: String, fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: EnhetNr, virksomhetNr: VirksomhetNr) {
     connection.use { connection ->
         connection.prepareStatement(queryStatusInsert).use {
             it.setString(1, uuid)
@@ -43,6 +42,7 @@ fun DatabaseInterface.addStatus(fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr:
 
 fun ResultSet.statusEndring(): StatusEndring =
     StatusEndring(
+        getString("uuid"),
         VeilederIdent(getString("veileder_ident")),
         SykmeldtFnr(getString("sykmeldt_fnr")),
         Status.valueOf(getString("status")),

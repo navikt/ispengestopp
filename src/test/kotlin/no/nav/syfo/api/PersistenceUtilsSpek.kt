@@ -22,6 +22,7 @@ import java.sql.SQLException
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
+import java.util.*
 
 object PersistenceUtilsSpek : Spek({
     val embeddedKafkaEnvironment = KafkaEnvironment(
@@ -52,6 +53,7 @@ object PersistenceUtilsSpek : Spek({
     val stoppAutomatikkTopicPartition = TopicPartition(env.stoppAutomatikkTopic, partition)
 
     val incomingStatusEndring = StatusEndring(
+        UUID.randomUUID().toString(),
         veilederIdent,
         sykmeldtFnr,
         Status.STOPP_AUTOMATIKK,
@@ -59,9 +61,14 @@ object PersistenceUtilsSpek : Spek({
         Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime(),
         enhetNr
     )
-
     val hendelse = objectMapper.writeValueAsString(incomingStatusEndring)
     val hendelseRecord = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelse)
+
+    val incomingStatusEndringNoUUID = incomingStatusEndring.copy(
+        uuid = null
+    )
+    val hendelseNoUUID = objectMapper.writeValueAsString(incomingStatusEndringNoUUID)
+    val hendelseRecordNoUUID = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelseNoUUID)
 
     fun verifyEmptyDB(database: DatabaseInterface) {
         val statusendringListe: List<StatusEndring> =
@@ -89,6 +96,11 @@ object PersistenceUtilsSpek : Spek({
             mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecord))
         )
 
+        val mockConsumerNoUUID = mockk<KafkaConsumer<String, String>>()
+        every { mockConsumerNoUUID.poll(Duration.ofMillis(env.pollTimeOutMs)) } returns ConsumerRecords(
+            mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecordNoUUID))
+        )
+
         it("Store in database after reading from kafka") {
             pollAndPersist(mockConsumer, database, env)
 
@@ -106,9 +118,26 @@ object PersistenceUtilsSpek : Spek({
             statusEndring.enhetNr shouldBeEqualTo enhetNr
         }
 
+        it("Store in database after reading record without UUID from kafka") {
+            pollAndPersist(mockConsumerNoUUID, database, env)
+
+            val statusendringListe: List<StatusEndring> =
+                database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+            statusendringListe.size shouldBeEqualTo 1
+
+            val statusEndring = statusendringListe[0]
+            statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+            statusEndring.veilederIdent shouldBeEqualTo veilederIdent
+            statusEndring.virksomhetNr shouldBeEqualTo primaryJob
+            statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
+            statusEndring.opprettet.dayOfMonth shouldBeEqualTo
+                Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
+            statusEndring.enhetNr shouldBeEqualTo enhetNr
+        }
+
         it("Catch thrown exception when storing in database fails, then move on") {
             mockkStatic("no.nav.syfo.QueriesKt")
-            every { database.addStatus(any(), any(), any(), any()) } throws SQLException("Sql er feil")
+            every { database.addStatus(any(), any(), any(), any(), any()) } throws SQLException("Sql er feil")
 
             pollAndPersist(mockConsumer, database, env)
 

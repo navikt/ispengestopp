@@ -5,6 +5,7 @@ import no.nav.syfo.*
 import no.nav.syfo.database.DatabaseInterface
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.time.Duration
+import java.util.*
 
 fun pollAndPersist(consumer: KafkaConsumer<String, String>, database: DatabaseInterface, env: Environment) {
     consumer.poll(Duration.ofMillis(env.pollTimeOutMs)).forEach { consumerRecord ->
@@ -12,6 +13,7 @@ fun pollAndPersist(consumer: KafkaConsumer<String, String>, database: DatabaseIn
         log.info("Offset for topic: ${env.stoppAutomatikkTopic}, offset: ${consumerRecord.offset()}")
         try {
             database.addStatus(
+                hendelse.uuid ?: UUID.randomUUID().toString(),
                 hendelse.sykmeldtFnr,
                 hendelse.veilederIdent,
                 hendelse.enhetNr,
