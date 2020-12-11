@@ -14,8 +14,10 @@ import no.nav.syfo.SykmeldtFnr
 import no.nav.syfo.Tilgang
 import org.slf4j.LoggerFactory
 
-class TilgangskontrollConsumer(private val url: String = "http://syfo-tilgangskontroll/syfo-tilgangskontroll/api/tilgang/bruker") {
-    val log = LoggerFactory.getLogger("no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer")
+class TilgangskontrollConsumer(
+    private val url: String = "http://syfo-tilgangskontroll/syfo-tilgangskontroll/api/tilgang/bruker"
+) {
+    private val log = LoggerFactory.getLogger("no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer")
 
     @KtorExperimentalAPI
     private val httpClient = HttpClient(CIO) {
