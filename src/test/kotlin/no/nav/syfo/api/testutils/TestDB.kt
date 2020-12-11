@@ -89,6 +89,7 @@ fun Connection.addStatus(dbStatusChangeTest: DBStatusChangeTest) {
 
 fun ResultSet.statusEndring(): StatusEndring =
     StatusEndring(
+        getString("uuid"),
         VeilederIdent(getString("veileder_ident")),
         SykmeldtFnr(getString("sykmeldt_fnr")),
         Status.valueOf(getString("status")),

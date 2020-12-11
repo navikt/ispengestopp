@@ -15,6 +15,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.*
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
 
@@ -61,6 +62,7 @@ fun Route.registerFlaggPerson84(
                 if (harTilgang) {
                     stoppAutomatikk.virksomhetNr.forEach {
                         val kFlaggperson84Hendelse = StatusEndring(
+                            UUID.randomUUID().toString(),
                             ident,
                             stoppAutomatikk.sykmeldtFnr,
                             Status.STOPP_AUTOMATIKK,
