@@ -28,62 +28,64 @@ fun Route.registerFlaggPerson84(
         get("/person/status") {
             log.info("Received get request to /api/v1/person/status")
 
-            if (call.request.headers.contains("fnr") == false) call.respond(HttpStatusCode.BadRequest)
-            val sykmeldtFnr = SykmeldtFnr(call.request.headers["fnr"]!!)
-
-            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-            val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token!!)
-            if (hasAccess) {
-                println("Get active flags for sykmeldt")
-                val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
-                when {
-                    flags.isNotEmpty() -> call.respond(flags)
-                    else -> call.respond(HttpStatusCode.NoContent)
+            val requestFnr = call.request.headers["fnr"]
+            requestFnr?.let {
+                val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
+                if (token == null) {
+                    call.respond(HttpStatusCode.BadRequest)
+                } else {
+                    val sykmeldtFnr = SykmeldtFnr(requestFnr)
+                    val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token)
+                    if (hasAccess) {
+                        val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
+                        when {
+                            flags.isNotEmpty() -> call.respond(flags)
+                            else -> call.respond(HttpStatusCode.NoContent)
+                        }
+                    } else {
+                        COUNT_GET_PERSON_STATUS_FORBIDDEN.inc()
+                        call.respond(HttpStatusCode.Forbidden)
+                    }
                 }
-            } else {
-                COUNT_GET_PERSON_STATUS_FORBIDDEN.inc()
-                call.respond(HttpStatusCode.Forbidden)
-            }
+            } ?: call.respond(HttpStatusCode.BadRequest)
         }
 
         post("/person/flagg") {
-            val stoppAutomatikk: StoppAutomatikk = call.receive()
             log.info("Received post request to /api/v1/person/flagg")
 
             val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-            if (token == null) {
-                call.respond(HttpStatusCode.Forbidden)
-            }
-
-            val ident = getVeilederIdentFromToken(token!!)
-            val harTilgang = tilgangskontroll.harTilgangTilBruker(stoppAutomatikk.sykmeldtFnr, token!!)
-            if (harTilgang) {
-                stoppAutomatikk.virksomhetNr.forEach {
-                    val kFlaggperson84Hendelse = StatusEndring(
-                        ident,
-                        stoppAutomatikk.sykmeldtFnr,
-                        Status.STOPP_AUTOMATIKK,
-                        it,
-                        OffsetDateTime.now(ZoneOffset.UTC),
-                        stoppAutomatikk.enhetNr
-                    )
-
-                    personFlagget84Producer.send(
-                        ProducerRecord(
-                            env.stoppAutomatikkTopic,
-                            "${stoppAutomatikk.sykmeldtFnr}-$it",
-                            kFlaggperson84Hendelse
+            token?.let {
+                val stoppAutomatikk: StoppAutomatikk = call.receive()
+                val ident = getVeilederIdentFromToken(token)
+                val harTilgang = tilgangskontroll.harTilgangTilBruker(stoppAutomatikk.sykmeldtFnr, token)
+                if (harTilgang) {
+                    stoppAutomatikk.virksomhetNr.forEach {
+                        val kFlaggperson84Hendelse = StatusEndring(
+                            ident,
+                            stoppAutomatikk.sykmeldtFnr,
+                            Status.STOPP_AUTOMATIKK,
+                            it,
+                            OffsetDateTime.now(ZoneOffset.UTC),
+                            stoppAutomatikk.enhetNr
                         )
-                    )
 
-                    log.info("Lagt melding på kafka: Topic: {}", env.stoppAutomatikkTopic)
+                        personFlagget84Producer.send(
+                            ProducerRecord(
+                                env.stoppAutomatikkTopic,
+                                "${stoppAutomatikk.sykmeldtFnr}-$it",
+                                kFlaggperson84Hendelse
+                            )
+                        )
+
+                        log.info("Lagt melding på kafka: Topic: {}", env.stoppAutomatikkTopic)
+                    }
+                    COUNT_ENDRE_PERSON_STATUS_SUCCESS.inc()
+                    call.respond(HttpStatusCode.Created)
+                } else {
+                    COUNT_ENDRE_PERSON_STATUS_FORBIDDEN.inc()
+                    call.respond(HttpStatusCode.Forbidden)
                 }
-                COUNT_ENDRE_PERSON_STATUS_SUCCESS.inc()
-                call.respond(HttpStatusCode.Created)
-            } else {
-                COUNT_ENDRE_PERSON_STATUS_FORBIDDEN.inc()
-                call.respond(HttpStatusCode.Forbidden)
-            }
+            } ?: call.respond(HttpStatusCode.BadRequest)
         }
     }
 }
