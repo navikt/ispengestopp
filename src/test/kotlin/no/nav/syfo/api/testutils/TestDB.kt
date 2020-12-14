@@ -6,6 +6,7 @@ import no.nav.syfo.VirksomhetNr
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.DbConfig
 import no.nav.syfo.database.DevDatabase
+import no.nav.syfo.database.domain.toStatusEndring
 import no.nav.syfo.database.toList
 import no.nav.syfo.statusEndring
 import org.testcontainers.containers.PostgreSQLContainer
@@ -57,7 +58,7 @@ fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: Vi
                 statusEndring()
             }
         }
-    }
+    }.map { it.toStatusEndring() }
 }
 
 fun Connection.dropData() {

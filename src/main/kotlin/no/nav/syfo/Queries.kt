@@ -1,6 +1,8 @@
 package no.nav.syfo
 
 import no.nav.syfo.database.DatabaseInterface
+import no.nav.syfo.database.domain.PStatusEndring
+import no.nav.syfo.database.domain.toStatusEndring
 import no.nav.syfo.database.toList
 import java.sql.ResultSet
 import java.time.ZoneOffset
@@ -25,7 +27,13 @@ const val queryStatusRetrieve =
     ORDER BY sykmeldt_fnr, virksomhet_nr, opprettet DESC
 """
 
-fun DatabaseInterface.addStatus(uuid: String, fnr: SykmeldtFnr, ident: VeilederIdent, enhetNr: EnhetNr, virksomhetNr: VirksomhetNr) {
+fun DatabaseInterface.addStatus(
+    uuid: String,
+    fnr: SykmeldtFnr,
+    ident: VeilederIdent,
+    enhetNr: EnhetNr,
+    virksomhetNr: VirksomhetNr
+) {
     connection.use { connection ->
         connection.prepareStatement(queryStatusInsert).use {
             it.setString(1, uuid)
@@ -40,17 +48,16 @@ fun DatabaseInterface.addStatus(uuid: String, fnr: SykmeldtFnr, ident: VeilederI
     }
 }
 
-fun ResultSet.statusEndring(): StatusEndring =
-    StatusEndring(
-        getString("uuid"),
-        VeilederIdent(getString("veileder_ident")),
-        SykmeldtFnr(getString("sykmeldt_fnr")),
-        Status.valueOf(getString("status")),
-        VirksomhetNr(getString("virksomhet_nr")),
-        getTimestamp("opprettet").toInstant().atOffset(ZoneOffset.UTC),
-        EnhetNr(
-            getString("enhet_nr")
-        )
+fun ResultSet.statusEndring(): PStatusEndring =
+    PStatusEndring(
+        id = getInt("id"),
+        uuid = getString("uuid"),
+        veilederIdent = VeilederIdent(getString("veileder_ident")),
+        sykmeldtFnr = SykmeldtFnr(getString("sykmeldt_fnr")),
+        status = Status.valueOf(getString("status")),
+        virksomhetNr = VirksomhetNr(getString("virksomhet_nr")),
+        opprettet = getTimestamp("opprettet").toInstant().atOffset(ZoneOffset.UTC),
+        enhetNr = EnhetNr(getString("enhet_nr"))
     )
 
 fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
@@ -61,7 +68,7 @@ fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
                 statusEndring()
             }
         }
-    }
+    }.map { it.toStatusEndring() }
 }
 
 const val queryStatusEndringListForUUID =
@@ -70,6 +77,7 @@ const val queryStatusEndringListForUUID =
     FROM status_endring
     WHERE uuid = ?
 """
+
 fun DatabaseInterface.getActiveFlags(uuid: UUID): List<StatusEndring> {
     return connection.use { connection ->
         connection.prepareStatement(queryStatusEndringListForUUID).use {
@@ -78,5 +86,5 @@ fun DatabaseInterface.getActiveFlags(uuid: UUID): List<StatusEndring> {
                 statusEndring()
             }
         }
-    }
+    }.map { it.toStatusEndring() }
 }
