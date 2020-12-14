@@ -63,3 +63,20 @@ fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
         }
     }
 }
+
+const val queryStatusEndringListForUUID =
+    """
+    SELECT *
+    FROM status_endring
+    WHERE uuid = ?
+"""
+fun DatabaseInterface.getActiveFlags(uuid: UUID): List<StatusEndring> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryStatusEndringListForUUID).use {
+            it.setString(1, uuid.toString())
+            it.executeQuery().toList {
+                statusEndring()
+            }
+        }
+    }
+}

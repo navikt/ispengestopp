@@ -12,13 +12,21 @@ fun pollAndPersist(consumer: KafkaConsumer<String, String>, database: DatabaseIn
         val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
         log.info("Offset for topic: ${env.stoppAutomatikkTopic}, offset: ${consumerRecord.offset()}")
         try {
-            database.addStatus(
-                hendelse.uuid ?: UUID.randomUUID().toString(),
-                hendelse.sykmeldtFnr,
-                hendelse.veilederIdent,
-                hendelse.enhetNr,
-                hendelse.virksomhetNr
-            )
+            val statusEndringList = hendelse.uuid?.let {
+                database.getActiveFlags(UUID.fromString(hendelse.uuid))
+            } ?: emptyList()
+            if (statusEndringList.isEmpty()) {
+                database.addStatus(
+                    hendelse.uuid ?: UUID.randomUUID().toString(),
+                    hendelse.sykmeldtFnr,
+                    hendelse.veilederIdent,
+                    hendelse.enhetNr,
+                    hendelse.virksomhetNr
+                )
+            } else {
+                log.error("Record with uuid=${hendelse.uuid} is already stored and is skipped")
+                COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.inc()
+            }
         } catch (e: Exception) {
             // TODO: Legg på retry kø
             COUNT_ENDRE_PERSON_STATUS_DB_FAILED.inc()
