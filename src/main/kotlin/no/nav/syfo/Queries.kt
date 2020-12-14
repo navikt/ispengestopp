@@ -1,12 +1,22 @@
 package no.nav.syfo
 
 import no.nav.syfo.database.DatabaseInterface
+import no.nav.syfo.database.domain.PArsak
 import no.nav.syfo.database.domain.PStatusEndring
+import no.nav.syfo.database.domain.toArsak
 import no.nav.syfo.database.domain.toStatusEndring
 import no.nav.syfo.database.toList
 import java.sql.ResultSet
 import java.time.ZoneOffset
 import java.util.*
+
+const val queryInsertArsak =
+    """INSERT INTO ARSAK (
+        id,
+        uuid,
+        status_endring_id,
+        arsaktype,
+        opprettet) VALUES (DEFAULT, ?, ?, ?, DEFAULT)"""
 
 const val queryStatusInsert =
     """INSERT INTO status_endring (
@@ -17,7 +27,7 @@ const val queryStatusInsert =
         status,
         virksomhet_nr,
         enhet_nr,
-        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, DEFAULT)"""
+        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, DEFAULT) RETURNING id"""
 
 const val queryStatusRetrieve =
     """
@@ -32,21 +42,55 @@ fun DatabaseInterface.addStatus(
     fnr: SykmeldtFnr,
     ident: VeilederIdent,
     enhetNr: EnhetNr,
+    arsakList: List<Arsak>?,
     virksomhetNr: VirksomhetNr
 ) {
     connection.use { connection ->
-        connection.prepareStatement(queryStatusInsert).use {
+        val statusEndringId = connection.prepareStatement(queryStatusInsert).use {
             it.setString(1, uuid)
             it.setString(2, fnr.value)
             it.setString(3, ident.value)
             it.setString(4, Status.STOPP_AUTOMATIKK.toString())
             it.setString(5, virksomhetNr.value)
             it.setString(6, enhetNr.value)
-            it.execute()
+            it.executeQuery().toList { getInt("id") }.first()
+        }
+        arsakList?.forEach { arsak ->
+            connection.prepareStatement(queryInsertArsak).use {
+                it.setString(1, UUID.randomUUID().toString())
+                it.setInt(2, statusEndringId)
+                it.setString(3, arsak.type.toString())
+                it.execute()
+            }
         }
         connection.commit()
     }
 }
+
+const val queryArsakListForStatusEndring =
+    """
+    SELECT * 
+    FROM arsak
+    WHERE status_endring_id = ?
+"""
+
+fun DatabaseInterface.getArsakListForStatusEndring(statusEndringId: Int): List<PArsak> {
+    return connection.use { connection ->
+        connection.prepareStatement(queryArsakListForStatusEndring).use {
+            it.setInt(1, statusEndringId)
+            it.executeQuery().toList { toPArsak() }
+        }
+    }
+}
+
+fun ResultSet.toPArsak(): PArsak =
+    PArsak(
+        id = getInt("id"),
+        uuid = getString("uuid"),
+        statusEndringId = getInt("status_endring_id"),
+        arsakType = getString("arsaktype"),
+        opprettet = getTimestamp("opprettet").toInstant().atOffset(ZoneOffset.UTC)
+    )
 
 fun ResultSet.statusEndring(): PStatusEndring =
     PStatusEndring(
@@ -61,14 +105,22 @@ fun ResultSet.statusEndring(): PStatusEndring =
     )
 
 fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
-    return connection.use { connection ->
+    val statusEndringList = connection.use { connection ->
         connection.prepareStatement(queryStatusRetrieve).use {
             it.setString(1, fnr.value)
             it.executeQuery().toList {
                 statusEndring()
             }
         }
-    }.map { it.toStatusEndring() }
+    }
+    return statusEndringList.map {
+        val arsakList = getArsakListForStatusEndring(it.id).map { pArsak ->
+            pArsak.toArsak()
+        }
+        it.toStatusEndring().copy(
+            arsakList = arsakList
+        )
+    }
 }
 
 const val queryStatusEndringListForUUID =
