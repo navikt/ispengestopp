@@ -24,15 +24,13 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeGreaterOrEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
-import java.time.Month
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.util.*
 
 class GetStatusSpek : Spek({
@@ -44,9 +42,6 @@ class GetStatusSpek : Spek({
     val primaryJob = VirksomhetNr("888")
     val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
-    val lastCreated = OffsetDateTime.of(2020, Month.AUGUST.value, 7, 10, 10, 0, 0, ZoneOffset.UTC)
-    val firstCreated = OffsetDateTime.of(2020, Month.JULY.value, 8, 9, 9, 0, 0, ZoneOffset.UTC)
-    val lastCreatedStringISO = "2020-08-07T10:10Z"
     val database by lazy { TestDB() }
 
     val embeddedKafkaEnvironment = KafkaEnvironment(
@@ -169,8 +164,7 @@ class GetStatusSpek : Spek({
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
                         primaryJob,
-                        enhetNr,
-                        lastCreated
+                        enhetNr
                     ),
                     DBStatusChangeTest(
                         "2",
@@ -178,8 +172,7 @@ class GetStatusSpek : Spek({
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
                         primaryJob,
-                        enhetNr,
-                        firstCreated
+                        enhetNr
                     ),
                     DBStatusChangeTest(
                         "3",
@@ -187,8 +180,7 @@ class GetStatusSpek : Spek({
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
                         secondaryJob,
-                        enhetNr,
-                        lastCreated
+                        enhetNr
                     ),
                     DBStatusChangeTest(
                         "4",
@@ -196,11 +188,18 @@ class GetStatusSpek : Spek({
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
                         primaryJob,
-                        enhetNr,
-                        lastCreated
+                        enhetNr
                     )
                 )
-                statusList.forEach { database.connection.addStatus(it) }
+                statusList.forEach {
+                    database.addStatus(
+                        it.uuid,
+                        it.sykmeldtFnr,
+                        it.veilederIdent,
+                        it.enhetNr,
+                        it.virksomhetNr
+                    )
+                }
 
                 with(
                     handleRequest(HttpMethod.Get, "/api/v1/person/status") {
@@ -214,8 +213,9 @@ class GetStatusSpek : Spek({
                     val flags: List<StatusEndring> = objectMapper.readValue(response.content!!)
 
                     flags.size shouldBeEqualTo 2
-                    flags[0].sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
-                    flags[0].opprettet.toString() shouldBeEqualTo lastCreatedStringISO
+                    flags.first().sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
+                    flags.first().opprettet.toEpochSecond()
+                        .shouldBeGreaterOrEqualTo(flags.last().opprettet.toEpochSecond())
                 }
             }
         }

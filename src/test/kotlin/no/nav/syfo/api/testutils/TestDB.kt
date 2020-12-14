@@ -1,15 +1,15 @@
 package no.nav.syfo.api.testutils
 
-import no.nav.syfo.*
+import no.nav.syfo.StatusEndring
+import no.nav.syfo.SykmeldtFnr
+import no.nav.syfo.VirksomhetNr
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.DbConfig
 import no.nav.syfo.database.DevDatabase
 import no.nav.syfo.database.toList
+import no.nav.syfo.statusEndring
 import org.testcontainers.containers.PostgreSQLContainer
 import java.sql.Connection
-import java.sql.ResultSet
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 class TestDB : DatabaseInterface {
 
@@ -48,17 +48,6 @@ const val queryStatusEndring =
     AND virksomhet_nr = ?
 """
 
-const val queryStatusAdd =
-    """INSERT INTO status_endring (
-        id,
-        uuid,
-        sykmeldt_fnr,
-        veileder_ident,
-        status,
-        virksomhet_nr,
-        enhet_nr,
-        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?)"""
-
 fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: VirksomhetNr): List<StatusEndring> {
     return use { connection ->
         connection.prepareStatement(queryStatusEndring).use {
@@ -70,33 +59,6 @@ fun Connection.hentStatusEndringListe(sykmeldtFnr: SykmeldtFnr, virksomhetNr: Vi
         }
     }
 }
-
-fun Connection.addStatus(dbStatusChangeTest: DBStatusChangeTest) {
-    use { connection ->
-        connection.prepareStatement(queryStatusAdd).use {
-            it.setString(1, dbStatusChangeTest.uuid)
-            it.setString(2, dbStatusChangeTest.sykmeldtFnr.value)
-            it.setString(3, dbStatusChangeTest.veilederIdent.value)
-            it.setString(4, dbStatusChangeTest.status.toString())
-            it.setString(5, dbStatusChangeTest.virksomhetNr.value)
-            it.setString(6, dbStatusChangeTest.enhetNr.value)
-            it.setObject(7, dbStatusChangeTest.opprettet)
-            it.execute()
-        }
-        connection.commit()
-    }
-}
-
-fun ResultSet.statusEndring(): StatusEndring =
-    StatusEndring(
-        getString("uuid"),
-        VeilederIdent(getString("veileder_ident")),
-        SykmeldtFnr(getString("sykmeldt_fnr")),
-        Status.valueOf(getString("status")),
-        VirksomhetNr(getString("virksomhet_nr")),
-        OffsetDateTime.ofInstant(getTimestamp("opprettet").toInstant(), ZoneOffset.UTC),
-        EnhetNr(getString("enhet_nr"))
-    )
 
 fun Connection.dropData() {
     val query = "DELETE FROM status_endring"

@@ -25,16 +25,6 @@ data class StoppAutomatikk(
     val enhetNr: EnhetNr
 )
 
-data class DBStatusChangeTest(
-    val uuid: String,
-    val sykmeldtFnr: SykmeldtFnr,
-    val veilederIdent: VeilederIdent,
-    val status: Status,
-    val virksomhetNr: VirksomhetNr,
-    val enhetNr: EnhetNr,
-    val opprettet: OffsetDateTime
-)
-
 data class SykmeldtFnr(val value: String)
 data class Tilgang(val harTilgang: Boolean, val begrunnelse: String? = null)
 data class VeilederIdent(val value: String)
