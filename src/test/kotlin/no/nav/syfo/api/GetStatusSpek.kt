@@ -17,17 +17,14 @@ import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.application.setupAuth
-import no.nav.syfo.kafka.JacksonKafkaSerializer
-import no.nav.syfo.kafka.loadBaseConfig
-import no.nav.syfo.kafka.toConsumerConfig
-import no.nav.syfo.kafka.toProducerConfig
+import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
+import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.common.serialization.StringDeserializer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
@@ -73,13 +70,12 @@ class GetStatusSpek : Spek({
         remove("sasl.mechanism")
     }
 
-    val baseConfig = loadBaseConfig(env, credentials).overrideForTest()
-    val consumerProperties = baseConfig
-        .toConsumerConfig("spek.integration-consumer", valueDeserializer = StringDeserializer::class)
+    val consumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials)
+        .overrideForTest()
     val consumer = KafkaConsumer<String, String>(consumerProperties)
     consumer.subscribe(listOf(env.stoppAutomatikkTopic))
 
-    val producerProperties = baseConfig.toProducerConfig("spek.integration-producer", JacksonKafkaSerializer::class)
+    val producerProperties = kafkaPersonFlaggetProducerProperties(env, credentials)
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     // TODO: gjøre database delen av testen om til å gi mer test coverage av prodkoden

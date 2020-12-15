@@ -14,7 +14,6 @@ val logstashEncoderVersion = "6.3"
 val nimbusjosejwtVersion = "7.5.1"
 val postgresVersion = "42.2.13"
 val prometheusVersion = "0.6.0"
-val smCommonVersion = "1.0.22"
 val vaultJavaDriveVersion = "3.1.0"
 val spekVersion = "2.0.11"
 val spekjunitVersion = "1.1.5"
@@ -65,7 +64,6 @@ dependencies {
     implementation("no.nav:vault-jdbc:$NavvaultJdbcVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
-    implementation("no.nav.syfo.sm:syfosm-common-kafka:$smCommonVersion")
 
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
