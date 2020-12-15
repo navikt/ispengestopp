@@ -157,12 +157,18 @@ class GetStatusSpek : Spek({
                 }
             }
             it("return correct content") {
+                val arsakList = listOf(
+                    Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
+                    Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
+                )
+
                 val statusList = listOf(
                     DBStatusChangeTest(
                         "1",
                         sykmeldtFnr,
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
+                        arsakList,
                         primaryJob,
                         enhetNr
                     ),
@@ -171,6 +177,7 @@ class GetStatusSpek : Spek({
                         sykmeldtFnr,
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
+                        arsakList,
                         primaryJob,
                         enhetNr
                     ),
@@ -179,6 +186,7 @@ class GetStatusSpek : Spek({
                         sykmeldtFnr,
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
+                        arsakList,
                         secondaryJob,
                         enhetNr
                     ),
@@ -187,6 +195,7 @@ class GetStatusSpek : Spek({
                         sykmeldtFnrFiller,
                         veilederIdent,
                         Status.STOPP_AUTOMATIKK,
+                        arsakList,
                         primaryJob,
                         enhetNr
                     )
@@ -197,6 +206,7 @@ class GetStatusSpek : Spek({
                         it.sykmeldtFnr,
                         it.veilederIdent,
                         it.enhetNr,
+                        it.arsakList,
                         it.virksomhetNr
                     )
                 }
@@ -214,6 +224,7 @@ class GetStatusSpek : Spek({
 
                     flags.size shouldBeEqualTo 2
                     flags.first().sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
+                    flags.first().arsakList shouldBeEqualTo arsakList
                     flags.first().opprettet.toEpochSecond()
                         .shouldBeGreaterOrEqualTo(flags.last().opprettet.toEpochSecond())
                 }

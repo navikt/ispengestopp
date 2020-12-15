@@ -21,6 +21,7 @@ fun pollAndPersist(consumer: KafkaConsumer<String, String>, database: DatabaseIn
                     hendelse.sykmeldtFnr,
                     hendelse.veilederIdent,
                     hendelse.enhetNr,
+                    hendelse.arsakList,
                     hendelse.virksomhetNr
                 )
             } else {

@@ -8,7 +8,6 @@ import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.TestDB
 import no.nav.syfo.api.testutils.dropData
-import no.nav.syfo.api.testutils.hentStatusEndringListe
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.util.pollAndPersist
 import org.amshove.kluent.shouldBeEqualTo
@@ -52,11 +51,17 @@ object PersistenceUtilsSpek : Spek({
     val partition = 0
     val stoppAutomatikkTopicPartition = TopicPartition(env.stoppAutomatikkTopic, partition)
 
+    val arsakList = listOf(
+        Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
+        Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
+    )
+
     val incomingStatusEndring = StatusEndring(
         UUID.randomUUID().toString(),
         veilederIdent,
         sykmeldtFnr,
         Status.STOPP_AUTOMATIKK,
+        arsakList,
         primaryJob,
         Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime(),
         enhetNr
@@ -65,14 +70,14 @@ object PersistenceUtilsSpek : Spek({
     val hendelseRecord = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelse)
 
     val incomingStatusEndringNoUUID = incomingStatusEndring.copy(
-        uuid = null
+        uuid = null,
+        arsakList = null
     )
     val hendelseNoUUID = objectMapper.writeValueAsString(incomingStatusEndringNoUUID)
     val hendelseRecordNoUUID = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelseNoUUID)
 
     fun verifyEmptyDB(database: DatabaseInterface) {
-        val statusendringListe: List<StatusEndring> =
-            database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+        val statusendringListe: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
         statusendringListe.size shouldBeEqualTo 0
     }
 
@@ -104,8 +109,7 @@ object PersistenceUtilsSpek : Spek({
         it("Store in database after reading from kafka") {
             pollAndPersist(mockConsumer, database, env)
 
-            val statusendringListe: List<StatusEndring> =
-                database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+            val statusendringListe: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe[0]
@@ -123,11 +127,11 @@ object PersistenceUtilsSpek : Spek({
 
             pollAndPersist(mockConsumer, database, env)
 
-            val statusendringListe: List<StatusEndring> =
-                database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+            val statusendringListe: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe.first()
+            statusEndring.arsakList shouldBeEqualTo arsakList
             statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
             statusEndring.veilederIdent shouldBeEqualTo veilederIdent
             statusEndring.virksomhetNr shouldBeEqualTo primaryJob
@@ -138,14 +142,14 @@ object PersistenceUtilsSpek : Spek({
 
             COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.get() shouldBeEqualTo 1.0
         }
-        it("Store in database after reading record without UUID from kafka") {
+        it("Store in database after reading record without UUID nor arsakList from kafka") {
             pollAndPersist(mockConsumerNoUUID, database, env)
 
-            val statusendringListe: List<StatusEndring> =
-                database.connection.hentStatusEndringListe(sykmeldtFnr, primaryJob)
+            val statusendringListe: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe[0]
+            statusEndring.arsakList?.size shouldBeEqualTo 0
             statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
             statusEndring.veilederIdent shouldBeEqualTo veilederIdent
             statusEndring.virksomhetNr shouldBeEqualTo primaryJob
@@ -157,7 +161,7 @@ object PersistenceUtilsSpek : Spek({
 
         it("Catch thrown exception when storing in database fails, then move on") {
             mockkStatic("no.nav.syfo.QueriesKt")
-            every { database.addStatus(any(), any(), any(), any(), any()) } throws SQLException("Sql er feil")
+            every { database.addStatus(any(), any(), any(), any(), any(), any()) } throws SQLException("Sql er feil")
 
             pollAndPersist(mockConsumer, database, env)
 

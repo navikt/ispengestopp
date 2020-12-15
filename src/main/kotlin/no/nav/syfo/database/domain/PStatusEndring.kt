@@ -20,6 +20,7 @@ fun PStatusEndring.toStatusEndring(): StatusEndring =
         sykmeldtFnr = this.sykmeldtFnr,
         veilederIdent = this.veilederIdent,
         status = this.status,
+        arsakList = null,
         virksomhetNr = this.virksomhetNr,
         opprettet = this.opprettet,
         enhetNr = this.enhetNr

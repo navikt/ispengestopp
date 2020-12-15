@@ -30,6 +30,7 @@ import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -161,7 +162,7 @@ class PostStatusSpek : Spek({
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
+                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                         setBody(stoppAutomatikkJson)
                     }
@@ -178,7 +179,7 @@ class PostStatusSpek : Spek({
                             "Bearer ${generateJWT("1234")}"
                         )
                         val stoppAutomatikk =
-                            StoppAutomatikk(sykmeldtFnrIkkeTilgang, listOf(primaryJob), enhetNr)
+                            StoppAutomatikk(sykmeldtFnrIkkeTilgang, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                         setBody(stoppAutomatikkJson)
                     }
@@ -186,12 +187,12 @@ class PostStatusSpek : Spek({
                     response.status() shouldBe HttpStatusCode.Forbidden
                 }
             }
-            it("persist status change to kafka and database") {
+            it("persist status change without ArsakList to kafka and database") {
                 with(
                     handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
-                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, listOf(primaryJob), enhetNr)
+                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                         setBody(stoppAutomatikkJson)
                     }
@@ -210,6 +211,50 @@ class PostStatusSpek : Spek({
                 messages.size shouldBeEqualTo 1
 
                 val latestFlaggperson84Hendelse = messages.last()
+                latestFlaggperson84Hendelse.arsakList.shouldBeNull()
+                latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+                latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
+                latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
+                latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
+                    .atZone(ZoneOffset.UTC).dayOfMonth
+                latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
+                latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
+            }
+
+            it("persist status change with ArsakList to kafka and database") {
+                val arsakList = listOf(
+                    Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
+                    Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
+                )
+                with(
+                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
+                        val stoppAutomatikk = StoppAutomatikk(
+                            sykmeldtFnr,
+                            arsakList,
+                            listOf(primaryJob),
+                            enhetNr
+                        )
+                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
+                        setBody(stoppAutomatikkJson)
+                    }
+                ) {
+                    response.status() shouldBe HttpStatusCode.Created
+                }
+
+                val messages: MutableList<StatusEndring> = mutableListOf()
+
+                testConsumer.poll(Duration.ofMillis(5000)).forEach {
+                    val hendelse: StatusEndring =
+                        objectMapper.readValue(it.value())
+                    messages.add(hendelse)
+                }
+
+                messages.size shouldBeEqualTo 1
+
+                val latestFlaggperson84Hendelse = messages.last()
+                latestFlaggperson84Hendelse.arsakList shouldBeEqualTo arsakList
                 latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
                 latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
                 latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK

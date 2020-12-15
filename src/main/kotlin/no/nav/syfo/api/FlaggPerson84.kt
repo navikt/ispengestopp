@@ -66,6 +66,7 @@ fun Route.registerFlaggPerson84(
                             ident,
                             stoppAutomatikk.sykmeldtFnr,
                             Status.STOPP_AUTOMATIKK,
+                            stoppAutomatikk.arsakList,
                             it,
                             OffsetDateTime.now(ZoneOffset.UTC),
                             stoppAutomatikk.enhetNr
