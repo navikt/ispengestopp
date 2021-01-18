@@ -22,7 +22,7 @@ val testcontainerVersion = "1.15.1"
 val NavvaultJdbcVersion = "1.3.7"
 val kafkaEmbeddedEnvVersion = "2.4.0"
 val mockkVersion = "1.10.5"
-val coroutinesVersion = "1.3.9"
+val coroutinesVersion = "1.4.2"
 
 plugins {
     kotlin("jvm") version "1.4.0"
