@@ -21,7 +21,7 @@ val kluentVersion = "1.61"
 val testcontainerVersion = "1.15.1"
 val NavvaultJdbcVersion = "1.3.7"
 val kafkaEmbeddedEnvVersion = "2.4.0"
-val mockkVersion = "1.10.0"
+val mockkVersion = "1.10.5"
 val coroutinesVersion = "1.3.9"
 
 plugins {
