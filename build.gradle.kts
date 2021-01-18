@@ -6,7 +6,7 @@ version = "1.0.0"
 
 val flywayVersion = "7.5.0"
 val hikariVersion = "3.4.5"
-val kafkaVersion = "2.3.1"
+val kafkaVersion = "2.7.0"
 val jacksonVersion = "2.11.3"
 val ktorVersion = "1.5.0"
 val logbackVersion = "1.2.3"
@@ -19,7 +19,7 @@ val spekVersion = "2.0.15"
 val kluentVersion = "1.61"
 val testcontainerVersion = "1.15.1"
 val NavvaultJdbcVersion = "1.3.7"
-val kafkaEmbeddedEnvVersion = "2.4.0"
+val kafkaEmbeddedEnvVersion = "2.5.0"
 val mockkVersion = "1.10.5"
 val coroutinesVersion = "1.4.2"
 
@@ -33,6 +33,7 @@ repositories {
     mavenCentral()
     jcenter()
     maven(url = "http://packages.confluent.io/maven/")
+    maven(url = "https://repository.mulesoft.org/nexus/content/repositories/public/")
 }
 
 dependencies {
