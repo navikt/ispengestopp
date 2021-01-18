@@ -25,7 +25,7 @@ val mockkVersion = "1.10.5"
 val coroutinesVersion = "1.4.2"
 
 plugins {
-    kotlin("jvm") version "1.4.0"
+    kotlin("jvm") version "1.4.21"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("org.jlleitschuh.gradle.ktlint") version "9.4.0"
 }
