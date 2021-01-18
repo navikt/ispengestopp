@@ -4,7 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransf
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val flywayVersion = "6.4.4"
+val flywayVersion = "7.5.0"
 val hikariVersion = "3.4.5"
 val kafkaVersion = "2.3.1"
 val jacksonVersion = "2.10.0"
