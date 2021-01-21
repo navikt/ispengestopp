@@ -218,7 +218,7 @@ class GetStatusSpek : Spek({
 
                     val flags: List<StatusEndring> = objectMapper.readValue(response.content!!)
 
-                    flags.size shouldBeEqualTo 2
+                    flags.size shouldBeEqualTo 3
                     flags.first().sykmeldtFnr.value shouldBeEqualTo sykmeldtFnr.value
                     flags.first().arsakList shouldBeEqualTo arsakList
                     flags.first().opprettet.toEpochSecond()

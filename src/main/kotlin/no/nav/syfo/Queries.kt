@@ -31,7 +31,7 @@ const val queryStatusInsert =
 
 const val queryStatusRetrieve =
     """
-    SELECT DISTINCT ON (sykmeldt_fnr, virksomhet_nr) *
+    SELECT *
     FROM status_endring
     WHERE sykmeldt_fnr = ?
     ORDER BY sykmeldt_fnr, virksomhet_nr, opprettet DESC
