@@ -3,15 +3,14 @@ package no.nav.syfo.tilgangskontroll
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.features.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
-import no.nav.syfo.COUNT_TILGANGSKONTROLL_FAIL
-import no.nav.syfo.COUNT_TILGANGSKONTROLL_OK
-import no.nav.syfo.SykmeldtFnr
-import no.nav.syfo.Tilgang
+import net.logstash.logback.argument.StructuredArguments
+import no.nav.syfo.*
 import org.slf4j.LoggerFactory
 
 class TilgangskontrollConsumer(
@@ -27,22 +26,32 @@ class TilgangskontrollConsumer(
     }
 
     suspend fun harTilgangTilBruker(fnr: SykmeldtFnr, token: String): Boolean {
-        val response: HttpResponse = httpClient.get("$url?fnr=${fnr.value}") {
-            header(HttpHeaders.Authorization, "Bearer $token")
-            accept(ContentType.Application.Json)
-        }
-
-        return when (response.status) {
-            HttpStatusCode.OK -> {
-                COUNT_TILGANGSKONTROLL_OK.inc()
-                response.receive<Tilgang>().harTilgang
+        try {
+            val response: HttpResponse = httpClient.get("$url?fnr=${fnr.value}") {
+                header(HttpHeaders.Authorization, "Bearer $token")
+                accept(ContentType.Application.Json)
             }
-            else -> {
-                val statusCode: String = response.status.value.toString()
-                COUNT_TILGANGSKONTROLL_FAIL.labels(statusCode).inc()
-                log.info("Ingen tilgang, Tilgangskontroll returnerte Status : {}", response.status)
+            COUNT_TILGANGSKONTROLL_OK.inc()
+            return response.receive<Tilgang>().harTilgang
+        } catch (e: ClientRequestException) {
+            return if (e.response.status == HttpStatusCode.Forbidden) {
+                COUNT_TILGANGSKONTROLL_FORBIDDEN.inc()
                 false
+            } else {
+                return handleUnexpectedReponseException(e.response)
             }
+        } catch (e: ServerResponseException) {
+            return handleUnexpectedReponseException(e.response)
         }
+    }
+
+    private fun handleUnexpectedReponseException(response: HttpResponse): Boolean {
+        val statusCode = response.status.value.toString()
+        log.error(
+            "Error while requesting access to person from syfo-tilgangskontroll with {}",
+            StructuredArguments.keyValue("statusCode", statusCode)
+        )
+        COUNT_TILGANGSKONTROLL_FAIL.labels(statusCode).inc()
+        return false
     }
 }

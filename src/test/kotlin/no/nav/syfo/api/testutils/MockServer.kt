@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
+import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.respond
 import io.ktor.routing.get
@@ -32,7 +33,7 @@ fun mockSyfotilgangskontrollServer(port: Int, fnr: SykmeldtFnr): ApplicationEngi
                 if (call.request.queryParameters["fnr"]!! == fnr.value) {
                     call.respond(Tilgang(true))
                 } else {
-                    call.respond(Tilgang(false, "Vil ikke"))
+                    call.respond(HttpStatusCode.Forbidden, Tilgang(false, "Vil ikke"))
                 }
             }
         }
