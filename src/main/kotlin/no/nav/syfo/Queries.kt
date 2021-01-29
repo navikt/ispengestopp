@@ -34,7 +34,7 @@ const val queryStatusRetrieve =
     SELECT *
     FROM status_endring
     WHERE sykmeldt_fnr = ?
-    ORDER BY sykmeldt_fnr, virksomhet_nr, opprettet DESC
+    ORDER BY opprettet DESC
 """
 
 fun DatabaseInterface.addStatus(
