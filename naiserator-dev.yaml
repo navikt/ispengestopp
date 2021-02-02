@@ -39,6 +39,7 @@ spec:
       - kvPath: serviceuser/data/dev/srvispengestopp
         mountPath: /secrets/serviceuser
   ingresses:
+    - "https://ispengestopp.dev.intern.nav.no"
     - "https://ispengestopp.nais.preprod.local"
   webproxy: true
   env:
