@@ -1,16 +1,9 @@
 package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.*
 import io.ktor.auth.*
-import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.jackson.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
@@ -20,6 +13,7 @@ import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.application.installContentNegotiation
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
@@ -96,14 +90,7 @@ class PostStatusSpek : Spek({
 
         val veilederTilgangskontrollMock = VeilederTilgangskontrollMock()
 
-        testApp.application.install(ContentNegotiation) {
-            jackson {
-                registerKotlinModule()
-                registerModule(JavaTimeModule())
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-            }
-        }
+        testApp.application.installContentNegotiation()
 
         val uri = Paths.get(env.jwksUri).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()

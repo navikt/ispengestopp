@@ -11,6 +11,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
+import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.config.bootstrapDBInit
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.VaultCredentialService
@@ -47,11 +48,14 @@ fun main() {
     val personFlagget84Producer = createPersonFlagget84Producer(env, vaultSecrets)
     val personFlagget84Consumer = createPersonFlagget84Consumer(env, vaultSecrets)
 
+    val tilgangskontrollConsumer = TilgangskontrollConsumer()
+
     val applicationEngine = createApplicationEngine(
         applicationState,
         database,
         env,
-        personFlagget84Producer
+        personFlagget84Producer,
+        tilgangskontrollConsumer
     )
 
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
