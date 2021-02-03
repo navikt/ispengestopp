@@ -2,9 +2,7 @@ package no.nav.syfo.api
 
 import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.ktor.auth.*
 import io.ktor.http.*
-import io.ktor.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -13,8 +11,7 @@ import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.installContentNegotiation
-import no.nav.syfo.application.setupAuth
+import no.nav.syfo.application.apiModule
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
@@ -45,10 +42,9 @@ class PostStatusSpek : Spek({
         topicNames = listOf("apen-isyfo-stoppautomatikk")
     )
 
+    val applicationState = ApplicationState()
     val env = testEnvironment(embeddedKafkaEnvironment.brokersURL)
     val credentials = testVaultSecrets()
-
-    val applicationState = ApplicationState()
 
     val testConsumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials).overrideForTest()
         .apply {
@@ -84,12 +80,8 @@ class PostStatusSpek : Spek({
 
         val veilederTilgangskontrollMock = VeilederTilgangskontrollMock()
 
-        testApp.application.installContentNegotiation()
-
         val uri = Paths.get(env.jwksUri).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
-
-        testApp.application.setupAuth(env, jwkProvider)
 
         applicationState.ready.set(true)
 
@@ -104,16 +96,14 @@ class PostStatusSpek : Spek({
             url = "${veilederTilgangskontrollMock.url}/syfo-tilgangskontroll/api/tilgang/bruker"
         )
 
-        testApp.application.routing {
-            authenticate {
-                registerFlaggPerson84(
-                    testDB,
-                    env,
-                    personFlagget84Producer,
-                    tilgangskontrollConsumer
-                )
-            }
-        }
+        testApp.application.apiModule(
+            applicationState = applicationState,
+            database = testDB,
+            env = env,
+            jwkProvider = jwkProvider,
+            personFlagget84Producer = personFlagget84Producer,
+            tilgangskontrollConsumer = tilgangskontrollConsumer
+        )
 
         beforeGroup {
             veilederTilgangskontrollMock.server.start()

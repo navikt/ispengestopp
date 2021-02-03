@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.application.authentication")
 
-fun Application.setupAuth(
+fun Application.installAuthentication(
     env: Environment,
     jwkProvider: JwkProvider
 ) {
