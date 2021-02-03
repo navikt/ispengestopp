@@ -20,7 +20,7 @@ const val keyId = "localhost-signer"
 fun generateJWT(
     audience: String,
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1)
-): String? {
+): String {
     val now = Date()
     val key = getDefaultRSAKey()
     val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())

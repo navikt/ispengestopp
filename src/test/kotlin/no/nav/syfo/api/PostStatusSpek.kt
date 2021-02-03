@@ -23,9 +23,10 @@ import no.nav.syfo.api.testutils.generateJWT
 import no.nav.syfo.api.testutils.mockSyfotilgangskontrollServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
+import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
@@ -168,9 +169,13 @@ class PostStatusSpek : Spek({
         }
 
         withTestApplicationForApi(TestApplicationEngine(), database) {
+            val endpointPath = "$apiBasePath$apiPersonFlaggPath"
+            val validToken = generateJWT(
+                env.loginserviceClientId,
+            )
             it("reject post request without token") {
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                    handleRequest(HttpMethod.Post, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
@@ -182,12 +187,9 @@ class PostStatusSpek : Spek({
             }
             it("reject post request to forbidden user") {
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                    handleRequest(HttpMethod.Post, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader(
-                            "Authorization",
-                            "Bearer ${generateJWT("1234")}"
-                        )
+                        addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                         val stoppAutomatikk =
                             StoppAutomatikk(sykmeldtFnrIkkeTilgang, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
@@ -199,9 +201,9 @@ class PostStatusSpek : Spek({
             }
             it("persist status change without ArsakList to kafka and database") {
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                    handleRequest(HttpMethod.Post, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
+                        addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                         val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                         setBody(stoppAutomatikkJson)
@@ -237,9 +239,9 @@ class PostStatusSpek : Spek({
                     Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
                 )
                 with(
-                    handleRequest(HttpMethod.Post, "/api/v1/person/flagg") {
+                    handleRequest(HttpMethod.Post, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader(HttpHeaders.Authorization, "Bearer ${generateJWT("1234")}")
+                        addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                         val stoppAutomatikk = StoppAutomatikk(
                             sykmeldtFnr,
                             arsakList,

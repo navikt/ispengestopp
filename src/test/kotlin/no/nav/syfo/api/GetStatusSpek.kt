@@ -10,6 +10,7 @@ import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.jackson.*
 import io.ktor.routing.*
 import io.ktor.server.testing.*
@@ -20,6 +21,7 @@ import no.nav.syfo.application.setupAuth
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
@@ -131,9 +133,13 @@ class GetStatusSpek : Spek({
         }
 
         withTestApplicationForApi(TestApplicationEngine(), database) {
+            val endpointPath = "$apiBasePath$apiPersonStatusPath"
+            val validToken = generateJWT(
+                env.loginserviceClientId,
+            )
             it("reject request without bearer token") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                    handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader("fnr", sykmeldtFnr.value)
                     }
@@ -143,9 +149,9 @@ class GetStatusSpek : Spek({
             }
             it("reject request to forbidden user") {
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                    handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader("Authorization", "Bearer ${generateJWT("1234")}")
+                        addHeader(Authorization, bearerHeader(validToken))
                         addHeader("fnr", sykmeldtFnrIkkeTilgang.value)
                     }
                 ) {
@@ -208,9 +214,9 @@ class GetStatusSpek : Spek({
                 }
 
                 with(
-                    handleRequest(HttpMethod.Get, "/api/v1/person/status") {
+                    handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader("Authorization", "Bearer ${generateJWT("1234")}")
+                        addHeader(Authorization, bearerHeader(validToken))
                         addHeader("fnr", sykmeldtFnr.value)
                     }
                 ) {

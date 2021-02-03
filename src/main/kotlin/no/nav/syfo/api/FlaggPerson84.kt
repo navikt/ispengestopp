@@ -19,14 +19,18 @@ import java.util.*
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
 
+const val apiBasePath = "/api/v1"
+const val apiPersonStatusPath = "/person/status"
+const val apiPersonFlaggPath = "/person/flagg"
+
 fun Route.registerFlaggPerson84(
     database: DatabaseInterface,
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
     tilgangskontroll: TilgangskontrollConsumer
 ) {
-    route("/api/v1") {
-        get("/person/status") {
+    route(apiBasePath) {
+        get(apiPersonStatusPath) {
             log.info("Received get request to /api/v1/person/status")
 
             val requestFnr = call.request.headers["fnr"]
@@ -51,7 +55,7 @@ fun Route.registerFlaggPerson84(
             } ?: call.respond(HttpStatusCode.BadRequest)
         }
 
-        post("/person/flagg") {
+        post(apiPersonFlaggPath) {
             log.info("Received post request to /api/v1/person/flagg")
 
             val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
