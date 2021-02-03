@@ -51,7 +51,7 @@ spec:
       value: ispengestopp
     - name: ISPENGESTOPP_DB_URL
       value: jdbc:postgresql://b27dbvl015.preprod.local:5432/ispengestopp
-    - name: JWT_ISSUER
-      value: https://sts.windows.net/966ac572-f5b7-4bbe-aa88-c76419c0f851/
+    - name: AADDISCOVERY_URL
+      value: "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/.well-known/openid-configuration"
     - name: LOGINSERVICE_CLIENT_ID
       value: 38e07d31-659d-4595-939a-f18dce3446c5

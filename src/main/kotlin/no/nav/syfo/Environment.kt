@@ -9,9 +9,8 @@ data class Environment(
     val databaseMountPathVault: String = getEnvVar("DATABASE_MOUNT_PATH_VAULT"),
     val databaseName: String = getEnvVar("DATABASE_NAME", "ispengestopp"),
     val ispengestoppDBURL: String = getEnvVar("ISPENGESTOPP_DB_URL"),
-    val jwtIssuer: String = getEnvVar("JWT_ISSUER"),
-    val jwksUri: String = getEnvVar("JWKS_URI", "https://login.microsoftonline.com/common/discovery/keys"),
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
+    val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
     val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID", "1234"),
     val stoppAutomatikkTopic: String = getEnvVar("STOPP_AUTOMATIKK_TOPIC", "apen-isyfo-stoppautomatikk"),
     val pollTimeOutMs: Long = 0

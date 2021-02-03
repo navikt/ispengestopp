@@ -1,6 +1,5 @@
 package no.nav.syfo.api
 
-import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
@@ -10,6 +9,7 @@ import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
+import no.nav.syfo.api.testutils.mock.wellKnownMock
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.apiModule
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
@@ -24,7 +24,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
@@ -79,9 +78,7 @@ class PostStatusSpek : Spek({
         testApp.start()
 
         val veilederTilgangskontrollMock = VeilederTilgangskontrollMock()
-
-        val uri = Paths.get(env.jwksUri).toUri().toURL()
-        val jwkProvider = JwkProviderBuilder(uri).build()
+        val wellKnown = wellKnownMock()
 
         applicationState.ready.set(true)
 
@@ -100,9 +97,9 @@ class PostStatusSpek : Spek({
             applicationState = applicationState,
             database = testDB,
             env = env,
-            jwkProvider = jwkProvider,
             personFlagget84Producer = personFlagget84Producer,
-            tilgangskontrollConsumer = tilgangskontrollConsumer
+            tilgangskontrollConsumer = tilgangskontrollConsumer,
+            wellKnown = wellKnown
         )
 
         beforeGroup {

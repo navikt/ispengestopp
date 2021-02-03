@@ -1,6 +1,5 @@
 package no.nav.syfo
 
-import com.auth0.jwk.JwkProviderBuilder
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -14,6 +13,7 @@ import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.apiModule
+import no.nav.syfo.application.authentication.getWellKnown
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.config.bootstrapDBInit
 import no.nav.syfo.database.DatabaseInterface
@@ -26,8 +26,6 @@ import no.nav.syfo.vault.RenewVaultService
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.net.URL
-import java.util.concurrent.TimeUnit
 
 val objectMapper: ObjectMapper = ObjectMapper()
     .registerModule(JavaTimeModule())
@@ -55,19 +53,16 @@ fun main() {
 
     val tilgangskontrollConsumer = TilgangskontrollConsumer()
 
-    val jwkProvider = JwkProviderBuilder(URL(env.jwksUri))
-        .cached(10, 24, TimeUnit.HOURS)
-        .rateLimited(10, 1, TimeUnit.MINUTES)
-        .build()
+    val wellKnown = getWellKnown(env.aadDiscoveryUrl)
 
     val applicationEngine = embeddedServer(Netty, env.applicationPort) {
         apiModule(
             applicationState = applicationState,
             database = database,
             env = env,
-            jwkProvider = jwkProvider,
             personFlagget84Producer = personFlagget84Producer,
-            tilgangskontrollConsumer = tilgangskontrollConsumer
+            tilgangskontrollConsumer = tilgangskontrollConsumer,
+            wellKnown = wellKnown
         )
     }
 
