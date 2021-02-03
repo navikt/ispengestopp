@@ -1,4 +1,4 @@
-package no.nav.syfo.tilgangskontroll
+package no.nav.syfo.client.tilgangskontroll
 
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 class TilgangskontrollConsumer(
     private val url: String = "http://syfo-tilgangskontroll/syfo-tilgangskontroll/api/tilgang/bruker"
 ) {
-    private val log = LoggerFactory.getLogger("no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer")
+    private val log = LoggerFactory.getLogger("no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer")
 
     @KtorExperimentalAPI
     private val httpClient = HttpClient(CIO) {

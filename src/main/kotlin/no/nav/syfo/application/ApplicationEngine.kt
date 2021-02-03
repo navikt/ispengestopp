@@ -17,7 +17,7 @@ import no.nav.syfo.StatusEndring
 import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.database.DatabaseInterface
-import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import java.net.URL

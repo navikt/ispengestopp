@@ -25,7 +25,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
-import no.nav.syfo.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
