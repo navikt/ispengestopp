@@ -31,7 +31,6 @@ import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.*
 
 @InternalCoroutinesApi
 @KtorExperimentalAPI
@@ -50,11 +49,6 @@ class PostStatusSpek : Spek({
     val credentials = testVaultSecrets()
 
     val applicationState = ApplicationState()
-
-    fun Properties.overrideForTest(): Properties = apply {
-        remove("security.protocol")
-        remove("sasl.mechanism")
-    }
 
     val testConsumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials).overrideForTest()
         .apply {

@@ -24,7 +24,6 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
-import java.util.*
 
 class GetStatusSpek : Spek({
 
@@ -44,11 +43,6 @@ class GetStatusSpek : Spek({
 
     val env = testEnvironment(embeddedKafkaEnvironment.brokersURL)
     val credentials = testVaultSecrets()
-
-    fun Properties.overrideForTest(): Properties = apply {
-        remove("security.protocol")
-        remove("sasl.mechanism")
-    }
 
     val consumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials)
         .overrideForTest()
