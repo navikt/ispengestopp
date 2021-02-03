@@ -48,24 +48,8 @@ class GetStatusSpek : Spek({
         topicNames = listOf("apen-isyfo-stoppautomatikk")
     )
 
-    val env = Environment(
-        "ispengestopp",
-        8080,
-        embeddedKafkaEnvironment.brokersURL,
-        "",
-        "",
-        "",
-        "https://sts.issuer.net/myid",
-        "src/test/resources/jwkset.json",
-        false,
-        "1234",
-        "apen-isyfo-stoppautomatikk",
-        0
-    )
-    val credentials = VaultSecrets(
-        "",
-        ""
-    )
+    val env = testEnvironment(embeddedKafkaEnvironment.brokersURL)
+    val credentials = testVaultSecrets()
 
     fun Properties.overrideForTest(): Properties = apply {
         remove("security.protocol")

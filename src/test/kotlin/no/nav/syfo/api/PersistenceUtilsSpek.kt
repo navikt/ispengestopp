@@ -7,7 +7,9 @@ import io.mockk.unmockkAll
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.TestDB
+import no.nav.syfo.api.testutils.UserConstants
 import no.nav.syfo.api.testutils.dropData
+import no.nav.syfo.api.testutils.testEnvironment
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.util.pollAndPersist
 import org.amshove.kluent.shouldBeEqualTo
@@ -29,24 +31,12 @@ object PersistenceUtilsSpek : Spek({
         topicNames = listOf("apen-isyfo-stoppautomatikk")
     )
 
-    val sykmeldtFnr = SykmeldtFnr("123456")
+    val sykmeldtFnr = UserConstants.SYKMELDT_FNR
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
-    val env = Environment(
-        "ispengestopp",
-        8080,
-        embeddedKafkaEnvironment.brokersURL,
-        "",
-        "",
-        "",
-        "https://sts.issuer.net/myid",
-        "src/test/resources/jwkset.json",
-        false,
-        "1234",
-        "apen-isyfo-stoppautomatikk",
-        0L
-    )
+
+    val env = testEnvironment(embeddedKafkaEnvironment.brokersURL)
 
     val partition = 0
     val stoppAutomatikkTopicPartition = TopicPartition(env.stoppAutomatikkTopic, partition)
