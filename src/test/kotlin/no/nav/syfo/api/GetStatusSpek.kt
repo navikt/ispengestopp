@@ -34,7 +34,7 @@ import java.util.*
 
 class GetStatusSpek : Spek({
 
-    val sykmeldtFnr = SykmeldtFnr("123456")
+    val sykmeldtFnr = UserConstants.SYKMELDT_FNR
     val sykmeldtFnrFiller = SykmeldtFnr("654321")
     val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
     val veilederIdent = VeilederIdent("Z999999")
@@ -87,6 +87,9 @@ class GetStatusSpek : Spek({
         block: TestApplicationEngine.() -> Unit
     ) {
         testApp.start()
+
+        val veilederTilgangskontrollMock = VeilederTilgangskontrollMock()
+
         testApp.application.install(ContentNegotiation) {
             jackson {
                 registerKotlinModule()
@@ -96,22 +99,14 @@ class GetStatusSpek : Spek({
             }
         }
 
-        val mockServerPort = 9090
-        val mockHttpServerUrl = "http://localhost:$mockServerPort"
-
-        val mockServer =
-            mockSyfotilgangskontrollServer(mockServerPort, sykmeldtFnr).start(wait = false)
-
-        afterGroup { mockServer.stop(1L, 10L) }
-
         val uri = Paths.get(env.jwksUri).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
 
         testApp.application.setupAuth(env, jwkProvider)
 
-        afterEachTest {
-            database.connection.dropData()
-        }
+        val tilgangskontrollConsumer = TilgangskontrollConsumer(
+            url = "${veilederTilgangskontrollMock.url}/syfo-tilgangskontroll/api/tilgang/bruker"
+        )
 
         testApp.application.routing {
             authenticate {
@@ -119,9 +114,21 @@ class GetStatusSpek : Spek({
                     database,
                     env,
                     personFlagget84Producer,
-                    TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
+                    tilgangskontrollConsumer
                 )
             }
+        }
+
+        beforeGroup {
+            veilederTilgangskontrollMock.server.start()
+        }
+
+        afterGroup {
+            veilederTilgangskontrollMock.server.stop(1L, 10L)
+        }
+
+        afterEachTest {
+            database.connection.dropData()
         }
 
         return testApp.block()

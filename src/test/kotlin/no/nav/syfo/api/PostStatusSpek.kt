@@ -17,10 +17,8 @@ import io.ktor.util.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
-import no.nav.syfo.api.testutils.TestDB
-import no.nav.syfo.api.testutils.dropData
-import no.nav.syfo.api.testutils.generateJWT
-import no.nav.syfo.api.testutils.mockSyfotilgangskontrollServer
+import no.nav.syfo.api.testutils.*
+import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.setupAuth
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
@@ -44,7 +42,7 @@ import java.util.*
 @InternalCoroutinesApi
 @KtorExperimentalAPI
 class PostStatusSpek : Spek({
-    val sykmeldtFnr = SykmeldtFnr("123456")
+    val sykmeldtFnr = SYKMELDT_FNR
     val sykmeldtFnrIkkeTilgang = SykmeldtFnr("666")
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
@@ -109,6 +107,9 @@ class PostStatusSpek : Spek({
         block: TestApplicationEngine.() -> Unit
     ) {
         testApp.start()
+
+        val veilederTilgangskontrollMock = VeilederTilgangskontrollMock()
+
         testApp.application.install(ContentNegotiation) {
             jackson {
                 registerKotlinModule()
@@ -118,22 +119,10 @@ class PostStatusSpek : Spek({
             }
         }
 
-        val mockServerPort = 9091
-        val mockHttpServerUrl = "http://localhost:$mockServerPort"
-
-        val mockServer =
-            mockSyfotilgangskontrollServer(mockServerPort, sykmeldtFnr).start(wait = false)
-
-        afterGroup { mockServer.stop(1L, 10L) }
-
         val uri = Paths.get(env.jwksUri).toUri().toURL()
         val jwkProvider = JwkProviderBuilder(uri).build()
 
         testApp.application.setupAuth(env, jwkProvider)
-
-        afterEachTest {
-            testDB.connection.dropData()
-        }
 
         applicationState.ready.set(true)
 
@@ -144,15 +133,31 @@ class PostStatusSpek : Spek({
             env
         )
 
+        val tilgangskontrollConsumer = TilgangskontrollConsumer(
+            url = "${veilederTilgangskontrollMock.url}/syfo-tilgangskontroll/api/tilgang/bruker"
+        )
+
         testApp.application.routing {
             authenticate {
                 registerFlaggPerson84(
                     testDB,
                     env,
                     personFlagget84Producer,
-                    TilgangskontrollConsumer("$mockHttpServerUrl/syfo-tilgangskontroll/api/tilgang/bruker")
+                    tilgangskontrollConsumer
                 )
             }
+        }
+
+        beforeGroup {
+            veilederTilgangskontrollMock.server.start()
+        }
+
+        afterGroup {
+            veilederTilgangskontrollMock.server.stop(1L, 10L)
+        }
+
+        afterEachTest {
+            testDB.connection.dropData()
         }
 
         return testApp.block()
