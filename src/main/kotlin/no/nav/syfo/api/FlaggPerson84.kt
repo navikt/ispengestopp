@@ -7,8 +7,11 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.*
 import no.nav.syfo.application.getVeilederIdentFromToken
-import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.database.DatabaseInterface
+import no.nav.syfo.util.callIdArgument
+import no.nav.syfo.util.getBearerHeader
+import no.nav.syfo.util.getCallId
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
@@ -31,35 +34,40 @@ fun Route.registerFlaggPerson84(
 ) {
     route(apiBasePath) {
         get(apiPersonStatusPath) {
-            log.info("Received get request to /api/v1/person/status")
+            log.info("Received get request to $apiBasePath$apiPersonStatusPath")
 
-            val requestFnr = call.request.headers["fnr"]
-            requestFnr?.let {
-                val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-                if (token == null) {
-                    call.respond(HttpStatusCode.BadRequest)
-                } else {
-                    val sykmeldtFnr = SykmeldtFnr(requestFnr)
-                    val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token)
-                    if (hasAccess) {
-                        val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
-                        when {
-                            flags.isNotEmpty() -> call.respond(flags)
-                            else -> call.respond(HttpStatusCode.NoContent)
-                        }
-                    } else {
-                        COUNT_GET_PERSON_STATUS_FORBIDDEN.inc()
-                        call.respond(HttpStatusCode.Forbidden)
+            val callId = getCallId()
+
+            try {
+                val requestFnr = call.request.headers["fnr"] ?: throw IllegalArgumentException("No Fnr supplied")
+                val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
+
+                val sykmeldtFnr = SykmeldtFnr(requestFnr)
+                val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token)
+                if (hasAccess) {
+                    val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
+                    when {
+                        flags.isNotEmpty() -> call.respond(flags)
+                        else -> call.respond(HttpStatusCode.NoContent)
                     }
+                } else {
+                    COUNT_GET_PERSON_STATUS_FORBIDDEN.inc()
+                    call.respond(HttpStatusCode.Forbidden)
                 }
-            } ?: call.respond(HttpStatusCode.BadRequest)
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Request to get for PersonIdent"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
         }
 
         post(apiPersonFlaggPath) {
-            log.info("Received post request to /api/v1/person/flagg")
+            log.info("Received post request to $apiBasePath$apiPersonStatusPath")
 
-            val token = call.request.headers["Authorization"]?.removePrefix("Bearer ")
-            token?.let {
+            val callId = getCallId()
+
+            val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
+            try {
                 val stoppAutomatikk: StoppAutomatikk = call.receive()
                 val ident = getVeilederIdentFromToken(token)
                 val harTilgang = tilgangskontroll.harTilgangTilBruker(stoppAutomatikk.sykmeldtFnr, token)
@@ -92,7 +100,11 @@ fun Route.registerFlaggPerson84(
                     COUNT_ENDRE_PERSON_STATUS_FORBIDDEN.inc()
                     call.respond(HttpStatusCode.Forbidden)
                 }
-            } ?: call.respond(HttpStatusCode.BadRequest)
+            } catch (e: IllegalArgumentException) {
+                val illegalArgumentMessage = "Request to post StatusEndring failed"
+                log.warn("$illegalArgumentMessage: {}, {}", e.message, callIdArgument(callId))
+                call.respond(HttpStatusCode.BadRequest, e.message ?: illegalArgumentMessage)
+            }
         }
     }
 }

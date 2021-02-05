@@ -11,6 +11,7 @@ import io.ktor.http.*
 import io.ktor.util.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.*
+import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class TilgangskontrollConsumer(
@@ -28,7 +29,7 @@ class TilgangskontrollConsumer(
     suspend fun harTilgangTilBruker(fnr: SykmeldtFnr, token: String): Boolean {
         try {
             val response: HttpResponse = httpClient.get("$url?fnr=${fnr.value}") {
-                header(HttpHeaders.Authorization, "Bearer $token")
+                header(HttpHeaders.Authorization, bearerHeader(token))
                 accept(ContentType.Application.Json)
             }
             COUNT_TILGANGSKONTROLL_OK.inc()
