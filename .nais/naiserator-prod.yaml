@@ -55,3 +55,5 @@ spec:
       value: "https://login.microsoftonline.com/navno.onmicrosoft.com/.well-known/openid-configuration"
     - name: LOGINSERVICE_CLIENT_ID
       value: 9b4e07a3-4f4c-4bab-b866-87f62dff480d
+    - name: SYFOTILGANGSKONTROLL_URL
+      value: "https://syfo-tilgangskontroll.nais.adeo.no"

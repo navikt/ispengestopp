@@ -13,6 +13,7 @@ data class Environment(
     val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
     val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID", "1234"),
     val stoppAutomatikkTopic: String = getEnvVar("STOPP_AUTOMATIKK_TOPIC", "apen-isyfo-stoppautomatikk"),
+    val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
     val pollTimeOutMs: Long = 0
 
 )

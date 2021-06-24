@@ -64,7 +64,7 @@ class GetStatusSpek : Spek({
         applicationState.ready.set(true)
 
         val tilgangskontrollConsumer = TilgangskontrollConsumer(
-            url = "${veilederTilgangskontrollMock.url}/syfo-tilgangskontroll/api/tilgang/bruker"
+            tilgangskontrollBaseUrl = veilederTilgangskontrollMock.url
         )
 
         testApp.application.apiModule(

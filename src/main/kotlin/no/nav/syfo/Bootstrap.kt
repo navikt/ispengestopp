@@ -51,7 +51,9 @@ fun main() {
     val personFlagget84Producer = createPersonFlagget84Producer(env, vaultSecrets)
     val personFlagget84Consumer = createPersonFlagget84Consumer(env, vaultSecrets)
 
-    val tilgangskontrollConsumer = TilgangskontrollConsumer()
+    val tilgangskontrollConsumer = TilgangskontrollConsumer(
+        tilgangskontrollBaseUrl = env.syfotilgangskontrollUrl
+    )
 
     val wellKnown = getWellKnown(env.aadDiscoveryUrl)
 

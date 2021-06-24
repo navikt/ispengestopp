@@ -15,7 +15,7 @@ import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class TilgangskontrollConsumer(
-    private val url: String = "http://syfo-tilgangskontroll/syfo-tilgangskontroll/api/tilgang/bruker"
+    private val tilgangskontrollBaseUrl: String
 ) {
     private val log = LoggerFactory.getLogger("no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer")
 
@@ -28,7 +28,7 @@ class TilgangskontrollConsumer(
 
     suspend fun harTilgangTilBruker(fnr: SykmeldtFnr, token: String): Boolean {
         try {
-            val response: HttpResponse = httpClient.get("$url?fnr=${fnr.value}") {
+            val response: HttpResponse = httpClient.get(getTilgangskontrollUrl(fnr)) {
                 header(HttpHeaders.Authorization, bearerHeader(token))
                 accept(ContentType.Application.Json)
             }
@@ -44,6 +44,10 @@ class TilgangskontrollConsumer(
         } catch (e: ServerResponseException) {
             return handleUnexpectedReponseException(e.response)
         }
+    }
+
+    private fun getTilgangskontrollUrl(fnr: SykmeldtFnr): String {
+        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/bruker?fnr=${fnr.value}"
     }
 
     private fun handleUnexpectedReponseException(response: HttpResponse): Boolean {

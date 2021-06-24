@@ -19,6 +19,7 @@ fun testEnvironment(
         developmentMode = false,
         loginserviceClientId = "1234",
         stoppAutomatikkTopic = "apen-isyfo-stoppautomatikk",
+        syfotilgangskontrollUrl = "http://syfotilgangskontroll",
         pollTimeOutMs = 0L
     )
 }
