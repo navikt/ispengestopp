@@ -6,7 +6,7 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import no.nav.syfo.*
-import no.nav.syfo.application.getVeilederIdentFromToken
+import no.nav.syfo.application.authentication.getVeilederIdentFromToken
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.util.callIdArgument

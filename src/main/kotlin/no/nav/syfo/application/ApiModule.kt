@@ -7,8 +7,7 @@ import no.nav.syfo.Environment
 import no.nav.syfo.StatusEndring
 import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerNaisApi
-import no.nav.syfo.application.authentication.WellKnown
-import no.nav.syfo.application.authentication.installAuthentication
+import no.nav.syfo.application.authentication.*
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.database.DatabaseInterface
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -21,10 +20,13 @@ fun Application.apiModule(
     tilgangskontrollConsumer: TilgangskontrollConsumer,
     wellKnown: WellKnown
 ) {
-    installAuthentication(
-        wellKnown,
-        listOf(
-            env.loginserviceClientId
+    installJwtAuthentication(
+        jwtIssuerList = listOf(
+            JwtIssuer(
+                accectedAudienceList = listOf(env.loginserviceClientId),
+                jwtIssuerType = JwtIssuerType.INTERN_AZUREAD_V1,
+                wellKnown = wellKnown,
+            )
         )
     )
     installCallId()
@@ -33,7 +35,7 @@ fun Application.apiModule(
 
     routing {
         registerNaisApi(applicationState)
-        authenticate {
+        authenticate(JwtIssuerType.INTERN_AZUREAD_V1.name) {
             registerFlaggPerson84(
                 database,
                 env,

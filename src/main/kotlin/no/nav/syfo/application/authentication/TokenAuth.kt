@@ -1,4 +1,4 @@
-package no.nav.syfo.application
+package no.nav.syfo.application.authentication
 
 import com.auth0.jwt.JWT
 import no.nav.syfo.VeilederIdent
