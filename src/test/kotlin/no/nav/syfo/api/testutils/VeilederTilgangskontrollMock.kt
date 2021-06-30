@@ -6,18 +6,18 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import no.nav.syfo.Tilgang
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
 import no.nav.syfo.application.installContentNegotiation
+import no.nav.syfo.client.tilgangskontroll.TilgangDTO
 
 class VeilederTilgangskontrollMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
-    private val tilgangFalse = Tilgang(
+    private val tilgangFalse = TilgangDTO(
         false,
         ""
     )
-    private val tilgangTrue = Tilgang(
+    private val tilgangTrue = TilgangDTO(
         true,
         ""
     )
@@ -31,8 +31,8 @@ class VeilederTilgangskontrollMock {
 
     private fun mockTilgangServer(
         port: Int,
-        tilgangFalse: Tilgang,
-        tilgangTrue: Tilgang,
+        tilgangFalse: TilgangDTO,
+        tilgangTrue: TilgangDTO,
     ): NettyApplicationEngine {
         return embeddedServer(
             factory = Netty,

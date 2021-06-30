@@ -33,7 +33,7 @@ class TilgangskontrollConsumer(
                 accept(ContentType.Application.Json)
             }
             COUNT_TILGANGSKONTROLL_OK.inc()
-            return response.receive<Tilgang>().harTilgang
+            return response.receive<TilgangDTO>().harTilgang
         } catch (e: ClientRequestException) {
             return if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_TILGANGSKONTROLL_FORBIDDEN.inc()
