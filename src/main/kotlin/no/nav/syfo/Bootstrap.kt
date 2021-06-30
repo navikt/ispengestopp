@@ -51,6 +51,7 @@ fun main() {
     val personFlagget84Consumer = createPersonFlagget84Consumer(env, vaultSecrets)
 
     val wellKnown = getWellKnown(env.aadDiscoveryUrl)
+    val wellKnownInternADV2 = getWellKnown(env.azureAppWellKnownUrl)
 
     val applicationEngine = embeddedServer(Netty, env.applicationPort) {
         apiModule(
@@ -58,7 +59,8 @@ fun main() {
             database = database,
             env = env,
             personFlagget84Producer = personFlagget84Producer,
-            wellKnownInternADV1 = wellKnown
+            wellKnownInternADV1 = wellKnown,
+            wellKnownInternADV2 = wellKnownInternADV2,
         )
     }
 

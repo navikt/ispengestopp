@@ -7,6 +7,7 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
+import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR_IKKE_TILGANG
 import no.nav.syfo.application.installContentNegotiation
 import no.nav.syfo.client.tilgangskontroll.TilgangDTO
 
@@ -49,6 +50,12 @@ class VeilederTilgangskontrollMock {
                             call.respond(HttpStatusCode.Forbidden, tilgangFalse)
                         }
                     }
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${SYKMELDT_FNR.value}") {
+                    call.respond(tilgangTrue)
+                }
+                get("/syfo-tilgangskontroll/api/tilgang/navident/bruker/${SYKMELDT_FNR_IKKE_TILGANG.value}") {
+                    call.respond(HttpStatusCode.Forbidden, tilgangFalse)
                 }
             }
         }

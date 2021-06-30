@@ -1,4 +1,4 @@
-package no.nav.syfo.api
+package no.nav.syfo.api.v2
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
@@ -6,23 +6,29 @@ import io.ktor.server.testing.*
 import io.ktor.util.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.syfo.*
+import no.nav.syfo.api.apiV2BasePath
+import no.nav.syfo.api.apiV2PersonFlaggPath
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR_IKKE_TILGANG
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.*
+import org.amshove.kluent.shouldBe
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeNull
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.*
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneOffset
 
 @InternalCoroutinesApi
 @KtorExperimentalAPI
-class PostStatusSpek : Spek({
+class PostStatusV2Spek : Spek({
     val sykmeldtFnr = SYKMELDT_FNR
     val sykmeldtFnrIkkeTilgang = SYKMELDT_FNR_IKKE_TILGANG
     val veilederIdent = VeilederIdent("Z999999")
@@ -97,10 +103,10 @@ class PostStatusSpek : Spek({
 
     describe("Flag a person to be removed from automatic processing") {
         withTestApplicationForApi(TestApplicationEngine(), database) {
-            val endpointPath = "$apiBasePath$apiPersonFlaggPath"
+            val endpointPath = "$apiV2BasePath$apiV2PersonFlaggPath"
             val validToken = generateJWT(
-                audience = externalMockEnvironment.environment.loginserviceClientId,
-                issuer = externalMockEnvironment.wellKnownInternADMock.issuer,
+                audience = externalMockEnvironment.environment.azureAppClientId,
+                issuer = externalMockEnvironment.wellKnownInternADV2Mock.issuer,
             )
             it("reject post request without token") {
                 with(

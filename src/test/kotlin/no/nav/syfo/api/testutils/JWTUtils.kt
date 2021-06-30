@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
+import no.nav.syfo.application.authentication.JWT_CLAIM_NAVIDENT
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -19,6 +20,7 @@ const val keyId = "localhost-signer"
  */
 fun generateJWT(
     audience: String,
+    issuer: String,
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1)
 ): String {
     val now = Date()
@@ -28,7 +30,7 @@ fun generateJWT(
     return JWT.create()
         .withKeyId(keyId)
         .withSubject("subject")
-        .withIssuer("https://sts.issuer.net/myid")
+        .withIssuer(issuer)
         .withAudience(audience)
         .withJWTId(UUID.randomUUID().toString())
         .withClaim("ver", "1.0")
@@ -37,7 +39,7 @@ fun generateJWT(
         .withClaim("nbf", now)
         .withClaim("iat", now)
         .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
-        .withClaim("NAVident", "Z999999")
+        .withClaim(JWT_CLAIM_NAVIDENT, "Z999999")
         .sign(alg)
 }
 

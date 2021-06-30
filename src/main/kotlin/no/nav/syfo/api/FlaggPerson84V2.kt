@@ -20,22 +20,20 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 
-private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
+private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84V2Kt")
 
-const val apiBasePath = "/api/v1"
-const val apiPersonStatusPath = "/person/status"
-const val apiPersonFlaggPath = "/person/flagg"
+const val apiV2BasePath = "/api/v2"
+const val apiV2PersonStatusPath = "/person/status"
+const val apiV2PersonFlaggPath = "/person/flagg"
 
-fun Route.registerFlaggPerson84(
+fun Route.registerFlaggPerson84V2(
     database: DatabaseInterface,
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
-    tilgangskontroll: TilgangskontrollConsumer
+    tilgangskontrollConsumer: TilgangskontrollConsumer,
 ) {
-    route(apiBasePath) {
-        get(apiPersonStatusPath) {
-            log.info("Received get request to $apiBasePath$apiPersonStatusPath")
-
+    route(apiV2BasePath) {
+        get(apiV2PersonStatusPath) {
             val callId = getCallId()
 
             try {
@@ -43,7 +41,7 @@ fun Route.registerFlaggPerson84(
                 val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
 
                 val sykmeldtFnr = SykmeldtFnr(requestFnr)
-                val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token)
+                val hasAccess = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(sykmeldtFnr, token)
                 if (hasAccess) {
                     val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
                     when {
@@ -61,16 +59,14 @@ fun Route.registerFlaggPerson84(
             }
         }
 
-        post(apiPersonFlaggPath) {
-            log.info("Received post request to $apiBasePath$apiPersonStatusPath")
-
+        post(apiV2PersonFlaggPath) {
             val callId = getCallId()
 
             val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
             try {
                 val stoppAutomatikk: StoppAutomatikk = call.receive()
                 val ident = getVeilederIdentFromToken(token)
-                val harTilgang = tilgangskontroll.harTilgangTilBruker(stoppAutomatikk.sykmeldtFnr, token)
+                val harTilgang = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(stoppAutomatikk.sykmeldtFnr, token)
                 if (harTilgang) {
                     stoppAutomatikk.virksomhetNr.forEach {
                         val kFlaggperson84Hendelse = StatusEndring(

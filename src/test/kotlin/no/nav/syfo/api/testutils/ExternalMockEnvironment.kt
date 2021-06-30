@@ -2,6 +2,8 @@ package no.nav.syfo.api.testutils
 
 import io.ktor.server.netty.*
 import no.nav.common.KafkaEnvironment
+import no.nav.syfo.api.testutils.mock.AzureAdV2Mock
+import no.nav.syfo.api.testutils.mock.wellKnownInternADV2Mock
 import no.nav.syfo.api.testutils.mock.wellKnownMock
 import no.nav.syfo.application.ApplicationState
 
@@ -10,18 +12,22 @@ class ExternalMockEnvironment {
     val database = TestDB()
     val embeddedEnvironment: KafkaEnvironment = testKafka()
 
+    val azureAdV2Mock = AzureAdV2Mock()
     val tilgangskontrollMock = VeilederTilgangskontrollMock()
 
     val externalApplicationMockMap = hashMapOf(
+        azureAdV2Mock.name to azureAdV2Mock.server,
         tilgangskontrollMock.name to tilgangskontrollMock.server,
     )
 
     val environment = testEnvironment(
+        azureTokenEndpoint = azureAdV2Mock.url,
         kafkaBrokersURL = embeddedEnvironment.brokersURL,
         syfotilgangskontrollUrl = tilgangskontrollMock.url,
     )
 
     val wellKnownInternADMock = wellKnownMock()
+    val wellKnownInternADV2Mock = wellKnownInternADV2Mock()
 }
 
 fun ExternalMockEnvironment.startExternalMocks() {
