@@ -41,6 +41,21 @@ spec:
   ingresses:
     - "https://ispengestopp.dev.intern.nav.no"
     - "https://ispengestopp.nais.preprod.local"
+  accessPolicy:
+    inbound:
+      rules:
+        - application: syfomodiaperson
+          namespace: teamsykefravr
+          cluster: dev-fss
+  azure:
+    application:
+      enabled: true
+      tenant: trygdeetaten.no
+      replyURLs:
+        - "https://ispengestopp.dev.intern.nav.no/oauth2/callback"
+      claims:
+        extra:
+          - "NAVident"
   webproxy: true
   env:
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
