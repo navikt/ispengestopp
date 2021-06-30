@@ -5,28 +5,19 @@ import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.ktor.util.*
 import kotlinx.coroutines.InternalCoroutinesApi
-import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
-import no.nav.syfo.api.testutils.mock.wellKnownMock
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.apiModule
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeNull
+import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.Duration
-import java.time.Instant
-import java.time.ZoneOffset
+import java.time.*
 
 @InternalCoroutinesApi
 @KtorExperimentalAPI
@@ -36,13 +27,12 @@ class PostStatusSpek : Spek({
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
-    val embeddedKafkaEnvironment = KafkaEnvironment(
-        autoStart = false,
-        topicNames = listOf("apen-isyfo-stoppautomatikk")
-    )
 
-    val applicationState = ApplicationState()
-    val env = testEnvironment(embeddedKafkaEnvironment.brokersURL)
+    val externalMockEnvironment = ExternalMockEnvironment()
+    val database = externalMockEnvironment.database
+
+    val env = externalMockEnvironment.environment
+
     val credentials = testVaultSecrets()
 
     val testConsumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials).overrideForTest()
@@ -77,37 +67,24 @@ class PostStatusSpek : Spek({
     ) {
         testApp.start()
 
-        val veilederTilgangskontrollMock = VeilederTilgangskontrollMock()
-        val wellKnown = wellKnownMock()
-
-        applicationState.ready.set(true)
-
         launchListeners(
-            applicationState,
+            externalMockEnvironment.applicationState,
             testDB,
             prodConsumer,
             env
         )
 
-        val tilgangskontrollConsumer = TilgangskontrollConsumer(
-            tilgangskontrollBaseUrl = veilederTilgangskontrollMock.url
-        )
-
-        testApp.application.apiModule(
-            applicationState = applicationState,
-            database = testDB,
-            env = env,
+        testApp.application.testApiModule(
+            externalMockEnvironment = externalMockEnvironment,
             personFlagget84Producer = personFlagget84Producer,
-            tilgangskontrollConsumer = tilgangskontrollConsumer,
-            wellKnown = wellKnown
         )
 
         beforeGroup {
-            veilederTilgangskontrollMock.server.start()
+            externalMockEnvironment.startExternalMocks()
         }
 
         afterGroup {
-            veilederTilgangskontrollMock.server.stop(1L, 10L)
+            externalMockEnvironment.stopExternalMocks()
         }
 
         afterEachTest {
@@ -118,15 +95,6 @@ class PostStatusSpek : Spek({
     }
 
     describe("Flag a person to be removed from automatic processing") {
-        val database by lazy { TestDB() }
-        beforeGroup {
-            embeddedKafkaEnvironment.start()
-        }
-        afterGroup {
-            database.stop()
-            embeddedKafkaEnvironment.tearDown()
-        }
-
         withTestApplicationForApi(TestApplicationEngine(), database) {
             val endpointPath = "$apiBasePath$apiPersonFlaggPath"
             val validToken = generateJWT(

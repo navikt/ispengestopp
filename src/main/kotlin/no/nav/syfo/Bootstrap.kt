@@ -14,7 +14,6 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.apiModule
 import no.nav.syfo.application.authentication.getWellKnown
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.config.bootstrapDBInit
 import no.nav.syfo.database.DatabaseInterface
 import no.nav.syfo.database.VaultCredentialService
@@ -51,10 +50,6 @@ fun main() {
     val personFlagget84Producer = createPersonFlagget84Producer(env, vaultSecrets)
     val personFlagget84Consumer = createPersonFlagget84Consumer(env, vaultSecrets)
 
-    val tilgangskontrollConsumer = TilgangskontrollConsumer(
-        tilgangskontrollBaseUrl = env.syfotilgangskontrollUrl
-    )
-
     val wellKnown = getWellKnown(env.aadDiscoveryUrl)
 
     val applicationEngine = embeddedServer(Netty, env.applicationPort) {
@@ -63,8 +58,7 @@ fun main() {
             database = database,
             env = env,
             personFlagget84Producer = personFlagget84Producer,
-            tilgangskontrollConsumer = tilgangskontrollConsumer,
-            wellKnown = wellKnown
+            wellKnownInternADV1 = wellKnown
         )
     }
 

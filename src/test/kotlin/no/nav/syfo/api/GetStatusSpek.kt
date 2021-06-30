@@ -4,19 +4,12 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
-import no.nav.common.KafkaEnvironment
 import no.nav.syfo.*
 import no.nav.syfo.api.testutils.*
-import no.nav.syfo.api.testutils.mock.wellKnownMock
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.apiModule
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.shouldBe
-import org.amshove.kluent.shouldBeEqualTo
-import org.amshove.kluent.shouldBeGreaterOrEqualTo
+import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
@@ -31,23 +24,24 @@ class GetStatusSpek : Spek({
     val primaryJob = VirksomhetNr("888")
     val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
-    val database by lazy { TestDB() }
 
-    val embeddedKafkaEnvironment = KafkaEnvironment(
-        autoStart = false,
-        topicNames = listOf("apen-isyfo-stoppautomatikk")
-    )
+    val externalMockEnvironment = ExternalMockEnvironment()
+    val database = externalMockEnvironment.database
 
-    val applicationState = ApplicationState()
-    val env = testEnvironment(embeddedKafkaEnvironment.brokersURL)
     val credentials = testVaultSecrets()
 
-    val consumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials)
+    val consumerProperties = kafkaPersonFlaggetConsumerProperties(
+        externalMockEnvironment.environment,
+        credentials,
+    )
         .overrideForTest()
     val consumer = KafkaConsumer<String, String>(consumerProperties)
-    consumer.subscribe(listOf(env.stoppAutomatikkTopic))
+    consumer.subscribe(listOf(externalMockEnvironment.environment.stoppAutomatikkTopic))
 
-    val producerProperties = kafkaPersonFlaggetProducerProperties(env, credentials)
+    val producerProperties = kafkaPersonFlaggetProducerProperties(
+        externalMockEnvironment.environment,
+        credentials,
+    )
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     // TODO: gjøre database delen av testen om til å gi mer test coverage av prodkoden
@@ -58,30 +52,17 @@ class GetStatusSpek : Spek({
     ) {
         testApp.start()
 
-        val veilederTilgangskontrollMock = VeilederTilgangskontrollMock()
-        val wellKnown = wellKnownMock()
-
-        applicationState.ready.set(true)
-
-        val tilgangskontrollConsumer = TilgangskontrollConsumer(
-            tilgangskontrollBaseUrl = veilederTilgangskontrollMock.url
-        )
-
-        testApp.application.apiModule(
-            applicationState = applicationState,
-            database = database,
-            env = env,
+        testApp.application.testApiModule(
+            externalMockEnvironment = externalMockEnvironment,
             personFlagget84Producer = personFlagget84Producer,
-            tilgangskontrollConsumer = tilgangskontrollConsumer,
-            wellKnown = wellKnown
         )
 
         beforeGroup {
-            veilederTilgangskontrollMock.server.start()
+            externalMockEnvironment.startExternalMocks()
         }
 
         afterGroup {
-            veilederTilgangskontrollMock.server.stop(1L, 10L)
+            externalMockEnvironment.stopExternalMocks()
         }
 
         afterEachTest {
@@ -99,7 +80,7 @@ class GetStatusSpek : Spek({
         withTestApplicationForApi(TestApplicationEngine(), database) {
             val endpointPath = "$apiBasePath$apiPersonStatusPath"
             val validToken = generateJWT(
-                env.loginserviceClientId,
+                externalMockEnvironment.environment.loginserviceClientId,
             )
             it("reject request without bearer token") {
                 with(

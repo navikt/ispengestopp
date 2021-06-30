@@ -36,7 +36,9 @@ object PersistenceUtilsSpek : Spek({
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
 
-    val env = testEnvironment(embeddedKafkaEnvironment.brokersURL)
+    val env = testEnvironment(
+        kafkaBrokersURL = embeddedKafkaEnvironment.brokersURL,
+    )
 
     val partition = 0
     val stoppAutomatikkTopicPartition = TopicPartition(env.stoppAutomatikkTopic, partition)

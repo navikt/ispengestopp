@@ -1,18 +1,14 @@
 package no.nav.syfo.api.testutils
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.application.*
-import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import no.nav.syfo.Tilgang
 import no.nav.syfo.api.testutils.UserConstants.SYKMELDT_FNR
+import no.nav.syfo.application.installContentNegotiation
 
 class VeilederTilgangskontrollMock {
     private val port = getRandomPort()
@@ -26,6 +22,7 @@ class VeilederTilgangskontrollMock {
         ""
     )
 
+    val name = "veiledertilgangskontroll"
     val server = mockTilgangServer(
         port,
         tilgangFalse,
@@ -41,13 +38,7 @@ class VeilederTilgangskontrollMock {
             factory = Netty,
             port = port
         ) {
-            install(ContentNegotiation) {
-                jackson {
-                    registerKotlinModule()
-                    registerModule(JavaTimeModule())
-                    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                }
-            }
+            installContentNegotiation()
             routing {
                 get("/syfo-tilgangskontroll/api/tilgang/bruker") {
                     when {

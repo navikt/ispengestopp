@@ -2,11 +2,14 @@ package no.nav.syfo.api.testutils
 
 import no.nav.syfo.Environment
 import no.nav.syfo.VaultSecrets
+import no.nav.syfo.application.ApplicationState
 import java.net.ServerSocket
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 fun testEnvironment(
-    kafkaBrokersURL: String
+    kafkaBrokersURL: String,
+    syfotilgangskontrollUrl: String = "http://syfotilgangskontroll",
 ): Environment {
     return Environment(
         applicationName = "ispengestopp",
@@ -19,10 +22,15 @@ fun testEnvironment(
         developmentMode = false,
         loginserviceClientId = "1234",
         stoppAutomatikkTopic = "apen-isyfo-stoppautomatikk",
-        syfotilgangskontrollUrl = "http://syfotilgangskontroll",
+        syfotilgangskontrollUrl = syfotilgangskontrollUrl,
         pollTimeOutMs = 0L
     )
 }
+
+fun testAppState() = ApplicationState(
+    alive = AtomicBoolean(true),
+    ready = AtomicBoolean(true),
+)
 
 fun testVaultSecrets() = VaultSecrets(
     "",

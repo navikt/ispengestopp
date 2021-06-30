@@ -17,21 +17,24 @@ fun Application.apiModule(
     database: DatabaseInterface,
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
-    tilgangskontrollConsumer: TilgangskontrollConsumer,
-    wellKnown: WellKnown
+    wellKnownInternADV1: WellKnown
 ) {
     installJwtAuthentication(
         jwtIssuerList = listOf(
             JwtIssuer(
                 accectedAudienceList = listOf(env.loginserviceClientId),
                 jwtIssuerType = JwtIssuerType.INTERN_AZUREAD_V1,
-                wellKnown = wellKnown,
+                wellKnown = wellKnownInternADV1,
             )
         )
     )
     installCallId()
     installContentNegotiation()
     installStatusPages()
+
+    val tilgangskontrollConsumer = TilgangskontrollConsumer(
+        tilgangskontrollBaseUrl = env.syfotilgangskontrollUrl
+    )
 
     routing {
         registerNaisApi(applicationState)
