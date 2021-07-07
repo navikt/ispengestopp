@@ -7,12 +7,12 @@ import no.nav.syfo.log
 import no.nav.syfo.vault.Vault
 
 class VaultCredentialService {
-    var leaseDuration: Long = 0
+    var leaseDuration: Long = 1
     var renewCredentialsTaskData: RenewCredentialsTaskData? = null
 
     suspend fun runRenewCredentialsTask(applicationState: ApplicationState) {
         delay(leaseDuration)
-        while (applicationState.ready.get()) {
+        while (applicationState.alive.get()) {
             renewCredentialsTaskData?.run {
                 val credentials = getNewCredentials(
                     mountPath,
