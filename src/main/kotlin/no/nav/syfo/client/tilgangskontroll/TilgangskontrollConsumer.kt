@@ -36,7 +36,7 @@ class TilgangskontrollConsumer(
         val oboToken = azureAdV2Client.getOnBehalfOfToken(
             scopeClientId = syfotilgangskontrollClientId,
             token = token
-        )?.accessToken ?: throw RuntimeException("Failed to request access to Enhet: Failed to get OBO token")
+        )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
         try {
             val url = getTilgangskontrollV2Url(fnr)

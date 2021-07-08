@@ -1,3 +1,4 @@
+
 package no.nav.syfo.util
 
 import io.ktor.application.*

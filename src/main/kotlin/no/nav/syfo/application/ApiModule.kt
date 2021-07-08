@@ -28,12 +28,12 @@ fun Application.apiModule(
     installJwtAuthentication(
         jwtIssuerList = listOf(
             JwtIssuer(
-                accectedAudienceList = listOf(env.loginserviceClientId),
+                acceptedAudienceList = listOf(env.loginserviceClientId),
                 jwtIssuerType = JwtIssuerType.INTERN_AZUREAD_V1,
                 wellKnown = wellKnownInternADV1,
             ),
             JwtIssuer(
-                accectedAudienceList = listOf(env.azureAppClientId),
+                acceptedAudienceList = listOf(env.azureAppClientId),
                 jwtIssuerType = JwtIssuerType.INTERN_AZUREAD_V2,
                 wellKnown = wellKnownInternADV2,
             ),

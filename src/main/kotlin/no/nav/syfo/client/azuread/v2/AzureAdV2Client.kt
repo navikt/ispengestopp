@@ -24,7 +24,7 @@ class AzureAdV2Client(
             Parameters.build {
                 append("client_id", azureAppClientId)
                 append("client_secret", azureAppClientSecret)
-                append("client_aqssertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
+                append("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
                 append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
                 append("assertion", token)
                 append("scope", "api://$scopeClientId/.default")

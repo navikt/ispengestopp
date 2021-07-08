@@ -1,7 +1,7 @@
 package no.nav.syfo.application.authentication
 
 data class JwtIssuer(
-    val accectedAudienceList: List<String>,
+    val acceptedAudienceList: List<String>,
     val jwtIssuerType: JwtIssuerType,
     val wellKnown: WellKnown
 )
