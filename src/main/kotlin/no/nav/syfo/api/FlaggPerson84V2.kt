@@ -37,10 +37,12 @@ fun Route.registerFlaggPerson84V2(
             val callId = getCallId()
 
             try {
-                val requestFnr = call.request.headers["fnr"] ?: throw IllegalArgumentException("No Fnr supplied")
+                val sykmeldtPersonident = call.request.headers[NAV_PERSONIDENT_HEADER]
+                    ?: throw IllegalArgumentException("No Personident for sykmeldt supplied")
+
                 val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                val sykmeldtFnr = SykmeldtFnr(requestFnr)
+                val sykmeldtFnr = SykmeldtFnr(sykmeldtPersonident)
                 val hasAccess = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(sykmeldtFnr, token)
                 if (hasAccess) {
                     val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)

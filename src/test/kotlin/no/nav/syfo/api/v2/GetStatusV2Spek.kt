@@ -5,6 +5,7 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.*
+import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.apiV2BasePath
 import no.nav.syfo.api.apiV2PersonStatusPath
 import no.nav.syfo.api.testutils.*
@@ -91,7 +92,7 @@ class GetStatusV2Spek : Spek({
                 with(
                     handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader("fnr", sykmeldtFnr.value)
+                        addHeader(NAV_PERSONIDENT_HEADER, sykmeldtFnr.value)
                     }
                 ) {
                     response.status() shouldBe HttpStatusCode.Unauthorized
@@ -102,7 +103,7 @@ class GetStatusV2Spek : Spek({
                     handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(Authorization, bearerHeader(validToken))
-                        addHeader("fnr", sykmeldtFnrIkkeTilgang.value)
+                        addHeader(NAV_PERSONIDENT_HEADER, sykmeldtFnrIkkeTilgang.value)
                     }
                 ) {
                     response.status() shouldBe HttpStatusCode.Forbidden
@@ -167,7 +168,7 @@ class GetStatusV2Spek : Spek({
                     handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(Authorization, bearerHeader(validToken))
-                        addHeader("fnr", sykmeldtFnr.value)
+                        addHeader(NAV_PERSONIDENT_HEADER, sykmeldtFnr.value)
                     }
                 ) {
                     response.status() shouldBe HttpStatusCode.OK
