@@ -9,7 +9,9 @@ import no.nav.syfo.api.testutils.*
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
 import no.nav.syfo.util.bearerHeader
-import org.amshove.kluent.*
+import org.amshove.kluent.shouldBe
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeGreaterOrEqualTo
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
@@ -87,7 +89,7 @@ class GetStatusSpek : Spek({
                 with(
                     handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader("fnr", sykmeldtFnr.value)
+                        addHeader(NAV_PERSONIDENT_HEADER, sykmeldtFnr.value)
                     }
                 ) {
                     response.status() shouldBe HttpStatusCode.Unauthorized
@@ -98,7 +100,7 @@ class GetStatusSpek : Spek({
                     handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(Authorization, bearerHeader(validToken))
-                        addHeader("fnr", sykmeldtFnrIkkeTilgang.value)
+                        addHeader(NAV_PERSONIDENT_HEADER, sykmeldtFnrIkkeTilgang.value)
                     }
                 ) {
                     response.status() shouldBe HttpStatusCode.Forbidden
@@ -163,7 +165,7 @@ class GetStatusSpek : Spek({
                     handleRequest(HttpMethod.Get, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(Authorization, bearerHeader(validToken))
-                        addHeader("fnr", sykmeldtFnr.value)
+                        addHeader(NAV_PERSONIDENT_HEADER, sykmeldtFnr.value)
                     }
                 ) {
                     response.status() shouldBe HttpStatusCode.OK

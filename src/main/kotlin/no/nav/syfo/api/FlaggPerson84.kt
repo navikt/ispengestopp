@@ -25,6 +25,7 @@ private val log: Logger = LoggerFactory.getLogger("no.nav.syfo.Flaggperson84Kt")
 const val apiBasePath = "/api/v1"
 const val apiPersonStatusPath = "/person/status"
 const val apiPersonFlaggPath = "/person/flagg"
+const val NAV_PERSONIDENT_HEADER = "nav-personident"
 
 fun Route.registerFlaggPerson84(
     database: DatabaseInterface,
@@ -39,10 +40,12 @@ fun Route.registerFlaggPerson84(
             val callId = getCallId()
 
             try {
-                val requestFnr = call.request.headers["fnr"] ?: throw IllegalArgumentException("No Fnr supplied")
+                val sykmeldtPersonident = call.request.headers[NAV_PERSONIDENT_HEADER]
+                    ?: throw IllegalArgumentException("No Personident for Sykmeldt supplied")
+
                 val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                val sykmeldtFnr = SykmeldtFnr(requestFnr)
+                val sykmeldtFnr = SykmeldtFnr(sykmeldtPersonident)
                 val hasAccess = tilgangskontroll.harTilgangTilBruker(sykmeldtFnr, token)
                 if (hasAccess) {
                     val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
