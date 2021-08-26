@@ -40,7 +40,6 @@ spec:
         mountPath: /secrets/serviceuser
   ingresses:
     - "https://ispengestopp.intern.nav.no"
-    - "https://ispengestopp.nais.adeo.no"
   accessPolicy:
     inbound:
       rules:
@@ -66,10 +65,6 @@ spec:
       value: ispengestopp
     - name: ISPENGESTOPP_DB_URL
       value: jdbc:postgresql://A01DBVL013.adeo.no:5432/ispengestopp
-    - name: AADDISCOVERY_URL
-      value: "https://login.microsoftonline.com/navno.onmicrosoft.com/.well-known/openid-configuration"
-    - name: LOGINSERVICE_CLIENT_ID
-      value: 9b4e07a3-4f4c-4bab-b866-87f62dff480d
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "dfaa2699-7390-4459-9cfc-2e8de64dfaf9"
     - name: SYFOTILGANGSKONTROLL_URL

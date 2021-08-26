@@ -58,31 +58,6 @@ class TilgangskontrollConsumer(
         }
     }
 
-    suspend fun harTilgangTilBruker(fnr: SykmeldtFnr, token: String): Boolean {
-        try {
-            val url = getTilgangskontrollUrl(fnr)
-            val response: HttpResponse = httpClient.get(url) {
-                header(HttpHeaders.Authorization, bearerHeader(token))
-                accept(ContentType.Application.Json)
-            }
-            COUNT_TILGANGSKONTROLL_OK.inc()
-            return response.receive<TilgangDTO>().harTilgang
-        } catch (e: ClientRequestException) {
-            return if (e.response.status == HttpStatusCode.Forbidden) {
-                COUNT_TILGANGSKONTROLL_FORBIDDEN.inc()
-                false
-            } else {
-                return handleUnexpectedReponseException(e.response)
-            }
-        } catch (e: ServerResponseException) {
-            return handleUnexpectedReponseException(e.response)
-        }
-    }
-
-    private fun getTilgangskontrollUrl(fnr: SykmeldtFnr): String {
-        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/bruker?fnr=${fnr.value}"
-    }
-
     private fun getTilgangskontrollV2Url(fnr: SykmeldtFnr): String {
         return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/bruker/${fnr.value}"
     }

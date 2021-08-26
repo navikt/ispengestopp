@@ -4,7 +4,6 @@ import io.ktor.server.netty.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.api.testutils.mock.AzureAdV2Mock
 import no.nav.syfo.api.testutils.mock.wellKnownInternADV2Mock
-import no.nav.syfo.api.testutils.mock.wellKnownMock
 import no.nav.syfo.application.ApplicationState
 
 class ExternalMockEnvironment {
@@ -26,7 +25,6 @@ class ExternalMockEnvironment {
         syfotilgangskontrollUrl = tilgangskontrollMock.url,
     )
 
-    val wellKnownInternADMock = wellKnownMock()
     val wellKnownInternADV2Mock = wellKnownInternADV2Mock()
 }
 

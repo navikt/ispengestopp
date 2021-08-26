@@ -14,7 +14,6 @@ fun Application.testApiModule(
         database = externalMockEnvironment.database,
         env = externalMockEnvironment.environment,
         personFlagget84Producer = personFlagget84Producer,
-        wellKnownInternADV1 = externalMockEnvironment.wellKnownInternADMock,
         wellKnownInternADV2 = externalMockEnvironment.wellKnownInternADV2Mock,
     )
 }

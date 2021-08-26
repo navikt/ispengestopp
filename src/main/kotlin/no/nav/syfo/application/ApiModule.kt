@@ -5,7 +5,6 @@ import io.ktor.auth.*
 import io.ktor.routing.*
 import no.nav.syfo.Environment
 import no.nav.syfo.StatusEndring
-import no.nav.syfo.api.registerFlaggPerson84
 import no.nav.syfo.api.registerFlaggPerson84V2
 import no.nav.syfo.api.registerNaisApi
 import no.nav.syfo.application.authentication.JwtIssuer
@@ -22,16 +21,10 @@ fun Application.apiModule(
     database: DatabaseInterface,
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
-    wellKnownInternADV1: WellKnown,
     wellKnownInternADV2: WellKnown,
 ) {
     installJwtAuthentication(
         jwtIssuerList = listOf(
-            JwtIssuer(
-                acceptedAudienceList = listOf(env.loginserviceClientId),
-                jwtIssuerType = JwtIssuerType.INTERN_AZUREAD_V1,
-                wellKnown = wellKnownInternADV1,
-            ),
             JwtIssuer(
                 acceptedAudienceList = listOf(env.azureAppClientId),
                 jwtIssuerType = JwtIssuerType.INTERN_AZUREAD_V2,
@@ -57,14 +50,6 @@ fun Application.apiModule(
 
     routing {
         registerNaisApi(applicationState)
-        authenticate(JwtIssuerType.INTERN_AZUREAD_V1.name) {
-            registerFlaggPerson84(
-                database,
-                env,
-                personFlagget84Producer,
-                tilgangskontrollConsumer
-            )
-        }
         authenticate(JwtIssuerType.INTERN_AZUREAD_V2.name) {
             registerFlaggPerson84V2(
                 database,
