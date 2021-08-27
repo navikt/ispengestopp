@@ -15,8 +15,6 @@ data class Environment(
     val databaseName: String = getEnvVar("DATABASE_NAME", "ispengestopp"),
     val ispengestoppDBURL: String = getEnvVar("ISPENGESTOPP_DB_URL"),
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
-    val aadDiscoveryUrl: String = getEnvVar("AADDISCOVERY_URL"),
-    val loginserviceClientId: String = getEnvVar("LOGINSERVICE_CLIENT_ID", "1234"),
     val stoppAutomatikkTopic: String = getEnvVar("STOPP_AUTOMATIKK_TOPIC", "apen-isyfo-stoppautomatikk"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),

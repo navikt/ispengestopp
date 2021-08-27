@@ -5,12 +5,12 @@ import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
 import no.nav.syfo.*
-import no.nav.syfo.api.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.api.apiV2BasePath
 import no.nav.syfo.api.apiV2PersonStatusPath
 import no.nav.syfo.api.testutils.*
 import no.nav.syfo.kafka.kafkaPersonFlaggetConsumerProperties
 import no.nav.syfo.kafka.kafkaPersonFlaggetProducerProperties
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo

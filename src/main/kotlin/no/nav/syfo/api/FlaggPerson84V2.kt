@@ -9,9 +9,7 @@ import no.nav.syfo.*
 import no.nav.syfo.application.authentication.getVeilederIdentFromToken
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.database.DatabaseInterface
-import no.nav.syfo.util.callIdArgument
-import no.nav.syfo.util.getBearerHeader
-import no.nav.syfo.util.getCallId
+import no.nav.syfo.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.Logger
