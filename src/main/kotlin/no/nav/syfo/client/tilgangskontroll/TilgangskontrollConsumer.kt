@@ -8,25 +8,28 @@ import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import io.ktor.util.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.*
 import no.nav.syfo.client.azuread.v2.AzureAdV2Client
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class TilgangskontrollConsumer(
     private val azureAdV2Client: AzureAdV2Client,
     private val syfotilgangskontrollClientId: String,
-    private val tilgangskontrollBaseUrl: String
+    tilgangskontrollBaseUrl: String
 ) {
-    private val log = LoggerFactory.getLogger("no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer")
-
-    @KtorExperimentalAPI
     private val httpClient = HttpClient(CIO) {
         install(JsonFeature) {
             serializer = JacksonSerializer()
         }
+    }
+
+    private val tilgangskontrollPersonUrl: String
+
+    init {
+        tilgangskontrollPersonUrl = "$tilgangskontrollBaseUrl$TILGANGSKONTROLL_PERSON_PATH"
     }
 
     suspend fun harTilgangTilBrukerMedOBO(
@@ -39,8 +42,8 @@ class TilgangskontrollConsumer(
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
         try {
-            val url = getTilgangskontrollV2Url(fnr)
-            val response: HttpResponse = httpClient.get(url) {
+            val response: HttpResponse = httpClient.get(tilgangskontrollPersonUrl) {
+                header(NAV_PERSONIDENT_HEADER, fnr.value)
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 accept(ContentType.Application.Json)
             }
@@ -58,10 +61,6 @@ class TilgangskontrollConsumer(
         }
     }
 
-    private fun getTilgangskontrollV2Url(fnr: SykmeldtFnr): String {
-        return "$tilgangskontrollBaseUrl/syfo-tilgangskontroll/api/tilgang/navident/bruker/${fnr.value}"
-    }
-
     private fun handleUnexpectedReponseException(response: HttpResponse): Boolean {
         val statusCode = response.status.value.toString()
         log.error(
@@ -70,5 +69,10 @@ class TilgangskontrollConsumer(
         )
         COUNT_TILGANGSKONTROLL_FAIL.labels(statusCode).inc()
         return false
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(TilgangskontrollConsumer::class.java)
+        const val TILGANGSKONTROLL_PERSON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident/person"
     }
 }
