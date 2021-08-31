@@ -66,6 +66,6 @@ spec:
     - name: ISPENGESTOPP_DB_URL
       value: jdbc:postgresql://b27dbvl015.preprod.local:5432/ispengestopp
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
-      value: "32e36aa5-1d12-452a-9b1e-9f3f557cbb4d"
+      value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.nais.preprod.local"
