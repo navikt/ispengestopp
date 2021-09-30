@@ -8,7 +8,7 @@ val flywayVersion = "7.5.0"
 val hikariVersion = "3.4.5"
 val kafkaVersion = "2.7.0"
 val jacksonVersion = "2.11.3"
-val ktorVersion = "1.5.0"
+val ktorVersion = "1.6.3"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "6.3"
 val nimbusjosejwtVersion = "7.5.1"
@@ -66,6 +66,7 @@ dependencies {
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
 
+    testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainerVersion")
