@@ -61,13 +61,6 @@ object PersistenceUtilsSpek : Spek({
     val hendelse = objectMapper.writeValueAsString(incomingStatusEndring)
     val hendelseRecord = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelse)
 
-    val incomingStatusEndringNoUUID = incomingStatusEndring.copy(
-        uuid = null,
-        arsakList = null
-    )
-    val hendelseNoUUID = objectMapper.writeValueAsString(incomingStatusEndringNoUUID)
-    val hendelseRecordNoUUID = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelseNoUUID)
-
     fun verifyEmptyDB(database: DatabaseInterface) {
         val statusendringListe: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
         statusendringListe.size shouldBeEqualTo 0
@@ -91,11 +84,6 @@ object PersistenceUtilsSpek : Spek({
         val mockConsumer = mockk<KafkaConsumer<String, String>>()
         every { mockConsumer.poll(Duration.ofMillis(env.pollTimeOutMs)) } returns ConsumerRecords(
             mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecord))
-        )
-
-        val mockConsumerNoUUID = mockk<KafkaConsumer<String, String>>()
-        every { mockConsumerNoUUID.poll(Duration.ofMillis(env.pollTimeOutMs)) } returns ConsumerRecords(
-            mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecordNoUUID))
         )
 
         it("Store in database after reading from kafka") {
@@ -134,26 +122,10 @@ object PersistenceUtilsSpek : Spek({
 
             COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.get() shouldBeEqualTo 1.0
         }
-        it("Store in database after reading record without UUID nor arsakList from kafka") {
-            pollAndPersist(mockConsumerNoUUID, database, env)
-
-            val statusendringListe: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
-            statusendringListe.size shouldBeEqualTo 1
-
-            val statusEndring = statusendringListe[0]
-            statusEndring.arsakList?.size shouldBeEqualTo 0
-            statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
-            statusEndring.veilederIdent shouldBeEqualTo veilederIdent
-            statusEndring.virksomhetNr shouldBeEqualTo primaryJob
-            statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
-            statusEndring.opprettet.dayOfMonth shouldBeEqualTo
-                Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
-            statusEndring.enhetNr shouldBeEqualTo enhetNr
-        }
 
         it("Catch thrown exception when storing in database fails, then move on") {
             mockkStatic("no.nav.syfo.QueriesKt")
-            every { database.addStatus(any(), any(), any(), any(), any(), any()) } throws SQLException("Sql er feil")
+            every { database.addStatus(any(), any(), any(), any(), any(), any(), any()) } throws SQLException("Sql er feil")
 
             pollAndPersist(mockConsumer, database, env)
 

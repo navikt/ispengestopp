@@ -19,6 +19,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.OffsetDateTime
 
 class GetStatusV2Spek : Spek({
 
@@ -29,15 +30,13 @@ class GetStatusV2Spek : Spek({
     val primaryJob = VirksomhetNr("888")
     val secondaryJob = VirksomhetNr("999")
     val enhetNr = EnhetNr("9999")
+    val opprettet = OffsetDateTime.now()
 
     val externalMockEnvironment = ExternalMockEnvironment()
     val database = externalMockEnvironment.database
 
-    val credentials = testVaultSecrets()
-
     val consumerProperties = kafkaPersonFlaggetConsumerProperties(
         externalMockEnvironment.environment,
-        credentials,
     )
         .overrideForTest()
     val consumer = KafkaConsumer<String, String>(consumerProperties)
@@ -45,7 +44,6 @@ class GetStatusV2Spek : Spek({
 
     val producerProperties = kafkaPersonFlaggetProducerProperties(
         externalMockEnvironment.environment,
-        credentials,
     )
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
@@ -123,7 +121,8 @@ class GetStatusV2Spek : Spek({
                         Status.STOPP_AUTOMATIKK,
                         arsakList,
                         primaryJob,
-                        enhetNr
+                        enhetNr,
+                        opprettet,
                     ),
                     DBStatusChangeTest(
                         "2",
@@ -132,7 +131,8 @@ class GetStatusV2Spek : Spek({
                         Status.STOPP_AUTOMATIKK,
                         arsakList,
                         primaryJob,
-                        enhetNr
+                        enhetNr,
+                        opprettet,
                     ),
                     DBStatusChangeTest(
                         "3",
@@ -141,7 +141,8 @@ class GetStatusV2Spek : Spek({
                         Status.STOPP_AUTOMATIKK,
                         arsakList,
                         secondaryJob,
-                        enhetNr
+                        enhetNr,
+                        opprettet,
                     ),
                     DBStatusChangeTest(
                         "4",
@@ -150,7 +151,8 @@ class GetStatusV2Spek : Spek({
                         Status.STOPP_AUTOMATIKK,
                         arsakList,
                         primaryJob,
-                        enhetNr
+                        enhetNr,
+                        opprettet,
                     )
                 )
                 statusList.forEach {
@@ -160,7 +162,8 @@ class GetStatusV2Spek : Spek({
                         it.veilederIdent,
                         it.enhetNr,
                         it.arsakList,
-                        it.virksomhetNr
+                        it.virksomhetNr,
+                        it.opprettet,
                     )
                 }
 

@@ -7,6 +7,8 @@ import no.nav.syfo.database.domain.toArsak
 import no.nav.syfo.database.domain.toStatusEndring
 import no.nav.syfo.database.toList
 import java.sql.ResultSet
+import java.sql.Timestamp
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 
@@ -16,7 +18,7 @@ const val queryInsertArsak =
         uuid,
         status_endring_id,
         arsaktype,
-        opprettet) VALUES (DEFAULT, ?, ?, ?, DEFAULT)"""
+        opprettet) VALUES (DEFAULT, ?, ?, ?, ?)"""
 
 const val queryStatusInsert =
     """INSERT INTO status_endring (
@@ -27,7 +29,7 @@ const val queryStatusInsert =
         status,
         virksomhet_nr,
         enhet_nr,
-        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, DEFAULT) RETURNING id"""
+        opprettet) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?) RETURNING id"""
 
 const val queryStatusRetrieve =
     """
@@ -43,7 +45,8 @@ fun DatabaseInterface.addStatus(
     ident: VeilederIdent,
     enhetNr: EnhetNr,
     arsakList: List<Arsak>?,
-    virksomhetNr: VirksomhetNr
+    virksomhetNr: VirksomhetNr,
+    opprettet: OffsetDateTime,
 ) {
     connection.use { connection ->
         val statusEndringId = connection.prepareStatement(queryStatusInsert).use {
@@ -53,6 +56,7 @@ fun DatabaseInterface.addStatus(
             it.setString(4, Status.STOPP_AUTOMATIKK.toString())
             it.setString(5, virksomhetNr.value)
             it.setString(6, enhetNr.value)
+            it.setTimestamp(7, Timestamp.from(opprettet.toInstant()))
             it.executeQuery().toList { getInt("id") }.first()
         }
         arsakList?.forEach { arsak ->
@@ -60,6 +64,7 @@ fun DatabaseInterface.addStatus(
                 it.setString(1, UUID.randomUUID().toString())
                 it.setInt(2, statusEndringId)
                 it.setString(3, arsak.type.toString())
+                it.setTimestamp(4, Timestamp.from(opprettet.toInstant()))
                 it.execute()
             }
         }

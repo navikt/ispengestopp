@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit
 
 class ApplicationServer(
     private val applicationServer: ApplicationEngine,
-    private val applicationState: ApplicationState
 ) {
     init {
         Runtime.getRuntime().addShutdownHook(
@@ -20,6 +19,8 @@ class ApplicationServer(
 
     fun start() {
         applicationServer.start(false)
-        applicationState.alive.set(true)
+    }
+    fun getEnvironment(): ApplicationEngineEnvironment {
+        return applicationServer.environment
     }
 }

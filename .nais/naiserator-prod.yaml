@@ -12,17 +12,21 @@ spec:
     max: 4
     cpuThresholdPercentage: 90
   port: 8080
+  startup:
+    path: /is_ready
+    periodSeconds: 5
+    timeout: 5
+    failureThreshold: 30
   liveness:
     path: /is_alive
-    initialDelay: 10
-    timeout: 5
     periodSeconds: 5
-    failureThreshold: 30
+    timeout: 5
+    failureThreshold: 3
   readiness:
     path: /is_ready
-    initialDelay: 30
     periodSeconds: 5
     timeout: 5
+    failureThreshold: 3
   prometheus:
     enabled: true
     path: /prometheus
@@ -33,11 +37,6 @@ spec:
     requests:
       cpu: 200m
       memory: 512Mi
-  vault:
-    enabled: true
-    paths:
-      - kvPath: serviceuser/data/prod/srvispengestopp
-        mountPath: /secrets/serviceuser
   ingresses:
     - "https://ispengestopp.intern.nav.no"
   accessPolicy:
@@ -46,26 +45,33 @@ spec:
         - application: syfomodiaperson
           namespace: teamsykefravr
           cluster: prod-fss
+    outbound:
+      external:
+        - host: "kafka-schema-registry.nais.adeo.no"
+        - host: "syfo-tilgangskontroll.prod-fss-pub.nais.io"
   azure:
     application:
       enabled: true
       tenant: nav.no
-      replyURLs:
-        - "https://ispengestopp.intern.nav.no/oauth2/callback"
       claims:
         extra:
           - "NAVident"
-  webproxy: true
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_12
+        databases:
+          - name: ispengestopp-db
+        diskAutoresize: true
+  envFrom:
+    - secret: ispengestopp-serviceuser
   env:
     - name: KAFKA_BOOTSTRAP_SERVERS_URL
       value: SASL_SSL://a01apvl00145.adeo.no:8443,SASL_SSL://a01apvl00146.adeo.no:8443,SASL_SSL://a01apvl00147.adeo.no:8443,SASL_SSL://a01apvl00149.adeo.no:8443
-    - name: DATABASE_MOUNT_PATH_VAULT
-      value: /postgresql/prod-fss
-    - name: DATABASE_NAME
-      value: ispengestopp
-    - name: ISPENGESTOPP_DB_URL
-      value: jdbc:postgresql://A01DBVL013.adeo.no:5432/ispengestopp
+    - name: KAFKA_SCHEMA_REGISTRY_URL
+      value: "https://kafka-schema-registry.nais.adeo.no"
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "prod-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
-      value: "https://syfo-tilgangskontroll.nais.adeo.no"
+      value: "https://syfo-tilgangskontroll.prod-fss-pub.nais.io"
+    - name: TOGGLE_KAFKA_CONSUMER_ENABLED
+      value: "false"

@@ -10,7 +10,7 @@ data class EnhetNr(val value: String) {
 }
 
 data class StatusEndring(
-    val uuid: String?,
+    val uuid: String,
     val veilederIdent: VeilederIdent,
     val sykmeldtFnr: SykmeldtFnr,
     val status: Status,
