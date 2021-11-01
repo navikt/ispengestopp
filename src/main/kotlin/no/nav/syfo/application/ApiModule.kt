@@ -6,7 +6,7 @@ import io.ktor.routing.*
 import no.nav.syfo.Environment
 import no.nav.syfo.StatusEndring
 import no.nav.syfo.api.registerFlaggPerson84V2
-import no.nav.syfo.api.registerNaisApi
+import no.nav.syfo.api.registerPodApi
 import no.nav.syfo.application.authentication.JwtIssuer
 import no.nav.syfo.application.authentication.JwtIssuerType
 import no.nav.syfo.application.authentication.WellKnown
@@ -49,7 +49,10 @@ fun Application.apiModule(
     )
 
     routing {
-        registerNaisApi(applicationState)
+        registerPodApi(
+            applicationState = applicationState,
+            database = database,
+        )
         authenticate(JwtIssuerType.INTERN_AZUREAD_V2.name) {
             registerFlaggPerson84V2(
                 database,
