@@ -40,9 +40,7 @@ class PostStatusV2Spek : Spek({
 
     val env = externalMockEnvironment.environment
 
-    val credentials = testVaultSecrets()
-
-    val testConsumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials).overrideForTest()
+    val testConsumerProperties = kafkaPersonFlaggetConsumerProperties(env).overrideForTest()
         .apply {
             remove(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG)
             remove(ConsumerConfig.GROUP_ID_CONFIG)
@@ -53,7 +51,7 @@ class PostStatusV2Spek : Spek({
     val testConsumer = KafkaConsumer<String, String>(testConsumerProperties)
     testConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
 
-    val prodConsumerProperties = kafkaPersonFlaggetConsumerProperties(env, credentials).overrideForTest()
+    val prodConsumerProperties = kafkaPersonFlaggetConsumerProperties(env).overrideForTest()
         .apply {
             remove(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG)
             remove(ConsumerConfig.GROUP_ID_CONFIG)
@@ -64,7 +62,7 @@ class PostStatusV2Spek : Spek({
     val prodConsumer = KafkaConsumer<String, String>(prodConsumerProperties)
     prodConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
 
-    val producerProperties = kafkaPersonFlaggetProducerProperties(env, credentials).overrideForTest()
+    val producerProperties = kafkaPersonFlaggetProducerProperties(env).overrideForTest()
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     fun withTestApplicationForApi(

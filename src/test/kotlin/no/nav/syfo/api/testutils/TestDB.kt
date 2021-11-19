@@ -1,44 +1,49 @@
 package no.nav.syfo.api.testutils
 
+import com.opentable.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.database.DatabaseInterface
-import no.nav.syfo.database.DbConfig
-import no.nav.syfo.database.DevDatabase
-import org.testcontainers.containers.PostgreSQLContainer
+import org.flywaydb.core.Flyway
 import java.sql.Connection
 
 class TestDB : DatabaseInterface {
 
-    private val container = PostgreSQLContainer<Nothing>("postgres").apply {
-        withDatabaseName("db_test")
-        withUsername("username")
-        withPassword("password")
-    }
+    private val pg: EmbeddedPostgres
 
-    private var db: DatabaseInterface
     override val connection: Connection
-        get() = db.connection.apply { autoCommit = false }
+        get() = pg.postgresDatabase.connection.apply {
+            autoCommit = false
+        }
 
     init {
-        container.start()
-        db = DevDatabase(
-            DbConfig(
-                jdbcUrl = container.jdbcUrl,
-                username = "username",
-                password = "password",
-                databaseName = "db_test"
-            )
-        )
+        pg = try {
+            EmbeddedPostgres.start()
+        } catch (e: Exception) {
+            EmbeddedPostgres.builder().setLocaleConfig("locale", "en_US").start()
+        }
+
+        Flyway.configure().run {
+            dataSource(pg.postgresDatabase).load().migrate()
+        }
     }
 
     fun stop() {
-        container.stop()
+        pg.close()
     }
 }
 
 fun Connection.dropData() {
-    val query = "DELETE FROM status_endring"
-    use { connection ->
-        connection.prepareStatement(query).executeUpdate()
+    val queryList = listOf(
+        """
+        DELETE FROM status_endring
+        """.trimIndent(),
+        """
+        DELETE FROM ARSAK
+        """.trimIndent(),
+    )
+    this.use { connection ->
+        queryList.forEach { query ->
+            connection.prepareStatement(query).execute()
+        }
         connection.commit()
     }
 }

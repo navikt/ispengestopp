@@ -13,6 +13,7 @@ val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "6.3"
 val nimbusjosejwtVersion = "7.5.1"
 val postgresVersion = "42.2.18"
+val postgresEmbeddedVersion = "0.13.4"
 val prometheusVersion = "0.9.0"
 val vaultJavaDriveVersion = "3.1.0"
 val spekVersion = "2.0.15"
@@ -58,11 +59,11 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
+    // Database
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
-    implementation("com.bettercloud:vault-java-driver:$vaultJavaDriveVersion")
-    implementation("no.nav:vault-jdbc:$NavvaultJdbcVersion")
+    testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
 

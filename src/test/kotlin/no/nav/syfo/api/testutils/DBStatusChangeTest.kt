@@ -1,6 +1,7 @@
 package no.nav.syfo.api.testutils
 
 import no.nav.syfo.*
+import java.time.OffsetDateTime
 
 data class DBStatusChangeTest(
     val uuid: String,
@@ -9,5 +10,6 @@ data class DBStatusChangeTest(
     val status: Status,
     val arsakList: List<Arsak>?,
     val virksomhetNr: VirksomhetNr,
-    val enhetNr: EnhetNr
+    val enhetNr: EnhetNr,
+    val opprettet: OffsetDateTime,
 )

@@ -5,7 +5,7 @@ import java.time.OffsetDateTime
 
 data class PStatusEndring(
     val id: Int,
-    val uuid: String?,
+    val uuid: String,
     val sykmeldtFnr: SykmeldtFnr,
     val veilederIdent: VeilederIdent,
     val status: Status,
