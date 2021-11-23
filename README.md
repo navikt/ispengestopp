@@ -12,7 +12,6 @@ in a database and posted on a kafka queue.
 * Gradle
 * JDK 13
 * Spek
-* Gson
 
 #### Requirements
 * Adopt-OpenJDK 13
@@ -35,7 +34,4 @@ Apply formatting: `./gradlew addKtlintFormatGitPreCommitHook`
 
 ## Contact us
 ### Code/project related questions can be sent to
-* June Henriksen, `june.henriksen2@nav.no`
-* Mathias Rørvik, `mathias.fris.rorvik@nav.no`
-* John Martin Lindseth `john.martin.lindseth@nav.no`
 * The following channel on slack --> #isyfo
