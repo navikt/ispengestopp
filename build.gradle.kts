@@ -1,27 +1,28 @@
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val flywayVersion = "7.15.0"
-val hikariVersion = "3.4.5"
-val kafkaVersion = "2.7.0"
-val jacksonVersion = "2.13.0"
-val ktorVersion = "1.6.5"
-val logbackVersion = "1.2.6"
-val logstashEncoderVersion = "6.6"
-val nimbusjosejwtVersion = "7.5.1"
-val postgresVersion = "42.3.1"
-val postgresEmbeddedVersion = "0.13.4"
-val prometheusVersion = "0.9.0"
-val spekVersion = "2.0.17"
-val kluentVersion = "1.68"
-val testcontainerVersion = "1.15.1"
-val NavvaultJdbcVersion = "1.3.7"
-val kafkaEmbeddedEnvVersion = "2.5.0"
-val mockkVersion = "1.12.0"
-val coroutinesVersion = "1.5.2"
+object Versions {
+    const val coroutines = "1.5.2"
+    const val jackson = "2.13.0"
+    const val flyway = "7.15.0"
+    const val hikari = "3.4.5"
+    const val kafka = "2.7.0"
+    const val kafkaEmbeddedEnv = "2.5.0"
+    const val kluent = "1.68"
+    const val ktor = "1.6.5"
+    const val logback = "1.2.6"
+    const val logstashEncoder = "6.6"
+    const val mockk = "1.12.0"
+    const val nimbusjosejwt = "7.5.1"
+    const val postgres = "42.3.1"
+    const val postgresEmbedded = "0.13.4"
+    const val prometheus = "0.9.0"
+    const val spek = "2.0.17"
+}
 
 plugins {
     kotlin("jvm") version "1.5.10"
@@ -40,46 +41,48 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutines}")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:${Versions.coroutines}")
 
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-auth-jwt:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-apache:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-cio:${Versions.ktor}")
+    implementation("io.ktor:ktor-client-jackson:${Versions.ktor}")
+    implementation("io.ktor:ktor-jackson:${Versions.ktor}")
+    implementation("io.ktor:ktor-server-netty:${Versions.ktor}")
 
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    // (De-)serialization
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${Versions.jackson}")
 
-    implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
-    implementation("io.prometheus:simpleclient_common:$prometheusVersion")
+    // Logging
+    implementation("ch.qos.logback:logback-classic:${Versions.logback}")
+    implementation("net.logstash.logback:logstash-logback-encoder:${Versions.logstashEncoder}")
 
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
+    // Metrics and Prometheus
+    implementation("io.prometheus:simpleclient_common:${Versions.prometheus}")
+    implementation("io.prometheus:simpleclient_hotspot:${Versions.prometheus}")
 
     // Database
-    implementation("org.postgresql:postgresql:$postgresVersion")
-    implementation("com.zaxxer:HikariCP:$hikariVersion")
-    implementation("org.flywaydb:flyway-core:$flywayVersion")
-    testImplementation("com.opentable.components:otj-pg-embedded:$postgresEmbeddedVersion")
+    implementation("org.flywaydb:flyway-core:${Versions.flyway}")
+    implementation("org.postgresql:postgresql:${Versions.postgres}")
+    implementation("com.zaxxer:HikariCP:${Versions.hikari}")
+    testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
 
-    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    // Kafka
+    implementation("org.apache.kafka:kafka_2.12:${Versions.kafka}")
+    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv}")
 
     testImplementation(kotlin("test"))
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("org.amshove.kluent:kluent:$kluentVersion")
-    testImplementation("org.testcontainers:postgresql:$testcontainerVersion")
-    testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwtVersion")
-    testImplementation("no.nav:kafka-embedded-env:$kafkaEmbeddedEnvVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
+    testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwt}")
+    testImplementation("io.ktor:ktor-server-test-host:${Versions.ktor}")
+    testImplementation("io.mockk:mockk:${Versions.mockk}")
+    testImplementation("org.amshove.kluent:kluent:${Versions.kluent}")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.coroutines}")
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:${Versions.spek}") {
+        exclude(group = "org.jetbrains.kotlin}")
     }
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
-        exclude(group = "org.jetbrains.kotlin")
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:${Versions.spek}") {
+        exclude(group = "org.jetbrains.kotlin}")
     }
 }
 
