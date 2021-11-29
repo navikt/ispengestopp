@@ -32,7 +32,7 @@ plugins {
 
 repositories {
     mavenCentral()
-    maven(url = "http://packages.confluent.io/maven/")
+    maven(url = "https://packages.confluent.io/maven/")
     maven(url = "https://jitpack.io")
     maven(url = "https://repository.mulesoft.org/nexus/content/repositories/public/")
 }
