@@ -4,7 +4,6 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import java.net.ServerSocket
 import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
 
 fun testEnvironment(
     azureTokenEndpoint: String = "azureTokenEndpoint",
@@ -13,7 +12,6 @@ fun testEnvironment(
 ): Environment {
     return Environment(
         applicationName = "ispengestopp",
-        applicationPort = 8080,
         azureAppClientId = "app-client-id",
         azureAppClientSecret = "app-secret",
         azureAppWellKnownUrl = "wellknownurl",
@@ -36,8 +34,8 @@ fun testEnvironment(
 }
 
 fun testAppState() = ApplicationState(
-    alive = AtomicBoolean(true),
-    ready = AtomicBoolean(true),
+    alive = true,
+    ready = true,
 )
 
 fun getRandomPort() = ServerSocket(0).use {

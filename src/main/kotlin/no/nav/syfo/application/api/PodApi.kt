@@ -15,7 +15,7 @@ fun Routing.registerPodApi(
     collectorRegistry: CollectorRegistry = CollectorRegistry.defaultRegistry
 ) {
     get("/is_alive") {
-        if (applicationState.alive.get()) {
+        if (applicationState.alive) {
             call.respondText("I'm alive! :)")
         } else {
             call.respondText("I'm dead x_x", status = HttpStatusCode.InternalServerError)
@@ -44,7 +44,7 @@ private fun isReady(
     applicationState: ApplicationState,
     database: DatabaseInterface,
 ): Boolean {
-    return applicationState.ready.get() && database.isDatabaseOK()
+    return applicationState.ready && database.isDatabaseOK()
 }
 
 private fun DatabaseInterface.isDatabaseOK(): Boolean {

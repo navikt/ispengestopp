@@ -3,12 +3,10 @@ package no.nav.syfo.pengestopp.api
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
-import io.ktor.util.*
 import kotlinx.coroutines.InternalCoroutinesApi
-import no.nav.syfo.*
+import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetConsumerProperties
-import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetProducerProperties
+import no.nav.syfo.pengestopp.kafka.*
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.UserConstants.SYKMELDT_FNR
 import no.nav.syfo.testutils.UserConstants.SYKMELDT_FNR_IKKE_TILGANG
@@ -22,7 +20,6 @@ import org.spekframework.spek2.style.specification.describe
 import java.time.*
 
 @InternalCoroutinesApi
-@KtorExperimentalAPI
 class PostStatusV2Spek : Spek({
     val sykmeldtFnr = SYKMELDT_FNR
     val sykmeldtFnrIkkeTilgang = SYKMELDT_FNR_IKKE_TILGANG
@@ -67,11 +64,11 @@ class PostStatusV2Spek : Spek({
     ) {
         testApp.start()
 
-        launchListeners(
-            externalMockEnvironment.applicationState,
-            testDB,
-            prodConsumer,
-            env
+        launchKafkaTask(
+            applicationState = externalMockEnvironment.applicationState,
+            database = testDB,
+            environment = env,
+            personFlagget84Consumer = prodConsumer,
         )
 
         testApp.application.testApiModule(

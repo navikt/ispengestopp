@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
-import no.nav.syfo.*
+import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.pengestopp.database.addStatus
 import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetConsumerProperties
