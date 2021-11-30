@@ -10,13 +10,14 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.*
-import no.nav.syfo.client.azuread.v2.AzureAdV2Client
+import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.pengestopp.SykmeldtFnr
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class TilgangskontrollConsumer(
-    private val azureAdV2Client: AzureAdV2Client,
+    private val azureAdClient: AzureAdClient,
     private val syfotilgangskontrollClientId: String,
     tilgangskontrollBaseUrl: String
 ) {
@@ -36,7 +37,7 @@ class TilgangskontrollConsumer(
         fnr: SykmeldtFnr,
         token: String,
     ): Boolean {
-        val oboToken = azureAdV2Client.getOnBehalfOfToken(
+        val oboToken = azureAdClient.getOnBehalfOfToken(
             scopeClientId = syfotilgangskontrollClientId,
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")

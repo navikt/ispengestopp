@@ -1,0 +1,27 @@
+package no.nav.syfo.pengestopp.database.domain
+
+import no.nav.syfo.pengestopp.*
+import java.time.OffsetDateTime
+
+data class PStatusEndring(
+    val id: Int,
+    val uuid: String,
+    val sykmeldtFnr: SykmeldtFnr,
+    val veilederIdent: VeilederIdent,
+    val status: Status,
+    val virksomhetNr: VirksomhetNr,
+    val opprettet: OffsetDateTime,
+    val enhetNr: EnhetNr
+)
+
+fun PStatusEndring.toStatusEndring(): StatusEndring =
+    StatusEndring(
+        uuid = this.uuid,
+        sykmeldtFnr = this.sykmeldtFnr,
+        veilederIdent = this.veilederIdent,
+        status = this.status,
+        arsakList = null,
+        virksomhetNr = this.virksomhetNr,
+        opprettet = this.opprettet,
+        enhetNr = this.enhetNr
+    )
