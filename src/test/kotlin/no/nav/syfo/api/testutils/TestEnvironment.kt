@@ -32,7 +32,6 @@ fun testEnvironment(
         serviceuserUsername = "",
         serviceuserPassword = "",
         pollTimeOutMs = 0L,
-        toggleKafkaConsumerEnabled = true,
     )
 }
 

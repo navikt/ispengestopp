@@ -73,5 +73,3 @@ spec:
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
     - name: SYFOTILGANGSKONTROLL_URL
       value: "https://syfo-tilgangskontroll.dev-fss-pub.nais.io"
-    - name: TOGGLE_KAFKA_CONSUMER_ENABLED
-      value: "true"

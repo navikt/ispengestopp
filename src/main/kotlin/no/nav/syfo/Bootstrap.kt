@@ -63,15 +63,12 @@ fun main() {
         application.environment.log.info("Application is ready")
         log.info("Hello from ispengestopp")
 
-        val toggleKafkaConsumerEnabled = env.toggleKafkaConsumerEnabled
-        if (toggleKafkaConsumerEnabled) {
-            launchListeners(
-                applicationState,
-                database,
-                personFlagget84Consumer,
-                env
-            )
-        }
+        launchListeners(
+            applicationState,
+            database,
+            personFlagget84Consumer,
+            env
+        )
     }
     applicationServer.start()
 }
