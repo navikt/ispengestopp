@@ -7,7 +7,7 @@ version = "1.0.0"
 
 object Versions {
     const val coroutines = "1.5.2"
-    const val flyway = "8.1.0"
+    const val flyway = "8.2.0"
     const val hikari = "5.0.0"
     const val jackson = "2.13.0"
     const val kafka = "2.7.0"
