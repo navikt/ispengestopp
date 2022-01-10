@@ -7,8 +7,8 @@ version = "1.0.0"
 
 object Versions {
     const val coroutines = "1.5.2"
-    const val flyway = "8.3.0"
-    const val hikari = "5.0.0"
+    const val flyway = "8.4.0"
+    const val hikari = "5.0.1"
     const val jackson = "2.13.1"
     const val kafka = "2.8.1"
     const val kafkaEmbeddedEnv = "2.8.1"
@@ -26,8 +26,8 @@ object Versions {
 
 plugins {
     kotlin("jvm") version "1.6.10"
-    id("com.github.johnrengelman.shadow") version "7.1.1"
-    id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 }
 
 repositories {
