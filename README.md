@@ -32,6 +32,8 @@ Apply formatting: `./gradlew addKtlintFormatGitPreCommitHook`
 #### Running locally
 `docker compose up`
 
-## Contact us
-### Code/project related questions can be sent to
-* The following channel on slack --> #isyfo
+## Contact
+
+### For NAV employees
+
+We are available at the Slack channel `#isyfo`.
