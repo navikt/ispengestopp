@@ -8,6 +8,7 @@ import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.micrometer.core.instrument.Metrics
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.*
 import no.nav.syfo.client.azuread.AzureAdClient
@@ -48,11 +49,11 @@ class TilgangskontrollConsumer(
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 accept(ContentType.Application.Json)
             }
-            COUNT_TILGANGSKONTROLL_OK.inc()
+            COUNT_TILGANGSKONTROLL_OK.increment()
             return response.receive<TilgangDTO>().harTilgang
         } catch (e: ClientRequestException) {
             return if (e.response.status == HttpStatusCode.Forbidden) {
-                COUNT_TILGANGSKONTROLL_FORBIDDEN.inc()
+                COUNT_TILGANGSKONTROLL_FORBIDDEN.increment()
                 false
             } else {
                 return handleUnexpectedReponseException(e.response)
@@ -68,7 +69,7 @@ class TilgangskontrollConsumer(
             "Error while requesting access to person from syfo-tilgangskontroll with {}",
             StructuredArguments.keyValue("statusCode", statusCode)
         )
-        COUNT_TILGANGSKONTROLL_FAIL.labels(statusCode).inc()
+        Metrics.counter(TILGANGSKONTROLL_FAIL, TAG_STATUS, statusCode).increment()
         return false
     }
 

@@ -51,7 +51,7 @@ fun Route.registerFlaggPerson84V2(
                         else -> call.respond(HttpStatusCode.NoContent)
                     }
                 } else {
-                    COUNT_GET_PERSON_STATUS_FORBIDDEN.inc()
+                    COUNT_GET_PERSON_STATUS_FORBIDDEN.increment()
                     call.respond(HttpStatusCode.Forbidden)
                 }
             } catch (e: IllegalArgumentException) {
@@ -92,10 +92,10 @@ fun Route.registerFlaggPerson84V2(
 
                         log.info("Lagt melding på kafka: Topic: {}", env.stoppAutomatikkTopic)
                     }
-                    COUNT_ENDRE_PERSON_STATUS_SUCCESS.inc()
+                    COUNT_ENDRE_PERSON_STATUS_SUCCESS.increment()
                     call.respond(HttpStatusCode.Created)
                 } else {
-                    COUNT_ENDRE_PERSON_STATUS_FORBIDDEN.inc()
+                    COUNT_ENDRE_PERSON_STATUS_FORBIDDEN.increment()
                     call.respond(HttpStatusCode.Forbidden)
                 }
             } catch (e: IllegalArgumentException) {

@@ -32,6 +32,7 @@ fun Application.apiModule(
     )
     installCallId()
     installContentNegotiation()
+    installMetrics()
     installStatusPages()
 
     val azureAdClient = AzureAdClient(
@@ -51,6 +52,7 @@ fun Application.apiModule(
             applicationState = applicationState,
             database = database,
         )
+        registerMetricApi()
         authenticate(JwtIssuerType.INTERN_AZUREAD_V2.name) {
             registerFlaggPerson84V2(
                 database,

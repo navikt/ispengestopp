@@ -111,7 +111,7 @@ object PersistenceUtilsSpek : Spek({
                 Instant.now().atZone(ZoneOffset.UTC).toOffsetDateTime().dayOfMonth
             statusEndring.enhetNr shouldBeEqualTo enhetNr
 
-            COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.get() shouldBeEqualTo 1.0
+            COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.count() shouldBeEqualTo 1.0
         }
 
         it("Catch thrown exception when storing in database fails, then move on") {
@@ -131,7 +131,7 @@ object PersistenceUtilsSpek : Spek({
             pollAndPersist(mockConsumer, database, env)
 
             verifyEmptyDB(database)
-            COUNT_ENDRE_PERSON_STATUS_DB_FAILED.get() shouldBeEqualTo 1.0
+            COUNT_ENDRE_PERSON_STATUS_DB_FAILED.count() shouldBeEqualTo 1.0
         }
     }
 })
