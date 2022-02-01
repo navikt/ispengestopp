@@ -7,7 +7,7 @@ version = "1.0.0"
 
 object Versions {
     const val coroutines = "1.5.2"
-    const val flyway = "8.4.0"
+    const val flyway = "8.4.3"
     const val hikari = "5.0.1"
     const val jackson = "2.13.1"
     const val kafka = "2.8.1"
@@ -17,7 +17,7 @@ object Versions {
     const val logback = "1.2.10"
     const val logstashEncoder = "7.0.1"
     const val mockk = "1.12.2"
-    const val nimbusjosejwt = "9.15.2"
+    const val nimbusjosejwt = "9.18"
     const val postgres = "42.3.1"
     const val postgresEmbedded = "0.13.4"
     const val prometheus = "0.9.0"
