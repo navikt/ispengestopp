@@ -34,11 +34,11 @@ fun pollAndPersist(
                 )
             } else {
                 log.error("Record with uuid=${hendelse.uuid} is already stored and is skipped")
-                COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.inc()
+                COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.increment()
             }
         } catch (e: Exception) {
             // TODO: Legg på retry kø
-            COUNT_ENDRE_PERSON_STATUS_DB_FAILED.inc()
+            COUNT_ENDRE_PERSON_STATUS_DB_FAILED.increment()
             log.error("Klarte ikke lagre til database. Hopper over melding. Feilet pga: ${e.javaClass}")
         }
     }
