@@ -7,21 +7,21 @@ version = "1.0.0"
 
 object Versions {
     const val coroutines = "1.5.2"
-    const val flyway = "8.5.0"
+    const val flyway = "8.5.2"
     const val hikari = "5.0.1"
     const val jackson = "2.13.1"
     const val kafka = "2.8.1"
     const val kafkaEmbeddedEnv = "2.8.1"
     const val kluent = "1.68"
     const val ktor = "1.6.7"
-    const val logback = "1.2.10"
+    const val logback = "1.2.11"
     const val logstashEncoder = "7.0.1"
-    const val micrometerRegistry = "1.8.2"
-    const val mockk = "1.12.2"
-    const val nimbusjosejwt = "9.18"
-    const val postgres = "42.3.2"
+    const val micrometerRegistry = "1.8.3"
+    const val mockk = "1.12.3"
+    const val nimbusjosejwt = "9.21"
+    const val postgres = "42.3.3"
     const val postgresEmbedded = "0.13.4"
-    const val spek = "2.0.17"
+    const val spek = "2.0.18"
 }
 
 plugins {
