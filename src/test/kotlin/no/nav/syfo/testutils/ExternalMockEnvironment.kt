@@ -2,9 +2,8 @@ package no.nav.syfo.testutils
 
 import io.ktor.server.netty.*
 import no.nav.common.KafkaEnvironment
-import no.nav.syfo.testutils.mock.AzureAdV2Mock
-import no.nav.syfo.testutils.mock.wellKnownInternADMock
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.testutils.mock.*
 
 class ExternalMockEnvironment {
     val applicationState: ApplicationState = testAppState()
