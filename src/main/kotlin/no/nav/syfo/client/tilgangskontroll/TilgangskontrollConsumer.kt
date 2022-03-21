@@ -1,17 +1,14 @@
 package no.nav.syfo.client.tilgangskontroll
 
-import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
-import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.micrometer.core.instrument.Metrics
 import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.*
 import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.client.httpClientDefault
 import no.nav.syfo.pengestopp.SykmeldtFnr
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -22,11 +19,7 @@ class TilgangskontrollConsumer(
     private val syfotilgangskontrollClientId: String,
     tilgangskontrollBaseUrl: String
 ) {
-    private val httpClient = HttpClient(CIO) {
-        install(JsonFeature) {
-            serializer = JacksonSerializer()
-        }
-    }
+    private val httpClient = httpClientDefault()
 
     private val tilgangskontrollPersonUrl: String
 
