@@ -18,12 +18,10 @@ class VeilederTilgangskontrollMock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
     private val tilgangFalse = TilgangDTO(
-        false,
-        ""
+        harTilgang = false,
     )
     private val tilgangTrue = TilgangDTO(
-        true,
-        ""
+        harTilgang = true,
     )
 
     val name = "veiledertilgangskontroll"
