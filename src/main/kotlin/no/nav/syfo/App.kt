@@ -1,9 +1,10 @@
 package no.nav.syfo
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.typesafe.config.ConfigFactory
-import io.ktor.application.*
-import io.ktor.config.*
+import io.ktor.server.application.*
+import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -14,12 +15,12 @@ import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseConfig
 import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.pengestopp.kafka.*
-import no.nav.syfo.util.configuredJacksonMapper
+import no.nav.syfo.util.configure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
-val objectMapper: ObjectMapper = configuredJacksonMapper()
+val objectMapper: ObjectMapper = jacksonObjectMapper().configure()
 
 val log: Logger = LoggerFactory.getLogger("no.nav.syfo.AppKt")
 

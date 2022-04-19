@@ -1,7 +1,7 @@
 package no.nav.syfo.client.tilgangskontroll
 
 import io.ktor.client.call.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -43,7 +43,7 @@ class TilgangskontrollConsumer(
                 accept(ContentType.Application.Json)
             }
             COUNT_TILGANGSKONTROLL_OK.increment()
-            return response.receive<TilgangDTO>().harTilgang
+            return response.body<TilgangDTO>().harTilgang
         } catch (e: ClientRequestException) {
             return if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_TILGANGSKONTROLL_FORBIDDEN.increment()
