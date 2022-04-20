@@ -1,6 +1,6 @@
 package no.nav.syfo.testutils
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.pengestopp.StatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer

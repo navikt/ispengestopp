@@ -1,11 +1,11 @@
 package no.nav.syfo.testutils.mock
 
-import io.ktor.application.*
+import io.ktor.server.application.*
 import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import no.nav.syfo.application.api.installContentNegotiation
 import no.nav.syfo.client.tilgangskontroll.TilgangDTO
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer.Companion.TILGANGSKONTROLL_PERSON_PATH

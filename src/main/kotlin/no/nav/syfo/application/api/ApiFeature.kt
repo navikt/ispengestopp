@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.ktor.application.*
-import io.ktor.features.*
+import io.ktor.server.application.*
 import io.ktor.http.*
-import io.ktor.jackson.*
-import io.ktor.metrics.micrometer.*
-import io.ktor.response.*
+import io.ktor.serialization.jackson.*
+import io.ktor.server.metrics.micrometer.*
+import io.ktor.server.plugins.callid.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.response.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import no.nav.syfo.application.metric.METRICS_REGISTRY
 import no.nav.syfo.util.*
@@ -48,9 +50,9 @@ fun Application.installMetrics() {
 
 fun Application.installStatusPages() {
     install(StatusPages) {
-        exception<Throwable> { cause ->
+        exception<Throwable> { call, cause ->
             call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-            log.error("Caught exception {} {} {}", cause, getCallId(), getConsumerId())
+            call.application.log.error("Caught exception {} {} {}", cause, call.getCallId(), call.getConsumerId())
             throw cause
         }
     }
