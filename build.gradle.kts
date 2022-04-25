@@ -7,25 +7,25 @@ version = "1.0.0"
 
 object Versions {
     const val coroutines = "1.5.2"
-    const val flyway = "8.5.4"
+    const val flyway = "8.5.9"
     const val hikari = "5.0.1"
     const val jackson = "2.13.1"
-    const val kafka = "2.8.1"
-    const val kafkaEmbeddedEnv = "2.8.1"
+    const val kafka = "3.1.0"
+    const val kafkaEmbeddedEnv = "3.1.0"
     const val kluent = "1.68"
     const val ktor = "2.0.0"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.1.1"
-    const val micrometerRegistry = "1.8.4"
+    const val micrometerRegistry = "1.8.5"
     const val mockk = "1.12.3"
     const val nimbusjosejwt = "9.21"
-    const val postgres = "42.3.3"
+    const val postgres = "42.3.4"
     const val postgresEmbedded = "0.13.4"
     const val spek = "2.0.18"
 }
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.jlleitschuh.gradle.ktlint") version "10.2.1"
 }
