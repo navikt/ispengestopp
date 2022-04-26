@@ -72,8 +72,11 @@ dependencies {
     testImplementation("com.opentable.components:otj-pg-embedded:${Versions.postgresEmbedded}")
 
     // Kafka
-    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}")
-    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv}")
+    val excludeLog4j = fun ExternalModuleDependency.() {
+        exclude(group = "log4j")
+    }
+    implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
+    testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv}", excludeLog4j)
 
     testImplementation(kotlin("test"))
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwt}")
