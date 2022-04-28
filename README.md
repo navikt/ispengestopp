@@ -10,11 +10,8 @@ in a database and posted on a kafka queue.
 * Kotlin
 * Ktor
 * Gradle
-* JDK 13
+* JDK 17
 * Spek
-
-#### Requirements
-* Adopt-OpenJDK 13
 
 #### Build and run tests
 To build locally and run the integration tests you can simply run `./gradlew test`
