@@ -1,11 +1,8 @@
 package no.nav.syfo.pengestopp.kafka
 
 import kotlinx.coroutines.*
-import net.logstash.logback.argument.StructuredArguments
-import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.application.Environment
+import no.nav.syfo.application.*
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.log
 import no.nav.syfo.pengestopp.pollAndPersist
 import org.apache.kafka.clients.consumer.KafkaConsumer
 
@@ -25,25 +22,6 @@ fun launchKafkaTask(
         )
     }
 }
-
-fun launchBackgroundTask(
-    applicationState: ApplicationState,
-    action: suspend CoroutineScope.() -> Unit,
-): Job =
-    GlobalScope.launch {
-        try {
-            action()
-        } catch (e: Exception) {
-            log.error(
-                "En uhåndtert feil oppstod, applikasjonen restarter {}",
-                StructuredArguments.fields(e.message),
-                e.cause
-            )
-        } finally {
-            applicationState.alive = false
-            applicationState.ready = false
-        }
-    }
 
 suspend fun blockingApplicationLogic(
     applicationState: ApplicationState,
