@@ -77,7 +77,15 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv}", excludeLog4j)
-
+    constraints {
+        implementation("org.eclipse.jetty.http2:http2-server") {
+            because("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
+            version {
+                require("9.4.48.v20220622")
+            }
+        }
+    }
+    
     testImplementation(kotlin("test"))
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwt}")
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktor}")
