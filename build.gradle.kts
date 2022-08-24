@@ -85,7 +85,7 @@ dependencies {
             }
         }
     }
-    
+
     testImplementation(kotlin("test"))
     testImplementation("com.nimbusds:nimbus-jose-jwt:${Versions.nimbusjosejwt}")
     testImplementation("io.ktor:ktor-server-test-host:${Versions.ktor}")
