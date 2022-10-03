@@ -10,17 +10,18 @@ object Versions {
     const val flyway = "8.5.13"
     const val hikari = "5.0.1"
     const val jackson = "2.13.3"
-    const val kafka = "3.2.0"
+    const val kafka = "3.2.3"
     const val kafkaEmbeddedEnv = "3.2.1"
     const val kluent = "1.68"
-    const val ktor = "2.1.0"
+    const val ktor = "2.1.2"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.2"
-    const val micrometerRegistry = "1.9.2"
+    const val micrometerRegistry = "1.9.4"
     const val mockk = "1.12.4"
-    const val nimbusjosejwt = "9.23"
+    const val nimbusjosejwt = "9.25.3"
     const val postgres = "42.4.1"
     const val postgresEmbedded = "0.13.4"
+    const val scala = "2.13.9"
     const val spek = "2.0.18"
 }
 
@@ -76,8 +77,22 @@ dependencies {
         exclude(group = "log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:${Versions.kafka}", excludeLog4j)
+    constraints {
+        implementation("org.scala-lang:scala-library") {
+            because("org.apache.kafka:kafka_2.13:${Versions.kafka} -> https://www.cve.org/CVERecord?id=CVE-2022-36944")
+            version {
+                require(Versions.scala)
+            }
+        }
+    }
     testImplementation("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv}", excludeLog4j)
     constraints {
+        implementation("org.yaml:snakeyaml") {
+            because("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-25857/")
+            version {
+                require("1.31")
+            }
+        }
         implementation("org.eclipse.jetty.http2:http2-server") {
             because("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
             version {
