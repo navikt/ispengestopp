@@ -13,7 +13,7 @@ spec:
   alerts:
     - alert: ISPENGESTOPP IS DOWN
       expr: sum(up{app="ispengestopp", job="kubernetes-pods"}) == 0
-      for: 5m
+      for: 30s
       description: "Det er ingen pods for app kjørende i namespace og dermed er appen nede"
       action: "Undersøk hvorfor pods er nede og få den kjørende igjen!"
       severity: danger
