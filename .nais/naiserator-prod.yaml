@@ -58,7 +58,7 @@ spec:
           - "NAVident"
   gcp:
     sqlInstances:
-      - type: POSTGRES_12
+      - type: POSTGRES_14
         databases:
           - name: ispengestopp-db
         diskAutoresize: true
