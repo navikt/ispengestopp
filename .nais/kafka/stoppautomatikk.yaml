@@ -4,7 +4,7 @@ metadata:
   annotations:
     dcat.data.nav.no/title: "Stoppautomatikk"
     dcat.data.nav.no/description: >-
-      Topic inneholder informasjon om sykmeldte personer der stopp i sykepenger har blitt anmodet.
+      Topic inneholder informasjon om sykmeldte personer der veileder ønsker stopp i automatisk behandling av sykepengesøknader.
   name: apen-isyfo-stoppautomatikk
   namespace: teamsykefravr
   labels:
