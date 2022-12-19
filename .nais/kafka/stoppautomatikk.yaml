@@ -1,0 +1,27 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  annotations:
+    dcat.data.nav.no/title: "Stoppautomatikk"
+    dcat.data.nav.no/description: >-
+      Topic inneholder informasjon om sykmeldte personer der veileder ønsker stopp i automatisk behandling av sykepengesøknader.
+  name: apen-isyfo-stoppautomatikk
+  namespace: teamsykefravr
+  labels:
+    team: teamsykefravr
+spec:
+  pool: {{ kafkaPool }}
+  config:
+    cleanupPolicy: delete
+    minimumInSyncReplicas: 1
+    partitions: 4
+    replication: 3
+    retentionBytes: -1  # -1 means unlimited
+    retentionHours: -1  # -1 means unlimited
+  acl:
+    - team: teamsykefravr
+      application: ispengestopp
+      access: readwrite
+    - team: risk
+      application: helserisk-isyfo
+      access: read
