@@ -16,10 +16,10 @@ fun pollAndPersist(
     database: DatabaseInterface,
     env: Environment,
 ) {
-    consumer.poll(Duration.ofMillis(env.pollTimeOutMs)).forEach { consumerRecord ->
-        val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
-        log.info("Offset for topic: ${env.stoppAutomatikkTopic}, offset: ${consumerRecord.offset()}")
-        try {
+    val records = consumer.poll(Duration.ofMillis(env.pollTimeOutMs))
+    if (!records.isEmpty) {
+        records.forEach { consumerRecord ->
+            val hendelse: StatusEndring = objectMapper.readValue(consumerRecord.value())
             val statusEndringList = database.getActiveFlags(UUID.fromString(hendelse.uuid))
 
             if (statusEndringList.isEmpty()) {
@@ -33,13 +33,12 @@ fun pollAndPersist(
                     hendelse.opprettet,
                 )
             } else {
-                log.error("Record with uuid=${hendelse.uuid} is already stored and is skipped")
+                log.warn("Record with uuid=${hendelse.uuid} is already stored and is skipped")
                 COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.increment()
             }
-        } catch (e: Exception) {
-            // TODO: Legg på retry kø
-            COUNT_ENDRE_PERSON_STATUS_DB_FAILED.increment()
-            log.error("Klarte ikke lagre til database. Hopper over melding. Feilet pga: ${e.javaClass}")
+        }
+        if (env.useAivenTopic) {
+            consumer.commitSync()
         }
     }
 }

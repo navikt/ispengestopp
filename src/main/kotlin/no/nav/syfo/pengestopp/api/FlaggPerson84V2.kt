@@ -68,6 +68,7 @@ fun Route.registerFlaggPerson84V2(
             try {
                 val stoppAutomatikk: StoppAutomatikk = call.receive()
                 val ident = getVeilederIdentFromToken(token)
+                val topic = if (env.useAivenTopic) env.stoppAutomatikkAivenTopic else env.stoppAutomatikkTopic
                 val harTilgang = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(stoppAutomatikk.sykmeldtFnr, token)
                 if (harTilgang) {
                     stoppAutomatikk.virksomhetNr.forEach {
@@ -81,16 +82,14 @@ fun Route.registerFlaggPerson84V2(
                             OffsetDateTime.now(ZoneOffset.UTC),
                             stoppAutomatikk.enhetNr
                         )
-
                         personFlagget84Producer.send(
                             ProducerRecord(
-                                env.stoppAutomatikkTopic,
+                                topic,
                                 "${stoppAutomatikk.sykmeldtFnr}-$it",
-                                kFlaggperson84Hendelse
+                                kFlaggperson84Hendelse,
                             )
                         )
-
-                        log.info("Lagt melding på kafka: Topic: {}", env.stoppAutomatikkTopic)
+                        log.info("Lagt melding på kafka: topic: $topic")
                     }
                     COUNT_ENDRE_PERSON_STATUS_SUCCESS.increment()
                     call.respond(HttpStatusCode.Created)

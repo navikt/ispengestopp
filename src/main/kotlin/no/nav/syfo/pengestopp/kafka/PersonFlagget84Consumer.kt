@@ -28,11 +28,14 @@ fun kafkaPersonFlaggetConsumerProperties(
 
 fun createPersonFlagget84Consumer(
     env: Environment,
+    groupId: String? = null,
 ): KafkaConsumer<String, String> {
     val kafkaConsumerProperties = kafkaPersonFlaggetConsumerProperties(env)
+    if (groupId != null) {
+        kafkaConsumerProperties[ConsumerConfig.GROUP_ID_CONFIG] = groupId
+    }
 
-    val personFlagget84Consumer = KafkaConsumer<String, String>(kafkaConsumerProperties)
-    personFlagget84Consumer.subscribe(listOf(env.stoppAutomatikkTopic))
-
-    return personFlagget84Consumer
+    return KafkaConsumer<String, String>(kafkaConsumerProperties).also {
+        it.subscribe(listOf(env.stoppAutomatikkTopic))
+    }
 }

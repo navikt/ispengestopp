@@ -4,7 +4,6 @@ import io.mockk.*
 import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.objectMapper
-import no.nav.syfo.pengestopp.database.addStatus
 import no.nav.syfo.pengestopp.database.getActiveFlags
 import no.nav.syfo.testutils.*
 import org.amshove.kluent.shouldBeEqualTo
@@ -12,7 +11,6 @@ import org.apache.kafka.clients.consumer.*
 import org.apache.kafka.common.TopicPartition
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.sql.SQLException
 import java.time.*
 import java.util.*
 
@@ -112,26 +110,6 @@ object PersistenceUtilsSpek : Spek({
             statusEndring.enhetNr shouldBeEqualTo enhetNr
 
             COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.count() shouldBeEqualTo 1.0
-        }
-
-        it("Catch thrown exception when storing in database fails, then move on") {
-            mockkStatic("no.nav.syfo.pengestopp.database.QueriesKt")
-            every {
-                database.addStatus(
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    any()
-                )
-            } throws SQLException("Sql er feil")
-
-            pollAndPersist(mockConsumer, database, env)
-
-            verifyEmptyDB(database)
-            COUNT_ENDRE_PERSON_STATUS_DB_FAILED.count() shouldBeEqualTo 1.0
         }
     }
 })
