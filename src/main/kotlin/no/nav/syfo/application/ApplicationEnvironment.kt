@@ -1,5 +1,7 @@
 package no.nav.syfo.application
 
+import no.nav.syfo.pengestopp.kafka.KafkaEnvironment
+
 data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "ispengestopp"),
 
@@ -21,10 +23,22 @@ data class Environment(
     val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
 
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
-    val stoppAutomatikkTopic: String = getEnvVar("STOPP_AUTOMATIKK_TOPIC", "apen-isyfo-stoppautomatikk"),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
+    val useAivenTopic: Boolean = getEnvVar("TOGGLE_USE_AIVEN_TOPIC").toBoolean(),
     val pollTimeOutMs: Long = 0,
+    val stoppAutomatikkTopic: String = "apen-isyfo-stoppautomatikk",
+    val stoppAutomatikkAivenTopic: String = "teamsykefravr.apen-isyfo-stoppautomatikk",
+    val kafka: KafkaEnvironment = KafkaEnvironment(
+        aivenBootstrapServers = getEnvVar("KAFKA_BROKERS"),
+        aivenCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD"),
+        aivenKeystoreLocation = getEnvVar("KAFKA_KEYSTORE_PATH"),
+        aivenSecurityProtocol = "SSL",
+        aivenTruststoreLocation = getEnvVar("KAFKA_TRUSTSTORE_PATH"),
+        aivenSchemaRegistryUrl = getEnvVar("KAFKA_SCHEMA_REGISTRY"),
+        aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
+        aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
+    ),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$ispengestoppDbHost:$ispengestoppDbPort/$ispengestoppDbName"

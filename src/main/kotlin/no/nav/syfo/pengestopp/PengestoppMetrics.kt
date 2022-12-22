@@ -8,7 +8,6 @@ import no.nav.syfo.application.metric.METRICS_REGISTRY
 const val ENDRE_PERSON_STATUS_SUCCESS = "${METRICS_NS}_endre_person_status_success_count"
 const val ENDRE_PERSON_STATUS_FORBIDDEN = "${METRICS_NS}_endre_person_status_forbidden_count"
 const val GET_PERSON_STATUS_FORBIDDEN = "${METRICS_NS}_get_person_status_forbidden_count"
-const val ENDRE_PERSON_STATUS_DB_FAILED = "${METRICS_NS}_endre_person_status_db_failed_count"
 const val ENDRE_PERSON_STATUS_DB_ALREADY_STORED = "${METRICS_NS}_endre_person_status_db_already_stored_count"
 
 val COUNT_ENDRE_PERSON_STATUS_SUCCESS: Counter = builder(ENDRE_PERSON_STATUS_SUCCESS)
@@ -17,10 +16,6 @@ val COUNT_ENDRE_PERSON_STATUS_SUCCESS: Counter = builder(ENDRE_PERSON_STATUS_SUC
 
 val COUNT_ENDRE_PERSON_STATUS_FORBIDDEN: Counter = builder(ENDRE_PERSON_STATUS_FORBIDDEN)
     .description("Counts the number of forbidden flaggings")
-    .register(METRICS_REGISTRY)
-
-val COUNT_ENDRE_PERSON_STATUS_DB_FAILED: Counter = builder(ENDRE_PERSON_STATUS_DB_FAILED)
-    .description("Counts the number of failed saves of flaggings to database")
     .register(METRICS_REGISTRY)
 
 val COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED: Counter = builder(ENDRE_PERSON_STATUS_DB_ALREADY_STORED)
