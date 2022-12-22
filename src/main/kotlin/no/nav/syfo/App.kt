@@ -39,15 +39,10 @@ fun main() {
         )
     )
 
-    val personFlagget84AivenProducer = createPersonFlagget84AivenProducer(environment)
-    val personFlagget84AivenConsumer = createPersonFlagget84AivenConsumer(environment)
-    val personFlagget84Producer = createPersonFlagget84Producer(environment)
-    val personFlagget84Consumer = createPersonFlagget84Consumer(environment)
-    val personFlagget84BootstrapConsumer = createPersonFlagget84Consumer(environment, "ispengestopp-bootstrap-v1")
-
     val wellKnownInternADV2 = getWellKnown(
         wellKnownUrl = environment.azureAppWellKnownUrl,
     )
+    val personFlagget84AivenProducer = createPersonFlagget84AivenProducer(environment)
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
@@ -64,7 +59,7 @@ fun main() {
                 personFlagget84Producer = if (environment.useAivenTopic)
                     personFlagget84AivenProducer
                 else
-                    personFlagget84Producer,
+                    createPersonFlagget84Producer(environment),
                 wellKnownInternADV2 = wellKnownInternADV2,
             )
         }
@@ -83,7 +78,7 @@ fun main() {
             bootstrapAivenTopic(
                 applicationState = applicationState,
                 environment = environment,
-                personFlagget84Consumer = personFlagget84BootstrapConsumer,
+                personFlagget84Consumer = createPersonFlagget84Consumer(environment, "ispengestopp-bootstrap-v2"),
                 personFlagget84AivenProducer = personFlagget84AivenProducer,
             )
         }
@@ -92,7 +87,10 @@ fun main() {
             applicationState = applicationState,
             database = database,
             environment = environment,
-            personFlagget84Consumer = if (environment.useAivenTopic) personFlagget84AivenConsumer else personFlagget84Consumer,
+            personFlagget84Consumer = if (environment.useAivenTopic)
+                createPersonFlagget84AivenConsumer(environment)
+            else
+                createPersonFlagget84Consumer(environment),
         )
     }
 
