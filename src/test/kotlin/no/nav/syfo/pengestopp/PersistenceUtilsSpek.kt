@@ -17,7 +17,7 @@ import java.util.*
 object PersistenceUtilsSpek : Spek({
     val embeddedKafkaEnvironment = KafkaEnvironment(
         autoStart = false,
-        topicNames = listOf("apen-isyfo-stoppautomatikk")
+        topicNames = listOf("teamsykefravr.apen-isyfo-stoppautomatikk")
     )
 
     val sykmeldtFnr = UserConstants.SYKMELDT_FNR
@@ -74,6 +74,7 @@ object PersistenceUtilsSpek : Spek({
         every { mockConsumer.poll(Duration.ofMillis(env.pollTimeOutMs)) } returns ConsumerRecords(
             mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecord))
         )
+        every { mockConsumer.commitSync() } returns Unit
 
         it("Store in database after reading from kafka") {
             pollAndPersist(mockConsumer, database, env)
