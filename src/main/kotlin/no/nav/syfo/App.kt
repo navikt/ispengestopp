@@ -42,7 +42,6 @@ fun main() {
     val wellKnownInternADV2 = getWellKnown(
         wellKnownUrl = environment.azureAppWellKnownUrl,
     )
-    val personFlagget84AivenProducer = createPersonFlagget84AivenProducer(environment)
 
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
@@ -57,7 +56,7 @@ fun main() {
                 database = database,
                 env = environment,
                 personFlagget84Producer = if (environment.useAivenTopic)
-                    personFlagget84AivenProducer
+                    createPersonFlagget84AivenProducer(environment)
                 else
                     createPersonFlagget84Producer(environment),
                 wellKnownInternADV2 = wellKnownInternADV2,
@@ -73,15 +72,6 @@ fun main() {
     applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) { application ->
         applicationState.ready = true
         application.environment.log.info("Application is ready, running Java VM ${Runtime.version()}")
-
-        if (environment.useAivenTopic) {
-            bootstrapAivenTopic(
-                applicationState = applicationState,
-                environment = environment,
-                personFlagget84Consumer = createPersonFlagget84Consumer(environment, "ispengestopp-bootstrap-v2"),
-                personFlagget84AivenProducer = personFlagget84AivenProducer,
-            )
-        }
 
         launchKafkaTask(
             applicationState = applicationState,
