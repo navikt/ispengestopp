@@ -13,7 +13,7 @@ object Versions {
     const val kafka = "3.2.3"
     const val kafkaEmbeddedEnv = "3.2.1"
     const val kluent = "1.68"
-    const val ktor = "2.1.2"
+    const val ktor = "2.2.2"
     const val logback = "1.2.11"
     const val logstashEncoder = "7.2"
     const val micrometerRegistry = "1.9.4"
@@ -97,6 +97,12 @@ dependencies {
             because("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
             version {
                 require("9.4.48.v20220622")
+            }
+        }
+        implementation("com.google.protobuf:protobuf-java") {
+            because("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv} -> https://cwe.mitre.org/data/definitions/400.html")
+            version {
+                require("3.21.7")
             }
         }
     }
