@@ -32,7 +32,7 @@ class PostStatusV2Spek : Spek({
 
     val env = externalMockEnvironment.environment
 
-    val testConsumerProperties = kafkaPersonFlaggetConsumerProperties(env).overrideForTest()
+    val testConsumerProperties = kafkaPersonFlaggetAivenConsumerProperties(env).overrideForTest()
         .apply {
             remove(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG)
             remove(ConsumerConfig.GROUP_ID_CONFIG)
@@ -41,9 +41,9 @@ class PostStatusV2Spek : Spek({
             put(ConsumerConfig.GROUP_ID_CONFIG, "spek.integration-consumer")
         }
     val testConsumer = KafkaConsumer<String, String>(testConsumerProperties)
-    testConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
+    testConsumer.subscribe(listOf(env.stoppAutomatikkAivenTopic))
 
-    val prodConsumerProperties = kafkaPersonFlaggetConsumerProperties(env).overrideForTest()
+    val prodConsumerProperties = kafkaPersonFlaggetAivenConsumerProperties(env).overrideForTest()
         .apply {
             remove(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG)
             remove(ConsumerConfig.GROUP_ID_CONFIG)
@@ -52,9 +52,9 @@ class PostStatusV2Spek : Spek({
             put(ConsumerConfig.GROUP_ID_CONFIG, "prodConsumer")
         }
     val prodConsumer = KafkaConsumer<String, String>(prodConsumerProperties)
-    prodConsumer.subscribe(listOf(env.stoppAutomatikkTopic))
+    prodConsumer.subscribe(listOf(env.stoppAutomatikkAivenTopic))
 
-    val producerProperties = kafkaPersonFlaggetProducerProperties(env).overrideForTest()
+    val producerProperties = kafkaPersonFlaggetAivenProducerProperties(env).overrideForTest()
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     fun withTestApplicationForApi(

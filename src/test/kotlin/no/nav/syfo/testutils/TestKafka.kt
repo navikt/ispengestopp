@@ -6,7 +6,7 @@ fun testKafka(
     autoStart: Boolean = false,
     withSchemaRegistry: Boolean = false,
     topicNames: List<String> = listOf(
-        "apen-isyfo-stoppautomatikk",
+        "teamsykefravr.apen-isyfo-stoppautomatikk",
     )
 ) = KafkaEnvironment(
     autoStart = autoStart,
