@@ -30,7 +30,7 @@ object PersistenceUtilsSpek : Spek({
     )
 
     val partition = 0
-    val stoppAutomatikkTopicPartition = TopicPartition(env.stoppAutomatikkTopic, partition)
+    val stoppAutomatikkTopicPartition = TopicPartition(env.stoppAutomatikkAivenTopic, partition)
 
     val arsakList = listOf(
         Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
@@ -48,7 +48,7 @@ object PersistenceUtilsSpek : Spek({
         enhetNr
     )
     val hendelse = objectMapper.writeValueAsString(incomingStatusEndring)
-    val hendelseRecord = ConsumerRecord(env.stoppAutomatikkTopic, partition, 1, "something", hendelse)
+    val hendelseRecord = ConsumerRecord(env.stoppAutomatikkAivenTopic, partition, 1, "something", hendelse)
 
     fun verifyEmptyDB(database: DatabaseInterface) {
         val statusendringListe: List<StatusEndring> = database.getActiveFlags(fnr = sykmeldtFnr)
