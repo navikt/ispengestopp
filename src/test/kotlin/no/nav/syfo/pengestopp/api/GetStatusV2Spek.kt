@@ -7,8 +7,8 @@ import io.ktor.server.testing.*
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.pengestopp.database.addStatus
-import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetConsumerProperties
-import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetProducerProperties
+import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetAivenConsumerProperties
+import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetAivenProducerProperties
 import no.nav.syfo.testutils.*
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
@@ -33,16 +33,15 @@ class GetStatusV2Spek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment()
     val database = externalMockEnvironment.database
 
-    val consumerProperties = kafkaPersonFlaggetConsumerProperties(
+    val consumerProperties = kafkaPersonFlaggetAivenConsumerProperties(
         externalMockEnvironment.environment,
-    )
-        .overrideForTest()
+    ).overrideForTest()
     val consumer = KafkaConsumer<String, String>(consumerProperties)
-    consumer.subscribe(listOf(externalMockEnvironment.environment.stoppAutomatikkTopic))
+    consumer.subscribe(listOf(externalMockEnvironment.environment.stoppAutomatikkAivenTopic))
 
-    val producerProperties = kafkaPersonFlaggetProducerProperties(
+    val producerProperties = kafkaPersonFlaggetAivenProducerProperties(
         externalMockEnvironment.environment,
-    )
+    ).overrideForTest()
     val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
 
     // TODO: gjøre database delen av testen om til å gi mer test coverage av prodkoden

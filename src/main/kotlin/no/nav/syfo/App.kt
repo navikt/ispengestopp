@@ -55,10 +55,7 @@ fun main() {
                 applicationState = applicationState,
                 database = database,
                 env = environment,
-                personFlagget84Producer = if (environment.useAivenTopic)
-                    createPersonFlagget84AivenProducer(environment)
-                else
-                    createPersonFlagget84Producer(environment),
+                personFlagget84Producer = createPersonFlagget84AivenProducer(environment),
                 wellKnownInternADV2 = wellKnownInternADV2,
             )
         }
@@ -77,10 +74,7 @@ fun main() {
             applicationState = applicationState,
             database = database,
             environment = environment,
-            personFlagget84Consumer = if (environment.useAivenTopic)
-                createPersonFlagget84AivenConsumer(environment)
-            else
-                createPersonFlagget84Consumer(environment),
+            personFlagget84Consumer = createPersonFlagget84AivenConsumer(environment),
         )
     }
 

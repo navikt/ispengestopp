@@ -68,7 +68,7 @@ fun Route.registerFlaggPerson84V2(
             try {
                 val stoppAutomatikk: StoppAutomatikk = call.receive()
                 val ident = getVeilederIdentFromToken(token)
-                val topic = if (env.useAivenTopic) env.stoppAutomatikkAivenTopic else env.stoppAutomatikkTopic
+                val topic = env.stoppAutomatikkAivenTopic
                 val harTilgang = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(stoppAutomatikk.sykmeldtFnr, token)
                 if (harTilgang) {
                     stoppAutomatikk.virksomhetNr.forEach {

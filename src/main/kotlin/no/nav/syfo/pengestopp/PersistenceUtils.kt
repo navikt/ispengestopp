@@ -37,8 +37,6 @@ fun pollAndPersist(
                 COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.increment()
             }
         }
-        if (env.useAivenTopic) {
-            consumer.commitSync()
-        }
+        consumer.commitSync()
     }
 }
