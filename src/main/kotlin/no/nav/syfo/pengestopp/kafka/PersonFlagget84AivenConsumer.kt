@@ -1,6 +1,7 @@
 package no.nav.syfo.pengestopp.kafka
 
 import no.nav.syfo.application.Environment
+import no.nav.syfo.application.kafka.commonKafkaAivenConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer

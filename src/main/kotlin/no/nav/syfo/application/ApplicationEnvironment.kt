@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.pengestopp.kafka.KafkaEnvironment
+import no.nav.syfo.application.kafka.KafkaEnvironment
 
 data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "ispengestopp"),
@@ -34,6 +34,7 @@ data class Environment(
         aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
         aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     ),
+    val toggleKafkaConsumerIdenthendelseEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_IDENTHENDELSE_CONSUMER_ENABLED").toBoolean(),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$ispengestoppDbHost:$ispengestoppDbPort/$ispengestoppDbName"

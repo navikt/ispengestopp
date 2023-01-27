@@ -2,7 +2,7 @@ package no.nav.syfo.testutils
 
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.pengestopp.kafka.KafkaEnvironment
+import no.nav.syfo.application.kafka.KafkaEnvironment
 import java.net.ServerSocket
 import java.util.*
 
@@ -38,6 +38,7 @@ fun testEnvironment(
             aivenRegistryUser = "registryuser",
             aivenRegistryPassword = "registrypassword",
         ),
+        toggleKafkaConsumerIdenthendelseEnabled = true,
     )
 }
 

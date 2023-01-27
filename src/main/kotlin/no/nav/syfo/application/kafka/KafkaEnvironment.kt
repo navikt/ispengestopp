@@ -1,4 +1,4 @@
-package no.nav.syfo.pengestopp.kafka
+package no.nav.syfo.application.kafka
 
 data class KafkaEnvironment(
     val aivenBootstrapServers: String,
