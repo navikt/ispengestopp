@@ -14,6 +14,8 @@ import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseConfig
 import no.nav.syfo.client.wellknown.getWellKnown
+import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
+import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
 import no.nav.syfo.pengestopp.kafka.*
 import no.nav.syfo.util.configure
 import org.slf4j.Logger
@@ -76,6 +78,15 @@ fun main() {
             environment = environment,
             personFlagget84Consumer = createPersonFlagget84AivenConsumer(environment),
         )
+
+        if (environment.toggleKafkaConsumerIdenthendelseEnabled) {
+            val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService()
+            launchKafkaTaskIdenthendelse(
+                applicationState = applicationState,
+                environment = environment,
+                kafkaIdenthendelseConsumerService = kafkaIdenthendelseConsumerService,
+            )
+        }
     }
 
     Runtime.getRuntime().addShutdownHook(

@@ -1,6 +1,8 @@
 package no.nav.syfo.pengestopp.kafka
 
 import no.nav.syfo.application.Environment
+import no.nav.syfo.application.kafka.JacksonKafkaSerializer
+import no.nav.syfo.application.kafka.commonKafkaAivenConfig
 import no.nav.syfo.pengestopp.StatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
