@@ -20,6 +20,7 @@ fun Application.apiModule(
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
     wellKnownInternADV2: WellKnown,
+    azureAdClient: AzureAdClient,
 ) {
     installJwtAuthentication(
         jwtIssuerList = listOf(
@@ -34,12 +35,6 @@ fun Application.apiModule(
     installContentNegotiation()
     installMetrics()
     installStatusPages()
-
-    val azureAdClient = AzureAdClient(
-        azureAppClientId = env.azureAppClientId,
-        azureAppClientSecret = env.azureAppClientSecret,
-        azureTokenEndpoint = env.azureTokenEndpoint,
-    )
 
     val tilgangskontrollConsumer = TilgangskontrollConsumer(
         azureAdClient = azureAdClient,
