@@ -10,6 +10,7 @@ import no.nav.syfo.pengestopp.database.addStatus
 import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetAivenConsumerProperties
 import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetAivenProducerProperties
 import no.nav.syfo.testutils.*
+import no.nav.syfo.testutils.generator.generateStatusEndringer
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
@@ -17,18 +18,11 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.OffsetDateTime
 
 class GetStatusV2Spek : Spek({
 
     val sykmeldtFnr = UserConstants.SYKMELDT_FNR
-    val sykmeldtFnrFiller = SykmeldtFnr("654321")
     val sykmeldtFnrIkkeTilgang = UserConstants.SYKMELDT_FNR_IKKE_TILGANG
-    val veilederIdent = VeilederIdent("Z999999")
-    val primaryJob = VirksomhetNr("888")
-    val secondaryJob = VirksomhetNr("999")
-    val enhetNr = EnhetNr("9999")
-    val opprettet = OffsetDateTime.now()
 
     val externalMockEnvironment = ExternalMockEnvironment()
     val database = externalMockEnvironment.database
@@ -109,48 +103,8 @@ class GetStatusV2Spek : Spek({
                     Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
                     Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
                 )
-
-                val statusList = listOf(
-                    DBStatusChangeTest(
-                        "1",
-                        sykmeldtFnr,
-                        veilederIdent,
-                        Status.STOPP_AUTOMATIKK,
-                        arsakList,
-                        primaryJob,
-                        enhetNr,
-                        opprettet,
-                    ),
-                    DBStatusChangeTest(
-                        "2",
-                        sykmeldtFnr,
-                        veilederIdent,
-                        Status.STOPP_AUTOMATIKK,
-                        arsakList,
-                        primaryJob,
-                        enhetNr,
-                        opprettet,
-                    ),
-                    DBStatusChangeTest(
-                        "3",
-                        sykmeldtFnr,
-                        veilederIdent,
-                        Status.STOPP_AUTOMATIKK,
-                        arsakList,
-                        secondaryJob,
-                        enhetNr,
-                        opprettet,
-                    ),
-                    DBStatusChangeTest(
-                        "4",
-                        sykmeldtFnrFiller,
-                        veilederIdent,
-                        Status.STOPP_AUTOMATIKK,
-                        arsakList,
-                        primaryJob,
-                        enhetNr,
-                        opprettet,
-                    )
+                val statusList = generateStatusEndringer(
+                    arsakList = arsakList,
                 )
                 statusList.forEach {
                     database.addStatus(

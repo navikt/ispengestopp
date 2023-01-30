@@ -17,6 +17,7 @@ class ExternalMockEnvironment {
     val externalApplicationMockMap = hashMapOf(
         azureAdV2Mock.name to azureAdV2Mock.server,
         tilgangskontrollMock.name to tilgangskontrollMock.server,
+        pdlMock.name to pdlMock.server,
     )
 
     val environment = testEnvironment(
