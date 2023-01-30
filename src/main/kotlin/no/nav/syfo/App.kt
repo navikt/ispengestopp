@@ -13,6 +13,8 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseConfig
+import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
@@ -45,6 +47,18 @@ fun main() {
         wellKnownUrl = environment.azureAppWellKnownUrl,
     )
 
+    val azureAdClient = AzureAdClient(
+        azureAppClientId = environment.azureAppClientId,
+        azureAppClientSecret = environment.azureAppClientSecret,
+        azureTokenEndpoint = environment.azureTokenEndpoint,
+    )
+
+    val pdlClient = PdlClient(
+        azureAdClient = azureAdClient,
+        pdlUrl = environment.pdlUrl,
+        pdlClientId = environment.pdlClientId,
+    )
+
     val applicationEngineEnvironment = applicationEngineEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
         config = HoconApplicationConfig(ConfigFactory.load())
@@ -59,6 +73,7 @@ fun main() {
                 env = environment,
                 personFlagget84Producer = createPersonFlagget84AivenProducer(environment),
                 wellKnownInternADV2 = wellKnownInternADV2,
+                azureAdClient = azureAdClient,
             )
         }
     }

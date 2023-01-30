@@ -19,6 +19,9 @@ data class Environment(
     val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
     val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
 
+    val pdlClientId: String = getEnvVar("PDL_CLIENT_ID"),
+    val pdlUrl: String = getEnvVar("PDL_URL"),
+
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
     val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
     val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),

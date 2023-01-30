@@ -9,6 +9,7 @@ import java.util.*
 fun testEnvironment(
     azureTokenEndpoint: String = "azureTokenEndpoint",
     kafkaBrokersURL: String,
+    pdlUrl: String = "pdl",
     syfotilgangskontrollUrl: String = "http://syfotilgangskontroll",
 ): Environment {
     return Environment(
@@ -28,6 +29,8 @@ fun testEnvironment(
         serviceuserUsername = "",
         serviceuserPassword = "",
         pollTimeOutMs = 0L,
+        pdlClientId = "dev-fss.pdl.pdl-api",
+        pdlUrl = pdlUrl,
         kafka = KafkaEnvironment(
             aivenBootstrapServers = kafkaBrokersURL,
             aivenCredstorePassword = "credstorepassord",
