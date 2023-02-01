@@ -16,6 +16,7 @@ import no.nav.syfo.application.database.DatabaseConfig
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.wellknown.getWellKnown
+import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
 import no.nav.syfo.pengestopp.kafka.*
@@ -95,7 +96,13 @@ fun main() {
         )
 
         if (environment.toggleKafkaConsumerIdenthendelseEnabled) {
-            val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService()
+            val identhendelseService = IdenthendelseService(
+                database = database,
+                pdlClient = pdlClient,
+            )
+            val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService(
+                identhendelseService = identhendelseService,
+            )
             launchKafkaTaskIdenthendelse(
                 applicationState = applicationState,
                 environment = environment,
