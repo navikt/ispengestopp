@@ -46,7 +46,7 @@ class PdlMock {
         routing {
             post {
                 val pdlRequest = call.receive<PdlHentIdenterRequest>()
-                if (pdlRequest.variables.ident == UserConstants.ARBEIDSTAKER_PERSONIDENT_3.value) {
+                if (pdlRequest.variables.ident == UserConstants.SYKMELDT_PERSONIDENT_3.value) {
                     call.respond(generatePdlIdenter("enAnnenIdent"))
                 } else {
                     call.respond(generatePdlIdenter(pdlRequest.variables.ident))

@@ -20,7 +20,7 @@ object PersistenceUtilsSpek : Spek({
         topicNames = listOf("teamsykefravr.apen-isyfo-stoppautomatikk")
     )
 
-    val sykmeldtFnr = UserConstants.SYKMELDT_FNR
+    val sykmeldtPersonIdent = UserConstants.SYKMELDT_PERSONIDENT
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
@@ -40,7 +40,7 @@ object PersistenceUtilsSpek : Spek({
     val incomingStatusEndring = StatusEndring(
         UUID.randomUUID().toString(),
         veilederIdent,
-        sykmeldtFnr,
+        sykmeldtPersonIdent,
         Status.STOPP_AUTOMATIKK,
         arsakList,
         primaryJob,
@@ -51,7 +51,7 @@ object PersistenceUtilsSpek : Spek({
     val hendelseRecord = ConsumerRecord(env.stoppAutomatikkAivenTopic, partition, 1, "something", hendelse)
 
     fun verifyEmptyDB(database: DatabaseInterface) {
-        val statusendringListe: List<StatusEndring> = database.getActiveFlags(fnr = sykmeldtFnr)
+        val statusendringListe: List<StatusEndring> = database.getActiveFlags(personIdent = sykmeldtPersonIdent)
         statusendringListe.size shouldBeEqualTo 0
     }
 
@@ -79,11 +79,11 @@ object PersistenceUtilsSpek : Spek({
         it("Store in database after reading from kafka") {
             pollAndPersist(mockConsumer, database, env)
 
-            val statusendringListe: List<StatusEndring> = database.getActiveFlags(fnr = sykmeldtFnr)
+            val statusendringListe: List<StatusEndring> = database.getActiveFlags(personIdent = sykmeldtPersonIdent)
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe[0]
-            statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+            statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
             statusEndring.veilederIdent shouldBeEqualTo veilederIdent
             statusEndring.virksomhetNr shouldBeEqualTo primaryJob
             statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
@@ -97,12 +97,12 @@ object PersistenceUtilsSpek : Spek({
 
             pollAndPersist(mockConsumer, database, env)
 
-            val statusendringListe: List<StatusEndring> = database.getActiveFlags(fnr = sykmeldtFnr)
+            val statusendringListe: List<StatusEndring> = database.getActiveFlags(personIdent = sykmeldtPersonIdent)
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe.first()
             statusEndring.arsakList shouldBeEqualTo arsakList
-            statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+            statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
             statusEndring.veilederIdent shouldBeEqualTo veilederIdent
             statusEndring.virksomhetNr shouldBeEqualTo primaryJob
             statusEndring.status shouldBeEqualTo Status.STOPP_AUTOMATIKK

@@ -9,8 +9,8 @@ import io.ktor.server.routing.*
 import no.nav.syfo.application.api.installContentNegotiation
 import no.nav.syfo.client.tilgangskontroll.TilgangDTO
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer.Companion.TILGANGSKONTROLL_PERSON_PATH
-import no.nav.syfo.testutils.UserConstants.SYKMELDT_FNR
-import no.nav.syfo.testutils.UserConstants.SYKMELDT_FNR_IKKE_TILGANG
+import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT
+import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT_IKKE_TILGANG
 import no.nav.syfo.testutils.getRandomPort
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 
@@ -32,10 +32,10 @@ class VeilederTilgangskontrollMock {
         installContentNegotiation()
         routing {
             get(TILGANGSKONTROLL_PERSON_PATH) {
-                if (call.request.headers[NAV_PERSONIDENT_HEADER] == SYKMELDT_FNR.value) {
+                if (call.request.headers[NAV_PERSONIDENT_HEADER] == SYKMELDT_PERSONIDENT.value) {
                     call.respond(tilgangTrue)
                 }
-                if (call.request.headers[NAV_PERSONIDENT_HEADER] == SYKMELDT_FNR_IKKE_TILGANG.value) {
+                if (call.request.headers[NAV_PERSONIDENT_HEADER] == SYKMELDT_PERSONIDENT_IKKE_TILGANG.value) {
                     call.respond(HttpStatusCode.Forbidden, tilgangFalse)
                 }
             }

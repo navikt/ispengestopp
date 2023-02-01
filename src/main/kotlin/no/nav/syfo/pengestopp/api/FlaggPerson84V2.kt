@@ -9,6 +9,7 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.getVeilederIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.pengestopp.database.getActiveFlags
 import no.nav.syfo.util.*
@@ -42,10 +43,10 @@ fun Route.registerFlaggPerson84V2(
 
                 val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
 
-                val sykmeldtFnr = SykmeldtFnr(sykmeldtPersonident)
-                val hasAccess = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(sykmeldtFnr, token)
+                val personIdent = PersonIdent(sykmeldtPersonident)
+                val hasAccess = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(personIdent, token)
                 if (hasAccess) {
-                    val flags: List<StatusEndring> = database.getActiveFlags(sykmeldtFnr)
+                    val flags: List<StatusEndring> = database.getActiveFlags(personIdent)
                     when {
                         flags.isNotEmpty() -> call.respond(flags)
                         else -> call.respond(HttpStatusCode.NoContent)

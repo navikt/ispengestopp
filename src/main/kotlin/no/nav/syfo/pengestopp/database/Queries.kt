@@ -2,6 +2,7 @@ package no.nav.syfo.pengestopp.database
 
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.application.database.toList
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.pengestopp.database.domain.*
 import java.sql.ResultSet
@@ -39,7 +40,7 @@ const val queryStatusRetrieve =
 
 fun DatabaseInterface.addStatus(
     uuid: String,
-    fnr: SykmeldtFnr,
+    personIdent: PersonIdent,
     ident: VeilederIdent,
     enhetNr: EnhetNr,
     arsakList: List<Arsak>?,
@@ -49,7 +50,7 @@ fun DatabaseInterface.addStatus(
     connection.use { connection ->
         val statusEndringId = connection.prepareStatement(queryStatusInsert).use {
             it.setString(1, uuid)
-            it.setString(2, fnr.value)
+            it.setString(2, personIdent.value)
             it.setString(3, ident.value)
             it.setString(4, Status.STOPP_AUTOMATIKK.toString())
             it.setString(5, virksomhetNr.value)
@@ -100,17 +101,17 @@ fun ResultSet.statusEndring(): PStatusEndring =
         id = getInt("id"),
         uuid = getString("uuid"),
         veilederIdent = VeilederIdent(getString("veileder_ident")),
-        sykmeldtFnr = SykmeldtFnr(getString("sykmeldt_fnr")),
+        personIdent = PersonIdent(getString("sykmeldt_fnr")),
         status = Status.valueOf(getString("status")),
         virksomhetNr = VirksomhetNr(getString("virksomhet_nr")),
         opprettet = getTimestamp("opprettet").toInstant().atOffset(ZoneOffset.UTC),
         enhetNr = EnhetNr(getString("enhet_nr"))
     )
 
-fun DatabaseInterface.getActiveFlags(fnr: SykmeldtFnr): List<StatusEndring> {
+fun DatabaseInterface.getActiveFlags(personIdent: PersonIdent): List<StatusEndring> {
     val statusEndringList = connection.use { connection ->
         connection.prepareStatement(queryStatusRetrieve).use {
-            it.setString(1, fnr.value)
+            it.setString(1, personIdent.value)
             it.executeQuery().toList {
                 statusEndring()
             }

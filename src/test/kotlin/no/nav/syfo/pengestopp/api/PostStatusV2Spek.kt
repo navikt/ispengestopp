@@ -8,8 +8,8 @@ import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.pengestopp.kafka.*
 import no.nav.syfo.testutils.*
-import no.nav.syfo.testutils.UserConstants.SYKMELDT_FNR
-import no.nav.syfo.testutils.UserConstants.SYKMELDT_FNR_IKKE_TILGANG
+import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT
+import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT_IKKE_TILGANG
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -21,8 +21,8 @@ import java.time.*
 
 @InternalCoroutinesApi
 class PostStatusV2Spek : Spek({
-    val sykmeldtFnr = SYKMELDT_FNR
-    val sykmeldtFnrIkkeTilgang = SYKMELDT_FNR_IKKE_TILGANG
+    val sykmeldtPersonIdent = SYKMELDT_PERSONIDENT
+    val sykmeldtPersonIdentIkkeTilgang = SYKMELDT_PERSONIDENT_IKKE_TILGANG
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
@@ -102,7 +102,7 @@ class PostStatusV2Spek : Spek({
                 with(
                     handleRequest(HttpMethod.Post, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, null, listOf(primaryJob), enhetNr)
+                        val stoppAutomatikk = StoppAutomatikk(sykmeldtPersonIdent, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                         setBody(stoppAutomatikkJson)
                     }
@@ -116,7 +116,7 @@ class PostStatusV2Spek : Spek({
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                         val stoppAutomatikk =
-                            StoppAutomatikk(sykmeldtFnrIkkeTilgang, null, listOf(primaryJob), enhetNr)
+                            StoppAutomatikk(sykmeldtPersonIdentIkkeTilgang, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                         setBody(stoppAutomatikkJson)
                     }
@@ -129,7 +129,7 @@ class PostStatusV2Spek : Spek({
                     handleRequest(HttpMethod.Post, endpointPath) {
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                        val stoppAutomatikk = StoppAutomatikk(sykmeldtFnr, null, listOf(primaryJob), enhetNr)
+                        val stoppAutomatikk = StoppAutomatikk(sykmeldtPersonIdent, null, listOf(primaryJob), enhetNr)
                         val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
                         setBody(stoppAutomatikkJson)
                     }
@@ -149,7 +149,7 @@ class PostStatusV2Spek : Spek({
 
                 val latestFlaggperson84Hendelse = messages.last()
                 latestFlaggperson84Hendelse.arsakList.shouldBeNull()
-                latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+                latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
                 latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
                 latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
                 latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
@@ -168,7 +168,7 @@ class PostStatusV2Spek : Spek({
                         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                         addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
                         val stoppAutomatikk = StoppAutomatikk(
-                            sykmeldtFnr,
+                            sykmeldtPersonIdent,
                             arsakList,
                             listOf(primaryJob),
                             enhetNr
@@ -192,7 +192,7 @@ class PostStatusV2Spek : Spek({
 
                 val latestFlaggperson84Hendelse = messages.last()
                 latestFlaggperson84Hendelse.arsakList shouldBeEqualTo arsakList
-                latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtFnr
+                latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
                 latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
                 latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK
                 latestFlaggperson84Hendelse.opprettet.dayOfMonth shouldBeEqualTo Instant.now()
