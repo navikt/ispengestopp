@@ -1,7 +1,7 @@
 package no.nav.syfo.identhendelse.database
 
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.pengestopp.SykmeldtFnr
+import no.nav.syfo.domain.PersonIdent
 
 const val queryUpdateSykmeldtFnr =
     """
@@ -11,8 +11,8 @@ const val queryUpdateSykmeldtFnr =
     """
 
 fun DatabaseInterface.updateStatusEndringSykmeldtFnr(
-    nyPersonident: SykmeldtFnr,
-    inactiveIdenter: List<SykmeldtFnr>,
+    nyPersonident: PersonIdent,
+    inactiveIdenter: List<PersonIdent>,
 ): Int {
     var updatedRows = 0
     this.connection.use { connection ->

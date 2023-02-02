@@ -1,18 +1,19 @@
 package no.nav.syfo.testutils.generator
 
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.testutils.DBStatusChangeTest
 import no.nav.syfo.testutils.UserConstants
 import java.time.OffsetDateTime
 
 fun generateStatusEndringer(
-    sykmeldtFnr: SykmeldtFnr = UserConstants.SYKMELDT_FNR,
+    personIdent: PersonIdent = UserConstants.SYKMELDT_PERSONIDENT,
     veilederIdent: VeilederIdent = VeilederIdent("Z999999"),
     primaryJob: VirksomhetNr = VirksomhetNr("888"),
     secondaryJob: VirksomhetNr = VirksomhetNr("999"),
     enhetNr: EnhetNr = EnhetNr("9999"),
     opprettet: OffsetDateTime = OffsetDateTime.now(),
-    sykmeldtFnrFiller: SykmeldtFnr = SykmeldtFnr("654321"),
+    personIdentFiller: PersonIdent = PersonIdent("12312312344"),
     arsakList: List<Arsak> = listOf(
         Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
         Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
@@ -21,7 +22,7 @@ fun generateStatusEndringer(
     return listOf(
         DBStatusChangeTest(
             "1",
-            sykmeldtFnr,
+            personIdent,
             veilederIdent,
             Status.STOPP_AUTOMATIKK,
             arsakList,
@@ -31,7 +32,7 @@ fun generateStatusEndringer(
         ),
         DBStatusChangeTest(
             "2",
-            sykmeldtFnr,
+            personIdent,
             veilederIdent,
             Status.STOPP_AUTOMATIKK,
             arsakList,
@@ -41,7 +42,7 @@ fun generateStatusEndringer(
         ),
         DBStatusChangeTest(
             "3",
-            sykmeldtFnr,
+            personIdent,
             veilederIdent,
             Status.STOPP_AUTOMATIKK,
             arsakList,
@@ -51,7 +52,7 @@ fun generateStatusEndringer(
         ),
         DBStatusChangeTest(
             "4",
-            sykmeldtFnrFiller,
+            personIdentFiller,
             veilederIdent,
             Status.STOPP_AUTOMATIKK,
             arsakList,

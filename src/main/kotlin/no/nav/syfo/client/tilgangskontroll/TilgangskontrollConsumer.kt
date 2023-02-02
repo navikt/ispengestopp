@@ -9,7 +9,7 @@ import io.micrometer.core.instrument.Metrics
 import net.logstash.logback.argument.StructuredArguments
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.pengestopp.SykmeldtFnr
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
@@ -28,7 +28,7 @@ class TilgangskontrollConsumer(
     }
 
     suspend fun harTilgangTilBrukerMedOBO(
-        fnr: SykmeldtFnr,
+        personIdent: PersonIdent,
         token: String,
     ): Boolean {
         val oboToken = azureAdClient.getOnBehalfOfToken(
@@ -38,7 +38,7 @@ class TilgangskontrollConsumer(
 
         try {
             val response: HttpResponse = httpClient.get(tilgangskontrollPersonUrl) {
-                header(NAV_PERSONIDENT_HEADER, fnr.value)
+                header(NAV_PERSONIDENT_HEADER, personIdent.value)
                 header(HttpHeaders.Authorization, bearerHeader(oboToken))
                 accept(ContentType.Application.Json)
             }

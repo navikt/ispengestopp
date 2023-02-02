@@ -6,7 +6,7 @@ import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.identhendelse.database.updateStatusEndringSykmeldtFnr
 import no.nav.syfo.identhendelse.kafka.COUNT_KAFKA_CONSUMER_PDL_AKTOR_UPDATES
 import no.nav.syfo.identhendelse.kafka.KafkaIdenthendelseDTO
-import no.nav.syfo.pengestopp.SykmeldtFnr
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.database.getActiveFlags
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -40,7 +40,7 @@ class IdenthendelseService(
     }
 
     // Erfaringer fra andre team tilsier at vi burde dobbeltsjekke at ting har blitt oppdatert i PDL før vi gjør endringer
-    private fun checkThatPdlIsUpdated(nyIdent: SykmeldtFnr) {
+    private fun checkThatPdlIsUpdated(nyIdent: PersonIdent) {
         runBlocking {
             val pdlIdenter = pdlClient.hentIdenter(nyIdent.value) ?: throw RuntimeException("Fant ingen identer fra PDL")
             if (nyIdent.value != pdlIdenter.aktivIdent && pdlIdenter.identhendelseIsNotHistorisk(nyIdent.value)) {

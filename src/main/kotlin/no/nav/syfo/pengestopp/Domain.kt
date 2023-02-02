@@ -1,5 +1,6 @@
 package no.nav.syfo.pengestopp
 
+import no.nav.syfo.domain.PersonIdent
 import java.time.OffsetDateTime
 
 data class EnhetNr(val value: String) {
@@ -22,7 +23,7 @@ fun nrValidator(value: String) {
 data class StatusEndring(
     val uuid: String,
     val veilederIdent: VeilederIdent,
-    val sykmeldtFnr: SykmeldtFnr,
+    val sykmeldtFnr: PersonIdent,
     val status: Status,
     val arsakList: List<Arsak>?,
     val virksomhetNr: VirksomhetNr,
@@ -43,13 +44,12 @@ data class Arsak(
 )
 
 data class StoppAutomatikk(
-    val sykmeldtFnr: SykmeldtFnr,
+    val sykmeldtFnr: PersonIdent,
     val arsakList: List<Arsak>?,
     val virksomhetNr: List<VirksomhetNr>,
     val enhetNr: EnhetNr
 )
 
-data class SykmeldtFnr(val value: String)
 data class VeilederIdent(val value: String)
 data class VirksomhetNr(val value: String) {
     init {

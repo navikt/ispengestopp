@@ -61,13 +61,13 @@ object IdenthendelseServiceSpek : Spek({
 
                     val arsakList = listOf(Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV))
                     val statusList = generateStatusEndringer(
-                        sykmeldtFnr = oldIdent,
+                        personIdent = oldIdent,
                         arsakList = arsakList,
                     )
                     statusList.forEach {
                         database.addStatus(
                             it.uuid,
-                            it.sykmeldtFnr,
+                            it.personIdent,
                             it.veilederIdent,
                             it.enhetNr,
                             it.arsakList,
@@ -92,20 +92,20 @@ object IdenthendelseServiceSpek : Spek({
             describe("Unhappy path") {
                 it("Skal kaste feil hvis PDL ikke har oppdatert identen") {
                     val kafkaIdenthendelseDTO = generateKafkaIdenthendelseDTO(
-                        sykmeldtFnr = UserConstants.ARBEIDSTAKER_PERSONIDENT_3,
+                        personIdent = UserConstants.SYKMELDT_PERSONIDENT_3,
                         hasOldPersonident = true,
                     )
                     val oldIdent = kafkaIdenthendelseDTO.getInactivePersonidenter().first()
 
                     val arsakList = listOf(Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV))
                     val statusList = generateStatusEndringer(
-                        sykmeldtFnr = oldIdent,
+                        personIdent = oldIdent,
                         arsakList = arsakList,
                     )
                     statusList.forEach {
                         database.addStatus(
                             it.uuid,
-                            it.sykmeldtFnr,
+                            it.personIdent,
                             it.veilederIdent,
                             it.enhetNr,
                             it.arsakList,
