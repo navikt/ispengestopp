@@ -41,7 +41,6 @@ fun testEnvironment(
             aivenRegistryUser = "registryuser",
             aivenRegistryPassword = "registrypassword",
         ),
-        toggleKafkaConsumerIdenthendelseEnabled = true,
     )
 }
 

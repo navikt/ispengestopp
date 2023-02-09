@@ -37,7 +37,6 @@ data class Environment(
         aivenRegistryUser = getEnvVar("KAFKA_SCHEMA_REGISTRY_USER"),
         aivenRegistryPassword = getEnvVar("KAFKA_SCHEMA_REGISTRY_PASSWORD"),
     ),
-    val toggleKafkaConsumerIdenthendelseEnabled: Boolean = getEnvVar("TOGGLE_KAFKA_IDENTHENDELSE_CONSUMER_ENABLED").toBoolean(),
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$ispengestoppDbHost:$ispengestoppDbPort/$ispengestoppDbName"

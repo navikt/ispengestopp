@@ -95,20 +95,18 @@ fun main() {
             personFlagget84Consumer = createPersonFlagget84AivenConsumer(environment),
         )
 
-        if (environment.toggleKafkaConsumerIdenthendelseEnabled) {
-            val identhendelseService = IdenthendelseService(
-                database = database,
-                pdlClient = pdlClient,
-            )
-            val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService(
-                identhendelseService = identhendelseService,
-            )
-            launchKafkaTaskIdenthendelse(
-                applicationState = applicationState,
-                environment = environment,
-                kafkaIdenthendelseConsumerService = kafkaIdenthendelseConsumerService,
-            )
-        }
+        val identhendelseService = IdenthendelseService(
+            database = database,
+            pdlClient = pdlClient,
+        )
+        val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService(
+            identhendelseService = identhendelseService,
+        )
+        launchKafkaTaskIdenthendelse(
+            applicationState = applicationState,
+            environment = environment,
+            kafkaIdenthendelseConsumerService = kafkaIdenthendelseConsumerService,
+        )
     }
 
     Runtime.getRuntime().addShutdownHook(
