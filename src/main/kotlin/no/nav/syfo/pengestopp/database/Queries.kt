@@ -76,6 +76,7 @@ const val queryArsakListForStatusEndring =
     SELECT * 
     FROM arsak
     WHERE status_endring_id = ?
+    ORDER BY id ASC
 """
 
 fun DatabaseInterface.getArsakListForStatusEndring(statusEndringId: Int): List<PArsak> {
