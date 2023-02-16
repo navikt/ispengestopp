@@ -51,6 +51,7 @@ spec:
         - host: "syfo-tilgangskontroll.dev-fss-pub.nais.io"
   azure:
     application:
+      allowAllUsers: true
       enabled: true
       tenant: trygdeetaten.no
       claims:
