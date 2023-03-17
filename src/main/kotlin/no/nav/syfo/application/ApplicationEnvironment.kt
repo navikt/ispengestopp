@@ -16,9 +16,6 @@ data class Environment(
     val ispengestoppDbUsername: String = getEnvVar("NAIS_DATABASE_ISPENGESTOPP_ISPENGESTOPP_DB_USERNAME"),
     val ispengestoppDbPassword: String = getEnvVar("NAIS_DATABASE_ISPENGESTOPP_ISPENGESTOPP_DB_PASSWORD"),
 
-    val serviceuserUsername: String = getEnvVar("SERVICEUSER_USERNAME"),
-    val serviceuserPassword: String = getEnvVar("SERVICEUSER_PASSWORD"),
-
     val pdlClientId: String = getEnvVar("PDL_CLIENT_ID"),
     val pdlUrl: String = getEnvVar("PDL_URL"),
 
