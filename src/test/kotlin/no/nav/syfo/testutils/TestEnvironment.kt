@@ -26,8 +26,6 @@ fun testEnvironment(
         developmentMode = false,
         syfotilgangskontrollClientId = "syfotilgangskontrollclientid",
         syfotilgangskontrollUrl = syfotilgangskontrollUrl,
-        serviceuserUsername = "",
-        serviceuserPassword = "",
         pollTimeOutMs = 0L,
         pdlClientId = "dev-fss.pdl.pdl-api",
         pdlUrl = pdlUrl,

@@ -39,6 +39,7 @@ spec:
       memory: 128Mi
   ingresses:
     - "https://ispengestopp.dev.intern.nav.no"
+    - "https://ispengestopp.intern.dev.nav.no"
   accessPolicy:
     inbound:
       rules:
@@ -65,8 +66,6 @@ spec:
         databases:
           - name: ispengestopp-db
         diskAutoresize: true
-  envFrom:
-    - secret: ispengestopp-serviceuser
   env:
     - name: SYFOTILGANGSKONTROLL_CLIENT_ID
       value: "dev-fss.teamsykefravr.syfo-tilgangskontroll"
