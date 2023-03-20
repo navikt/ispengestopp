@@ -38,7 +38,6 @@ spec:
       cpu: 100m
       memory: 128Mi
   ingresses:
-    - "https://ispengestopp.dev.intern.nav.no"
     - "https://ispengestopp.intern.dev.nav.no"
   accessPolicy:
     inbound:
