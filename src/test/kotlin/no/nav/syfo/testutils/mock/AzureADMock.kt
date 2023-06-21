@@ -6,7 +6,7 @@ import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.api.installContentNegotiation
-import no.nav.syfo.client.azuread.AzureAdV2TokenResponse
+import no.nav.syfo.client.azuread.AzureAdTokenResponse
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.testutils.getRandomPort
 import java.nio.file.Paths
@@ -24,7 +24,7 @@ class AzureAdV2Mock {
     private val port = getRandomPort()
     val url = "http://localhost:$port"
 
-    val aadV2TokenResponse = AzureAdV2TokenResponse(
+    val aadV2TokenResponse = AzureAdTokenResponse(
         access_token = "token",
         expires_in = 3600,
         token_type = "type"

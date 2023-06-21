@@ -30,7 +30,7 @@ class AzureAdClient(
                 append("scope", "api://$scopeClientId/.default")
                 append("requested_token_use", "on_behalf_of")
             }
-        )?.toAzureAdV2Token()
+        )?.toAzureAdToken()
     }
 
     suspend fun getSystemToken(scopeClientId: String): AzureAdToken? {
@@ -41,16 +41,16 @@ class AzureAdClient(
                 append("grant_type", "client_credentials")
                 append("scope", "api://$scopeClientId/.default")
             }
-        )?.toAzureAdV2Token()
+        )?.toAzureAdToken()
     }
 
-    private suspend fun getAccessToken(formParameters: Parameters): AzureAdV2TokenResponse? {
+    private suspend fun getAccessToken(formParameters: Parameters): AzureAdTokenResponse? {
         return try {
             val response: HttpResponse = httpClient.post(azureTokenEndpoint) {
                 accept(ContentType.Application.Json)
                 setBody(FormDataContent(formParameters))
             }
-            response.body<AzureAdV2TokenResponse>()
+            response.body<AzureAdTokenResponse>()
         } catch (e: ClientRequestException) {
             handleUnexpectedResponseException(e)
         } catch (e: ServerResponseException) {
@@ -60,7 +60,7 @@ class AzureAdClient(
 
     private fun handleUnexpectedResponseException(
         responseException: ResponseException
-    ): AzureAdV2TokenResponse? {
+    ): AzureAdTokenResponse? {
         log.error(
             "Error while requesting AzureAdAccessToken with statusCode=${responseException.response.status.value}",
             responseException
