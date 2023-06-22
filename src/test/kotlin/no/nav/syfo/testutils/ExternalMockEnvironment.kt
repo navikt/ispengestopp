@@ -10,7 +10,7 @@ class ExternalMockEnvironment {
     val database = TestDB()
     val embeddedEnvironment: KafkaEnvironment = testKafka()
 
-    val azureAdV2Mock = AzureAdV2Mock()
+    val azureAdV2Mock = AzureAdMock()
     val tilgangskontrollMock = VeilederTilgangskontrollMock()
     val pdlMock = PdlMock()
 
