@@ -1,5 +1,6 @@
 package no.nav.syfo.client.tilgangskontroll
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -17,9 +18,9 @@ import org.slf4j.LoggerFactory
 class TilgangskontrollConsumer(
     private val azureAdClient: AzureAdClient,
     private val syfotilgangskontrollClientId: String,
-    tilgangskontrollBaseUrl: String
+    tilgangskontrollBaseUrl: String,
+    private val httpClient: HttpClient = httpClientDefault()
 ) {
-    private val httpClient = httpClientDefault()
 
     private val tilgangskontrollPersonUrl: String
 

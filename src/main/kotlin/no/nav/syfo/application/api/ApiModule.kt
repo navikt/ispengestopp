@@ -7,7 +7,6 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.pengestopp.StatusEndring
@@ -20,7 +19,7 @@ fun Application.apiModule(
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
     wellKnownInternADV2: WellKnown,
-    azureAdClient: AzureAdClient,
+    tilgangskontrollConsumer: TilgangskontrollConsumer,
 ) {
     installJwtAuthentication(
         jwtIssuerList = listOf(
@@ -35,12 +34,6 @@ fun Application.apiModule(
     installContentNegotiation()
     installMetrics()
     installStatusPages()
-
-    val tilgangskontrollConsumer = TilgangskontrollConsumer(
-        azureAdClient = azureAdClient,
-        syfotilgangskontrollClientId = env.syfotilgangskontrollClientId,
-        tilgangskontrollBaseUrl = env.syfotilgangskontrollUrl,
-    )
 
     routing {
         registerPodApi(

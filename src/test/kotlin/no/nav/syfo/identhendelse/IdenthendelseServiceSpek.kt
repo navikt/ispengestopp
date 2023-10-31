@@ -29,11 +29,13 @@ object IdenthendelseServiceSpek : Spek({
                 azureAppClientId = externalMockEnvironment.environment.azureAppClientId,
                 azureAppClientSecret = externalMockEnvironment.environment.azureAppClientSecret,
                 azureTokenEndpoint = externalMockEnvironment.environment.azureTokenEndpoint,
+                httpClient = externalMockEnvironment.mockHttpClient,
             )
             val pdlClient = PdlClient(
                 azureAdClient = azureAdClient,
                 pdlClientId = externalMockEnvironment.environment.pdlClientId,
                 pdlUrl = externalMockEnvironment.environment.pdlUrl,
+                httpClient = externalMockEnvironment.mockHttpClient
             )
 
             val identhendelseService = IdenthendelseService(
