@@ -8,7 +8,7 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 
 fun MockRequestHandleScope.tilgangskontrollMockResponse(request: HttpRequestData): HttpResponseData {
     return when (request.headers[NAV_PERSONIDENT_HEADER]) {
-        SYKMELDT_PERSONIDENT_IKKE_TILGANG.value -> respond(TilgangDTO(harTilgang = false))
-        else -> respond(TilgangDTO(harTilgang = true))
+        SYKMELDT_PERSONIDENT_IKKE_TILGANG.value -> respond(TilgangDTO(erGodkjent = false))
+        else -> respond(TilgangDTO(erGodkjent = true))
     }
 }

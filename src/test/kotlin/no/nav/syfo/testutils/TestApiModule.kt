@@ -25,8 +25,8 @@ fun Application.testApiModule(
         wellKnownInternADV2 = externalMockEnvironment.wellKnownInternADV2Mock,
         tilgangskontrollConsumer = TilgangskontrollConsumer(
             azureAdClient = azureAdClient,
-            syfotilgangskontrollClientId = externalMockEnvironment.environment.syfotilgangskontrollClientId,
-            tilgangskontrollBaseUrl = externalMockEnvironment.environment.syfotilgangskontrollUrl,
+            tilgangskontrollClientId = externalMockEnvironment.environment.tilgangskontrollClientId,
+            tilgangskontrollBaseUrl = externalMockEnvironment.environment.tilgangskontrollUrl,
             httpClient = externalMockEnvironment.mockHttpClient,
         ),
     )

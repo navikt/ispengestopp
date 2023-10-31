@@ -77,8 +77,8 @@ fun main() {
                 wellKnownInternADV2 = wellKnownInternADV2,
                 tilgangskontrollConsumer = TilgangskontrollConsumer(
                     azureAdClient = azureAdClient,
-                    syfotilgangskontrollClientId = environment.syfotilgangskontrollClientId,
-                    tilgangskontrollBaseUrl = environment.syfotilgangskontrollUrl,
+                    tilgangskontrollClientId = environment.tilgangskontrollClientId,
+                    tilgangskontrollBaseUrl = environment.tilgangskontrollUrl,
                 ),
             )
         }

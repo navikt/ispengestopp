@@ -20,8 +20,8 @@ data class Environment(
     val pdlUrl: String = getEnvVar("PDL_URL"),
 
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
-    val syfotilgangskontrollClientId: String = getEnvVar("SYFOTILGANGSKONTROLL_CLIENT_ID"),
-    val syfotilgangskontrollUrl: String = getEnvVar("SYFOTILGANGSKONTROLL_URL"),
+    val tilgangskontrollClientId: String = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID"),
+    val tilgangskontrollUrl: String = getEnvVar("ISTILGANGSKONTROLL_URL"),
     val pollTimeOutMs: Long = 0,
     val stoppAutomatikkAivenTopic: String = "teamsykefravr.apen-isyfo-stoppautomatikk",
     val kafka: KafkaEnvironment = KafkaEnvironment(
