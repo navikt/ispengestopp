@@ -7,7 +7,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.*
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.pengestopp.StatusEndring
 import no.nav.syfo.pengestopp.api.registerFlaggPerson84V2
@@ -19,7 +19,7 @@ fun Application.apiModule(
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
     wellKnownInternADV2: WellKnown,
-    tilgangskontrollConsumer: TilgangskontrollConsumer,
+    tilgangskontrollClient: TilgangskontrollClient,
 ) {
     installJwtAuthentication(
         jwtIssuerList = listOf(
@@ -46,7 +46,7 @@ fun Application.apiModule(
                 database,
                 env,
                 personFlagget84Producer,
-                tilgangskontrollConsumer
+                tilgangskontrollClient
             )
         }
     }

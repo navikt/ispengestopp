@@ -15,7 +15,7 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
-class TilgangskontrollConsumer(
+class TilgangskontrollClient(
     private val azureAdClient: AzureAdClient,
     private val tilgangskontrollClientId: String,
     tilgangskontrollBaseUrl: String,
@@ -68,7 +68,7 @@ class TilgangskontrollConsumer(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(TilgangskontrollConsumer::class.java)
+        private val log = LoggerFactory.getLogger(TilgangskontrollClient::class.java)
         const val TILGANGSKONTROLL_PERSON_PATH = "/api/tilgang/navident/person"
     }
 }

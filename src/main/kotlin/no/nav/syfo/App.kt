@@ -15,7 +15,7 @@ import no.nav.syfo.application.database.Database
 import no.nav.syfo.application.database.DatabaseConfig
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
@@ -75,7 +75,7 @@ fun main() {
                 env = environment,
                 personFlagget84Producer = createPersonFlagget84AivenProducer(environment),
                 wellKnownInternADV2 = wellKnownInternADV2,
-                tilgangskontrollConsumer = TilgangskontrollConsumer(
+                tilgangskontrollClient = TilgangskontrollClient(
                     azureAdClient = azureAdClient,
                     tilgangskontrollClientId = environment.tilgangskontrollClientId,
                     tilgangskontrollBaseUrl = environment.tilgangskontrollUrl,
