@@ -1,15 +1,22 @@
 package no.nav.syfo.testutils.mock
 
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import no.nav.syfo.application.api.installContentNegotiation
+import io.ktor.client.engine.mock.*
+import io.ktor.client.request.*
 import no.nav.syfo.client.pdl.*
 import no.nav.syfo.testutils.UserConstants
-import no.nav.syfo.testutils.getRandomPort
+
+suspend fun MockRequestHandleScope.pdlMockResponse(request: HttpRequestData): HttpResponseData {
+    val pdlRequest = request.receiveBody<PdlHentIdenterRequest>()
+    return when (pdlRequest.variables.ident) {
+        UserConstants.SYKMELDT_PERSONIDENT_3.value -> {
+            respond(generatePdlIdenter("enAnnenIdent"))
+        }
+
+        else -> {
+            respond(generatePdlIdenter(pdlRequest.variables.ident))
+        }
+    }
+}
 
 fun generatePdlIdenter(
     personident: String,
@@ -32,26 +39,3 @@ fun generatePdlIdenter(
     ),
     errors = null,
 )
-
-class PdlMock {
-    private val port = getRandomPort()
-    val url = "http://localhost:$port"
-    val name = "pdl"
-
-    val server = embeddedServer(
-        factory = Netty,
-        port = port,
-    ) {
-        installContentNegotiation()
-        routing {
-            post {
-                val pdlRequest = call.receive<PdlHentIdenterRequest>()
-                if (pdlRequest.variables.ident == UserConstants.SYKMELDT_PERSONIDENT_3.value) {
-                    call.respond(generatePdlIdenter("enAnnenIdent"))
-                } else {
-                    call.respond(generatePdlIdenter(pdlRequest.variables.ident))
-                }
-            }
-        }
-    }
-}

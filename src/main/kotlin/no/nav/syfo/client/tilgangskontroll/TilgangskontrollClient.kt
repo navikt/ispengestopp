@@ -1,5 +1,6 @@
 package no.nav.syfo.client.tilgangskontroll
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -14,12 +15,12 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 
-class TilgangskontrollConsumer(
+class TilgangskontrollClient(
     private val azureAdClient: AzureAdClient,
-    private val syfotilgangskontrollClientId: String,
-    tilgangskontrollBaseUrl: String
+    private val tilgangskontrollClientId: String,
+    tilgangskontrollBaseUrl: String,
+    private val httpClient: HttpClient = httpClientDefault()
 ) {
-    private val httpClient = httpClientDefault()
 
     private val tilgangskontrollPersonUrl: String
 
@@ -32,7 +33,7 @@ class TilgangskontrollConsumer(
         token: String,
     ): Boolean {
         val oboToken = azureAdClient.getOnBehalfOfToken(
-            scopeClientId = syfotilgangskontrollClientId,
+            scopeClientId = tilgangskontrollClientId,
             token = token
         )?.accessToken ?: throw RuntimeException("Failed to request access to Person: Failed to get OBO token")
 
@@ -43,7 +44,7 @@ class TilgangskontrollConsumer(
                 accept(ContentType.Application.Json)
             }
             COUNT_TILGANGSKONTROLL_OK.increment()
-            return response.body<TilgangDTO>().harTilgang
+            return response.body<TilgangDTO>().erGodkjent
         } catch (e: ClientRequestException) {
             return if (e.response.status == HttpStatusCode.Forbidden) {
                 COUNT_TILGANGSKONTROLL_FORBIDDEN.increment()
@@ -59,7 +60,7 @@ class TilgangskontrollConsumer(
     private fun handleUnexpectedReponseException(response: HttpResponse): Boolean {
         val statusCode = response.status.value.toString()
         log.error(
-            "Error while requesting access to person from syfo-tilgangskontroll with {}",
+            "Error while requesting access to person from istilgangskontroll with {}",
             StructuredArguments.keyValue("statusCode", statusCode)
         )
         Metrics.counter(TILGANGSKONTROLL_FAIL, TAG_STATUS, statusCode).increment()
@@ -67,7 +68,7 @@ class TilgangskontrollConsumer(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(TilgangskontrollConsumer::class.java)
-        const val TILGANGSKONTROLL_PERSON_PATH = "/syfo-tilgangskontroll/api/tilgang/navident/person"
+        private val log = LoggerFactory.getLogger(TilgangskontrollClient::class.java)
+        const val TILGANGSKONTROLL_PERSON_PATH = "/api/tilgang/navident/person"
     }
 }

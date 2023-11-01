@@ -1,5 +1,6 @@
 package no.nav.syfo.client.azuread
 
+import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
@@ -12,9 +13,9 @@ import org.slf4j.LoggerFactory
 class AzureAdClient(
     private val azureAppClientId: String,
     private val azureAppClientSecret: String,
-    private val azureTokenEndpoint: String
+    private val azureTokenEndpoint: String,
+    private val httpClient: HttpClient = httpClientProxy(),
 ) {
-    private val httpClient = httpClientProxy()
 
     suspend fun getOnBehalfOfToken(
         scopeClientId: String,

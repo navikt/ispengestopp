@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.authentication.getVeilederIdentFromToken
 import no.nav.syfo.application.database.DatabaseInterface
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollConsumer
+import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.pengestopp.database.getActiveFlags
@@ -31,7 +31,7 @@ fun Route.registerFlaggPerson84V2(
     database: DatabaseInterface,
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
-    tilgangskontrollConsumer: TilgangskontrollConsumer,
+    tilgangskontrollClient: TilgangskontrollClient,
 ) {
     route(apiV2BasePath) {
         get(apiV2PersonStatusPath) {
@@ -44,7 +44,7 @@ fun Route.registerFlaggPerson84V2(
                 val token = getBearerHeader() ?: throw IllegalArgumentException("No Authorization header supplied")
 
                 val personIdent = PersonIdent(sykmeldtPersonident)
-                val hasAccess = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(personIdent, token)
+                val hasAccess = tilgangskontrollClient.harTilgangTilBrukerMedOBO(personIdent, token)
                 if (hasAccess) {
                     val flags: List<StatusEndring> = database.getActiveFlags(personIdent)
                     when {
@@ -70,7 +70,7 @@ fun Route.registerFlaggPerson84V2(
                 val stoppAutomatikk: StoppAutomatikk = call.receive()
                 val ident = getVeilederIdentFromToken(token)
                 val topic = env.stoppAutomatikkAivenTopic
-                val harTilgang = tilgangskontrollConsumer.harTilgangTilBrukerMedOBO(stoppAutomatikk.sykmeldtFnr, token)
+                val harTilgang = tilgangskontrollClient.harTilgangTilBrukerMedOBO(stoppAutomatikk.sykmeldtFnr, token)
                 if (harTilgang) {
                     stoppAutomatikk.virksomhetNr.forEach {
                         val kFlaggperson84Hendelse = StatusEndring(
