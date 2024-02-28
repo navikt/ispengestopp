@@ -12,13 +12,13 @@ object Versions {
     const val kafka = "3.6.0"
     const val kafkaEmbeddedEnv = "3.2.2"
     const val kluent = "1.73"
-    const val ktor = "2.3.7"
+    const val ktor = "2.3.8"
     const val logback = "1.4.14"
     const val logstashEncoder = "7.3"
     const val micrometerRegistry = "1.12.0"
     const val mockk = "1.13.5"
     const val nimbusjosejwt = "9.37.2"
-    const val postgres = "42.6.0"
+    const val postgres = "42.7.2"
     val postgresEmbedded = if (Os.isFamily(Os.FAMILY_MAC)) "1.0.0" else "0.13.4"
     const val spek = "2.0.19"
 }
@@ -75,6 +75,18 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:${Versions.confluent}", excludeLog4j)
     implementation("io.confluent:kafka-schema-registry:${Versions.confluent}", excludeLog4j)
     constraints {
+        implementation("org.apache.avro:avro") {
+            because("io.confluent:kafka-avro-serializer:${Versions.confluent} -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
+            version {
+                require("1.11.3")
+            }
+        }
+        implementation("org.apache.commons:commons-compress") {
+            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
+            version {
+                require("1.26.0")
+            }
+        }
         implementation("org.yaml:snakeyaml") {
             because("io.confluent:kafka-schema-registry:${Versions.confluent} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-25857/")
             version {
@@ -123,7 +135,7 @@ dependencies {
         implementation("org.eclipse.jetty.http2:http2-server") {
             because("no.nav:kafka-embedded-env:${Versions.kafkaEmbeddedEnv} -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-2048/")
             version {
-                require("9.4.48.v20220622")
+                require("9.4.54.v20240208")
             }
         }
         implementation("com.google.protobuf:protobuf-java") {
