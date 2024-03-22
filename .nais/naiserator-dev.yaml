@@ -63,6 +63,10 @@ spec:
         databases:
           - name: ispengestopp-db
         diskAutoresize: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   env:
     - name: ISTILGANGSKONTROLL_CLIENT_ID
       value: "dev-gcp.teamsykefravr.istilgangskontroll"
