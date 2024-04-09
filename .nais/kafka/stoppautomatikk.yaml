@@ -25,3 +25,6 @@ spec:
     - team: risk
       application: helserisk-isyfo
       access: read
+    - team: tbd
+      application: sparkel-stoppknapp
+      access: read
