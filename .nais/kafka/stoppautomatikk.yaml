@@ -22,9 +22,6 @@ spec:
     - team: teamsykefravr
       application: ispengestopp
       access: readwrite
-    - team: risk
-      application: helserisk-isyfo
-      access: read
     - team: tbd
       application: sparkel-stoppknapp
       access: read
