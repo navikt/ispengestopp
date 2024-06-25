@@ -1,7 +1,6 @@
 package no.nav.syfo.pengestopp
 
 import io.mockk.*
-import no.nav.common.KafkaEnvironment
 import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.database.getActiveFlags
@@ -15,19 +14,12 @@ import java.time.*
 import java.util.*
 
 object PersistenceUtilsSpek : Spek({
-    val embeddedKafkaEnvironment = KafkaEnvironment(
-        autoStart = false,
-        topicNames = listOf("teamsykefravr.apen-isyfo-stoppautomatikk")
-    )
-
     val sykmeldtPersonIdent = UserConstants.SYKMELDT_PERSONIDENT
     val veilederIdent = VeilederIdent("Z999999")
     val primaryJob = VirksomhetNr("888")
     val enhetNr = EnhetNr("9999")
 
-    val env = testEnvironment(
-        kafkaBrokersURL = embeddedKafkaEnvironment.brokersURL,
-    )
+    val env = testEnvironment()
 
     val partition = 0
     val stoppAutomatikkTopicPartition = TopicPartition(env.stoppAutomatikkAivenTopic, partition)

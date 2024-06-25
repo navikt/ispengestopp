@@ -5,9 +5,7 @@ import no.nav.syfo.application.Environment
 import no.nav.syfo.application.kafka.KafkaEnvironment
 import java.util.*
 
-fun testEnvironment(
-    kafkaBrokersURL: String,
-): Environment {
+fun testEnvironment(): Environment {
     return Environment(
         applicationName = "ispengestopp",
         azureAppClientId = "app-client-id",
@@ -26,7 +24,7 @@ fun testEnvironment(
         pdlClientId = "dev-fss.pdl.pdl-api",
         pdlUrl = "pdlUrl",
         kafka = KafkaEnvironment(
-            aivenBootstrapServers = kafkaBrokersURL,
+            aivenBootstrapServers = "kafkaBrokersURL",
             aivenCredstorePassword = "credstorepassord",
             aivenKeystoreLocation = "keystore",
             aivenSecurityProtocol = "SSL",

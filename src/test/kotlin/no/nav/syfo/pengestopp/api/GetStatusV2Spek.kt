@@ -4,17 +4,15 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.http.HttpHeaders.Authorization
 import io.ktor.server.testing.*
+import io.mockk.mockk
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.pengestopp.database.addStatus
-import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetAivenConsumerProperties
-import no.nav.syfo.pengestopp.kafka.kafkaPersonFlaggetAivenProducerProperties
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.generator.generateStatusEndringer
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -27,16 +25,7 @@ class GetStatusV2Spek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment()
     val database = externalMockEnvironment.database
 
-    val consumerProperties = kafkaPersonFlaggetAivenConsumerProperties(
-        externalMockEnvironment.environment,
-    ).overrideForTest()
-    val consumer = KafkaConsumer<String, String>(consumerProperties)
-    consumer.subscribe(listOf(externalMockEnvironment.environment.stoppAutomatikkAivenTopic))
-
-    val producerProperties = kafkaPersonFlaggetAivenProducerProperties(
-        externalMockEnvironment.environment,
-    ).overrideForTest()
-    val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
+    val personFlagget84Producer = mockk<KafkaProducer<String, StatusEndring>>()
 
     // TODO: gjøre database delen av testen om til å gi mer test coverage av prodkoden
     fun withTestApplicationForApi(
@@ -50,10 +39,6 @@ class GetStatusV2Spek : Spek({
             externalMockEnvironment = externalMockEnvironment,
             personFlagget84Producer = personFlagget84Producer,
         )
-
-        beforeGroup {
-            externalMockEnvironment.startExternalMocks()
-        }
 
         afterGroup {
             externalMockEnvironment.stopExternalMocks()
