@@ -1,23 +1,23 @@
 package no.nav.syfo.pengestopp.api
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.http.*
 import io.ktor.server.testing.*
+import io.mockk.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.pengestopp.kafka.*
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT
 import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT_IKKE_TILGANG
 import no.nav.syfo.util.bearerHeader
 import org.amshove.kluent.*
-import org.apache.kafka.clients.consumer.ConsumerConfig
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import java.time.*
+import java.util.concurrent.Future
 
 @InternalCoroutinesApi
 class PostStatusV2Spek : Spek({
@@ -30,32 +30,7 @@ class PostStatusV2Spek : Spek({
     val externalMockEnvironment = ExternalMockEnvironment()
     val database = externalMockEnvironment.database
 
-    val env = externalMockEnvironment.environment
-
-    val testConsumerProperties = kafkaPersonFlaggetAivenConsumerProperties(env).overrideForTest()
-        .apply {
-            remove(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG)
-            remove(ConsumerConfig.GROUP_ID_CONFIG)
-        }.apply {
-            put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-            put(ConsumerConfig.GROUP_ID_CONFIG, "spek.integration-consumer")
-        }
-    val testConsumer = KafkaConsumer<String, String>(testConsumerProperties)
-    testConsumer.subscribe(listOf(env.stoppAutomatikkAivenTopic))
-
-    val prodConsumerProperties = kafkaPersonFlaggetAivenConsumerProperties(env).overrideForTest()
-        .apply {
-            remove(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG)
-            remove(ConsumerConfig.GROUP_ID_CONFIG)
-        }.apply {
-            put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-            put(ConsumerConfig.GROUP_ID_CONFIG, "prodConsumer")
-        }
-    val prodConsumer = KafkaConsumer<String, String>(prodConsumerProperties)
-    prodConsumer.subscribe(listOf(env.stoppAutomatikkAivenTopic))
-
-    val producerProperties = kafkaPersonFlaggetAivenProducerProperties(env).overrideForTest()
-    val personFlagget84Producer = KafkaProducer<String, StatusEndring>(producerProperties)
+    val personFlagget84Producer = mockk<KafkaProducer<String, StatusEndring>>(relaxed = true)
 
     fun withTestApplicationForApi(
         testApp: TestApplicationEngine,
@@ -64,24 +39,18 @@ class PostStatusV2Spek : Spek({
     ) {
         testApp.start()
 
-        launchKafkaTask(
-            applicationState = externalMockEnvironment.applicationState,
-            database = testDB,
-            environment = env,
-            personFlagget84Consumer = prodConsumer,
-        )
-
         testApp.application.testApiModule(
             externalMockEnvironment = externalMockEnvironment,
             personFlagget84Producer = personFlagget84Producer,
         )
 
-        beforeGroup {
-            externalMockEnvironment.startExternalMocks()
-        }
-
         afterGroup {
             externalMockEnvironment.stopExternalMocks()
+        }
+
+        beforeEachTest {
+            clearAllMocks()
+            coEvery { personFlagget84Producer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
         }
 
         afterEachTest {
@@ -137,17 +106,10 @@ class PostStatusV2Spek : Spek({
                     response.status() shouldBe HttpStatusCode.Created
                 }
 
-                val messages: MutableList<StatusEndring> = mutableListOf()
+                val producerRecordSlot = slot<ProducerRecord<String, StatusEndring>>()
+                verify(exactly = 1) { personFlagget84Producer.send(capture(producerRecordSlot)) }
+                val latestFlaggperson84Hendelse = producerRecordSlot.captured.value()
 
-                testConsumer.poll(Duration.ofMillis(5000)).forEach {
-                    val hendelse: StatusEndring =
-                        objectMapper.readValue(it.value())
-                    messages.add(hendelse)
-                }
-
-                messages.size shouldBeEqualTo 1
-
-                val latestFlaggperson84Hendelse = messages.last()
                 latestFlaggperson84Hendelse.arsakList.shouldBeNull()
                 latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
                 latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
@@ -180,17 +142,10 @@ class PostStatusV2Spek : Spek({
                     response.status() shouldBe HttpStatusCode.Created
                 }
 
-                val messages: MutableList<StatusEndring> = mutableListOf()
+                val producerRecordSlot = slot<ProducerRecord<String, StatusEndring>>()
+                verify(exactly = 1) { personFlagget84Producer.send(capture(producerRecordSlot)) }
+                val latestFlaggperson84Hendelse = producerRecordSlot.captured.value()
 
-                testConsumer.poll(Duration.ofMillis(5000)).forEach {
-                    val hendelse: StatusEndring =
-                        objectMapper.readValue(it.value())
-                    messages.add(hendelse)
-                }
-
-                messages.size shouldBeEqualTo 1
-
-                val latestFlaggperson84Hendelse = messages.last()
                 latestFlaggperson84Hendelse.arsakList shouldBeEqualTo arsakList
                 latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
                 latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent

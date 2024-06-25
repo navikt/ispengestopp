@@ -43,10 +43,6 @@ object IdenthendelseServiceSpek : Spek({
                 pdlClient = pdlClient,
             )
 
-            beforeGroup {
-                externalMockEnvironment.startExternalMocks()
-            }
-
             afterGroup {
                 externalMockEnvironment.stopExternalMocks()
             }
