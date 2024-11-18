@@ -73,7 +73,7 @@ dependencies {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-avro-serializer:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
             version {
-                require("1.11.3")
+                require("1.11.4")
             }
         }
         implementation("org.apache.commons:commons-compress") {
@@ -115,7 +115,7 @@ dependencies {
         implementation("org.apache.zookeeper:zookeeper") {
             because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
             version {
-                require("3.9.1")
+                require("3.9.3")
             }
         }
     }
