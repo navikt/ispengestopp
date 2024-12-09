@@ -2,26 +2,26 @@
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val confluent = "7.7.1"
+val confluent = "7.7.2"
 val flyway = "10.17.2"
 val hikari = "5.1.0"
-val jackson = "2.17.2"
-val kafka = "3.6.0"
+val jackson = "2.18.0"
+val kafka = "3.9.0"
 val kluent = "1.73"
-val ktor = "2.3.12"
-val logback = "1.5.8"
+val ktor = "3.0.2"
+val logback = "1.5.12"
 val logstashEncoder = "7.4"
 val micrometerRegistry = "1.12.8"
 val mockk = "1.13.12"
-val nimbusjosejwt = "9.41.1"
+val nimbusjosejwt = "9.47"
 val postgres = "42.7.4"
 val postgresEmbedded = "2.0.7"
 val spek = "2.0.19"
 
 plugins {
-    kotlin("jvm") version "2.0.20"
+    kotlin("jvm") version "2.0.21"
     id("com.gradleup.shadow") version "8.3.2"
-    id("org.jlleitschuh.gradle.ktlint") version "11.4.2"
+    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
 repositories {
@@ -67,8 +67,21 @@ dependencies {
         exclude(group = "log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$kafka", excludeLog4j)
+    constraints {
+        implementation("org.apache.zookeeper:zookeeper") {
+            because("org.apache.kafka:kafka_2.13:$kafka -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
+            version {
+                require("3.9.3")
+            }
+        }
+        implementation("org.bitbucket.b_c:jose4j") {
+            because("org.apache.kafka:kafka_2.13:$kafka -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
+            version {
+                require("0.9.6")
+            }
+        }
+    }
     implementation("io.confluent:kafka-avro-serializer:$confluent", excludeLog4j)
-    implementation("io.confluent:kafka-schema-registry:$confluent", excludeLog4j)
     constraints {
         implementation("org.apache.avro:avro") {
             because("io.confluent:kafka-avro-serializer:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
@@ -79,48 +92,19 @@ dependencies {
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.26.0")
-            }
-        }
-        implementation("org.yaml:snakeyaml") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2022-25857/")
-            version {
-                require("1.31")
-            }
-        }
-        implementation("org.glassfish:jakarta.el") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://advisory.checkmarx.net/advisory/vulnerability/CVE-2021-28170/")
-            version {
-                require("3.0.4")
-            }
-        }
-        implementation("com.google.protobuf:protobuf-java") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2022-3510")
-            version {
-                require("3.21.7")
-            }
-        }
-        implementation("com.google.code.gson:gson") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2022-25647")
-            version {
-                require("2.8.9")
+                require("1.27.1")
             }
         }
         implementation("org.json:json") {
             because("io.confluent:kafka-schema-registry:$confluent -> https://nvd.nist.gov/vuln/detail/CVE-2022-45688")
             version {
-                require("20231013")
-            }
-        }
-        implementation("org.apache.zookeeper:zookeeper") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
-            version {
-                require("3.9.3")
+                require("20240303")
             }
         }
     }
+    implementation("io.confluent:kafka-schema-registry:$confluent", excludeLog4j)
 
-    testImplementation(kotlin("test"))
+    testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("io.mockk:mockk:$mockk")
