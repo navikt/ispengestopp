@@ -61,14 +61,22 @@ fun main() {
         pdlClientId = environment.pdlClientId,
     )
 
-    val applicationEngineEnvironment = applicationEngineEnvironment {
+    val applicationEnvironment = applicationEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
         config = HoconApplicationConfig(ConfigFactory.load())
-
-        connector {
-            port = applicationPort
-        }
-        module {
+    }
+    val server = embeddedServer(
+        Netty,
+        environment = applicationEnvironment,
+        configure = {
+            connector {
+                port = applicationPort
+            }
+            connectionGroupSize = 8
+            workerGroupSize = 8
+            callGroupSize = 16
+        },
+        module = {
             apiModule(
                 applicationState = applicationState,
                 database = database,
@@ -81,38 +89,32 @@ fun main() {
                     tilgangskontrollBaseUrl = environment.tilgangskontrollUrl,
                 ),
             )
+            monitor.subscribe(ApplicationStarted) {
+                applicationState.ready = true
+                log.info("Application is ready, running Java VM ${Runtime.version()}")
+
+                launchKafkaTask(
+                    applicationState = applicationState,
+                    database = database,
+                    environment = environment,
+                    personFlagget84Consumer = createPersonFlagget84AivenConsumer(environment),
+                )
+
+                val identhendelseService = IdenthendelseService(
+                    database = database,
+                    pdlClient = pdlClient,
+                )
+                val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService(
+                    identhendelseService = identhendelseService,
+                )
+                launchKafkaTaskIdenthendelse(
+                    applicationState = applicationState,
+                    environment = environment,
+                    kafkaIdenthendelseConsumerService = kafkaIdenthendelseConsumerService,
+                )
+            }
         }
-    }
-
-    val server = embeddedServer(
-        factory = Netty,
-        environment = applicationEngineEnvironment,
     )
-
-    applicationEngineEnvironment.monitor.subscribe(ApplicationStarted) { application ->
-        applicationState.ready = true
-        application.environment.log.info("Application is ready, running Java VM ${Runtime.version()}")
-
-        launchKafkaTask(
-            applicationState = applicationState,
-            database = database,
-            environment = environment,
-            personFlagget84Consumer = createPersonFlagget84AivenConsumer(environment),
-        )
-
-        val identhendelseService = IdenthendelseService(
-            database = database,
-            pdlClient = pdlClient,
-        )
-        val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService(
-            identhendelseService = identhendelseService,
-        )
-        launchKafkaTaskIdenthendelse(
-            applicationState = applicationState,
-            environment = environment,
-            kafkaIdenthendelseConsumerService = kafkaIdenthendelseConsumerService,
-        )
-    }
 
     Runtime.getRuntime().addShutdownHook(
         Thread {

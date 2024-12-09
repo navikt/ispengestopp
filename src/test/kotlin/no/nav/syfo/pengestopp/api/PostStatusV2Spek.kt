@@ -1,15 +1,18 @@
 package no.nav.syfo.pengestopp.api
 
+import io.ktor.client.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
 import io.ktor.http.*
+import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.*
 import kotlinx.coroutines.InternalCoroutinesApi
-import no.nav.syfo.objectMapper
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT
 import no.nav.syfo.testutils.UserConstants.SYKMELDT_PERSONIDENT_IKKE_TILGANG
-import no.nav.syfo.util.bearerHeader
+import no.nav.syfo.util.*
 import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -32,79 +35,76 @@ class PostStatusV2Spek : Spek({
 
     val personFlagget84Producer = mockk<KafkaProducer<String, StatusEndring>>(relaxed = true)
 
-    fun withTestApplicationForApi(
-        testApp: TestApplicationEngine,
-        testDB: TestDB,
-        block: TestApplicationEngine.() -> Unit
-    ) {
-        testApp.start()
-
-        testApp.application.testApiModule(
-            externalMockEnvironment = externalMockEnvironment,
-            personFlagget84Producer = personFlagget84Producer,
-        )
-
-        afterGroup {
-            externalMockEnvironment.stopExternalMocks()
+    fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
+        application {
+            testApiModule(
+                externalMockEnvironment = externalMockEnvironment,
+                personFlagget84Producer = personFlagget84Producer,
+            )
         }
-
-        beforeEachTest {
-            clearAllMocks()
-            coEvery { personFlagget84Producer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
+        val client = createClient {
+            install(ContentNegotiation) {
+                jackson { configure() }
+            }
         }
+        return client
+    }
 
-        afterEachTest {
-            testDB.connection.dropData()
-        }
+    afterGroup {
+        externalMockEnvironment.stopExternalMocks()
+        database.stop()
+    }
 
-        return testApp.block()
+    afterEachTest {
+        database.connection.dropData()
+    }
+
+    beforeEachTest {
+        clearAllMocks()
+        coEvery { personFlagget84Producer.send(any()) } returns mockk<Future<RecordMetadata>>(relaxed = true)
     }
 
     describe("Flag a person to be removed from automatic processing") {
-        withTestApplicationForApi(TestApplicationEngine(), database) {
-            val endpointPath = "$apiV2BasePath$apiV2PersonFlaggPath"
-            val validToken = generateJWT(
-                audience = externalMockEnvironment.environment.azureAppClientId,
-                issuer = externalMockEnvironment.wellKnownInternADV2Mock.issuer,
-            )
-            it("reject post request without token") {
-                with(
-                    handleRequest(HttpMethod.Post, endpointPath) {
-                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        val stoppAutomatikk = StoppAutomatikk(sykmeldtPersonIdent, null, listOf(primaryJob), enhetNr)
-                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                        setBody(stoppAutomatikkJson)
-                    }
-                ) {
-                    response.status() shouldBe HttpStatusCode.Unauthorized
+        val endpointPath = "$apiV2BasePath$apiV2PersonFlaggPath"
+        val validToken = generateJWT(
+            audience = externalMockEnvironment.environment.azureAppClientId,
+            issuer = externalMockEnvironment.wellKnownInternADV2Mock.issuer,
+        )
+        val stoppAutomatikk = StoppAutomatikk(sykmeldtPersonIdent, null, listOf(primaryJob), enhetNr)
+
+        it("reject post request without token") {
+            testApplication {
+                val client = setupApiAndClient()
+
+                val response = client.post(endpointPath) {
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    setBody(stoppAutomatikk)
                 }
+                response.status shouldBe HttpStatusCode.Unauthorized
             }
-            it("reject post request to forbidden user") {
-                with(
-                    handleRequest(HttpMethod.Post, endpointPath) {
-                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                        val stoppAutomatikk =
-                            StoppAutomatikk(sykmeldtPersonIdentIkkeTilgang, null, listOf(primaryJob), enhetNr)
-                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                        setBody(stoppAutomatikkJson)
-                    }
-                ) {
-                    response.status() shouldBe HttpStatusCode.Forbidden
+        }
+        it("reject post request to forbidden user") {
+            testApplication {
+                val client = setupApiAndClient()
+
+                val response = client.post(endpointPath) {
+                    bearerAuth(validToken)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    setBody(stoppAutomatikk.copy(sykmeldtFnr = sykmeldtPersonIdentIkkeTilgang))
                 }
+                response.status shouldBe HttpStatusCode.Forbidden
             }
-            it("persist status change without ArsakList to kafka and database") {
-                with(
-                    handleRequest(HttpMethod.Post, endpointPath) {
-                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                        val stoppAutomatikk = StoppAutomatikk(sykmeldtPersonIdent, null, listOf(primaryJob), enhetNr)
-                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                        setBody(stoppAutomatikkJson)
-                    }
-                ) {
-                    response.status() shouldBe HttpStatusCode.Created
+        }
+        it("persist status change without ArsakList to kafka and database") {
+            testApplication {
+                val client = setupApiAndClient()
+
+                val response = client.post(endpointPath) {
+                    bearerAuth(validToken)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    setBody(stoppAutomatikk)
                 }
+                response.status shouldBe HttpStatusCode.Created
 
                 val producerRecordSlot = slot<ProducerRecord<String, StatusEndring>>()
                 verify(exactly = 1) { personFlagget84Producer.send(capture(producerRecordSlot)) }
@@ -119,28 +119,29 @@ class PostStatusV2Spek : Spek({
                 latestFlaggperson84Hendelse.enhetNr shouldBeEqualTo enhetNr
                 latestFlaggperson84Hendelse.virksomhetNr shouldBeEqualTo primaryJob
             }
+        }
 
-            it("persist status change with ArsakList to kafka and database") {
+        it("persist status change with ArsakList to kafka and database") {
+            testApplication {
+                val client = setupApiAndClient()
                 val arsakList = listOf(
                     Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
                     Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
                 )
-                with(
-                    handleRequest(HttpMethod.Post, endpointPath) {
-                        addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                        addHeader(HttpHeaders.Authorization, bearerHeader(validToken))
-                        val stoppAutomatikk = StoppAutomatikk(
+
+                val response = client.post(endpointPath) {
+                    bearerAuth(validToken)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    setBody(
+                        StoppAutomatikk(
                             sykmeldtPersonIdent,
                             arsakList,
                             listOf(primaryJob),
                             enhetNr
                         )
-                        val stoppAutomatikkJson = objectMapper.writeValueAsString(stoppAutomatikk)
-                        setBody(stoppAutomatikkJson)
-                    }
-                ) {
-                    response.status() shouldBe HttpStatusCode.Created
+                    )
                 }
+                response.status shouldBe HttpStatusCode.Created
 
                 val producerRecordSlot = slot<ProducerRecord<String, StatusEndring>>()
                 verify(exactly = 1) { personFlagget84Producer.send(capture(producerRecordSlot)) }
