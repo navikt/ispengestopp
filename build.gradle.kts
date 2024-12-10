@@ -6,6 +6,7 @@ val confluent = "7.7.2"
 val flyway = "10.17.2"
 val hikari = "5.1.0"
 val jackson = "2.18.0"
+val jetty = "9.4.56.v20240826"
 val kafka = "3.9.0"
 val kluent = "1.73"
 val ktor = "3.0.2"
@@ -95,15 +96,46 @@ dependencies {
                 require("1.27.1")
             }
         }
+    }
+    implementation("io.confluent:kafka-schema-registry:$confluent", excludeLog4j)
+    constraints {
+        implementation("io.github.classgraph:classgraph") {
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
+            version {
+                require("4.8.179")
+            }
+        }
         implementation("org.json:json") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://nvd.nist.gov/vuln/detail/CVE-2022-45688")
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
             version {
                 require("20240303")
             }
         }
+        implementation("org.eclipse.jetty:jetty-server") {
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(jetty)
+            }
+        }
+        implementation("org.eclipse.jetty:jetty-xml") {
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(jetty)
+            }
+        }
+        implementation("org.eclipse.jetty:jetty-servlets") {
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(jetty)
+            }
+        }
+        implementation("org.eclipse.jetty.http2:http2-server") {
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
+            version {
+                require(jetty)
+            }
+        }
     }
-    implementation("io.confluent:kafka-schema-registry:$confluent", excludeLog4j)
-
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
