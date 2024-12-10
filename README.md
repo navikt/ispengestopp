@@ -10,7 +10,8 @@ in a database and posted on a kafka queue.
 * Kotlin
 * Ktor
 * Gradle
-* JDK 17
+* JDK 21
+* Kafka
 * Spek
 
 #### Build and run tests
