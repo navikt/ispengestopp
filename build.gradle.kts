@@ -2,26 +2,26 @@
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val confluent = "7.7.2"
-val flyway = "10.17.2"
-val hikari = "5.1.0"
-val jackson = "2.18.0"
-val jetty = "9.4.56.v20240826"
+val confluent = "7.8.0"
+val flyway = "11.3.0"
+val hikari = "6.2.1"
+val jackson = "2.18.2"
+val jetty = "9.4.57.v20241219"
 val kafka = "3.9.0"
 val kluent = "1.73"
-val ktor = "3.0.2"
-val logback = "1.5.12"
-val logstashEncoder = "7.4"
-val micrometerRegistry = "1.12.8"
-val mockk = "1.13.12"
-val nimbusjosejwt = "9.47"
-val postgres = "42.7.4"
-val postgresEmbedded = "2.0.7"
+val ktor = "3.0.3"
+val logback = "1.5.16"
+val logstashEncoder = "8.0"
+val micrometerRegistry = "1.12.13"
+val mockk = "1.13.16"
+val nimbusjosejwt = "10.0.1"
+val postgres = "42.7.5"
+val postgresEmbedded = "2.1.0"
 val spek = "2.0.19"
 
 plugins {
-    kotlin("jvm") version "2.0.21"
-    id("com.gradleup.shadow") version "8.3.2"
+    kotlin("jvm") version "2.1.10"
+    id("com.gradleup.shadow") version "8.3.5"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
@@ -108,7 +108,13 @@ dependencies {
         implementation("org.json:json") {
             because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
             version {
-                require("20240303")
+                require("20250107")
+            }
+        }
+        implementation("org.apache.mina:mina-core") {
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2024-52046")
+            version {
+                require("2.2.4")
             }
         }
         implementation("org.eclipse.jetty:jetty-server") {
