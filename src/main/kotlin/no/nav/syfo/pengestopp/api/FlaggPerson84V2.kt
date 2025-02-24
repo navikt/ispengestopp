@@ -1,17 +1,15 @@
 package no.nav.syfo.pengestopp.api
 
-import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.Environment
+import no.nav.syfo.application.IPengestoppRepository
 import no.nav.syfo.application.api.authentication.getVeilederIdentFromToken
-import no.nav.syfo.application.database.DatabaseInterface
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.pengestopp.database.getActiveFlags
 import no.nav.syfo.util.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -28,7 +26,7 @@ const val apiV2PersonStatusPath = "/person/status"
 const val apiV2PersonFlaggPath = "/person/flagg"
 
 fun Route.registerFlaggPerson84V2(
-    database: DatabaseInterface,
+    pengestoppRepository: IPengestoppRepository,
     env: Environment,
     personFlagget84Producer: KafkaProducer<String, StatusEndring>,
     tilgangskontrollClient: TilgangskontrollClient,
@@ -46,7 +44,7 @@ fun Route.registerFlaggPerson84V2(
                 val personIdent = PersonIdent(sykmeldtPersonident)
                 val hasAccess = tilgangskontrollClient.harTilgangTilBrukerMedOBO(personIdent, token)
                 if (hasAccess) {
-                    val flags: List<StatusEndring> = database.getActiveFlags(personIdent)
+                    val flags: List<StatusEndring> = pengestoppRepository.getStatusEndringer(personIdent)
                     when {
                         flags.isNotEmpty() -> call.respond(flags)
                         else -> call.respond(HttpStatusCode.NoContent)

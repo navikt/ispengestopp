@@ -25,7 +25,7 @@ data class StatusEndring(
     val veilederIdent: VeilederIdent,
     val sykmeldtFnr: PersonIdent,
     val status: Status,
-    val arsakList: List<Arsak>?,
+    val arsakList: List<Arsak>,
     val virksomhetNr: VirksomhetNr,
     val opprettet: OffsetDateTime,
     val enhetNr: EnhetNr // For å holde oversikt over hvem som bruker tjenesten
@@ -45,7 +45,7 @@ data class Arsak(
 
 data class StoppAutomatikk(
     val sykmeldtFnr: PersonIdent,
-    val arsakList: List<Arsak>?,
+    val arsakList: List<Arsak>,
     val virksomhetNr: List<VirksomhetNr>,
     val enhetNr: EnhetNr
 )

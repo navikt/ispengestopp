@@ -70,7 +70,7 @@ class PostStatusV2Spek : Spek({
             audience = externalMockEnvironment.environment.azureAppClientId,
             issuer = externalMockEnvironment.wellKnownInternADV2Mock.issuer,
         )
-        val stoppAutomatikk = StoppAutomatikk(sykmeldtPersonIdent, null, listOf(primaryJob), enhetNr)
+        val stoppAutomatikk = StoppAutomatikk(sykmeldtPersonIdent, emptyList(), listOf(primaryJob), enhetNr)
 
         it("reject post request without token") {
             testApplication {
@@ -110,7 +110,7 @@ class PostStatusV2Spek : Spek({
                 verify(exactly = 1) { personFlagget84Producer.send(capture(producerRecordSlot)) }
                 val latestFlaggperson84Hendelse = producerRecordSlot.captured.value()
 
-                latestFlaggperson84Hendelse.arsakList.shouldBeNull()
+                latestFlaggperson84Hendelse.arsakList.shouldBeEmpty()
                 latestFlaggperson84Hendelse.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
                 latestFlaggperson84Hendelse.veilederIdent shouldBeEqualTo veilederIdent
                 latestFlaggperson84Hendelse.status shouldBeEqualTo Status.STOPP_AUTOMATIKK

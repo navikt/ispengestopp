@@ -1,4 +1,4 @@
-package no.nav.syfo.pengestopp.database.domain
+package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
@@ -15,13 +15,13 @@ data class PStatusEndring(
     val enhetNr: EnhetNr
 )
 
-fun PStatusEndring.toStatusEndring(): StatusEndring =
+fun PStatusEndring.toStatusEndring(arsaker: List<Arsak>): StatusEndring =
     StatusEndring(
         uuid = this.uuid,
         sykmeldtFnr = this.personIdent,
         veilederIdent = this.veilederIdent,
         status = this.status,
-        arsakList = null,
+        arsakList = arsaker,
         virksomhetNr = this.virksomhetNr,
         opprettet = this.opprettet,
         enhetNr = this.enhetNr

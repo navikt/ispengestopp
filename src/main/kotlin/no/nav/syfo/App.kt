@@ -11,8 +11,8 @@ import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.api.apiModule
-import no.nav.syfo.application.database.Database
-import no.nav.syfo.application.database.DatabaseConfig
+import no.nav.syfo.infrastructure.database.Database
+import no.nav.syfo.infrastructure.database.DatabaseConfig
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
@@ -20,6 +20,7 @@ import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.identhendelse.IdenthendelseService
 import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
 import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
+import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.pengestopp.kafka.*
 import no.nav.syfo.util.configure
 import org.slf4j.Logger
@@ -77,12 +78,14 @@ fun main() {
             callGroupSize = 16
         },
         module = {
+            val pengestoppRepository = PengestoppRepository(database = database)
             apiModule(
                 applicationState = applicationState,
                 database = database,
                 env = environment,
                 personFlagget84Producer = createPersonFlagget84AivenProducer(environment),
                 wellKnownInternADV2 = wellKnownInternADV2,
+                pengestoppRepository = pengestoppRepository,
                 tilgangskontrollClient = TilgangskontrollClient(
                     azureAdClient = azureAdClient,
                     tilgangskontrollClientId = environment.tilgangskontrollClientId,
@@ -95,13 +98,13 @@ fun main() {
 
                 launchKafkaTask(
                     applicationState = applicationState,
-                    database = database,
+                    pengestoppRepository = pengestoppRepository,
                     environment = environment,
                     personFlagget84Consumer = createPersonFlagget84AivenConsumer(environment),
                 )
 
                 val identhendelseService = IdenthendelseService(
-                    database = database,
+                    pengestoppRepository = pengestoppRepository,
                     pdlClient = pdlClient,
                 )
                 val kafkaIdenthendelseConsumerService = IdenthendelseConsumerService(

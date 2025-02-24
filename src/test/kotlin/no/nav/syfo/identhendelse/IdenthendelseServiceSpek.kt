@@ -3,10 +3,9 @@ package no.nav.syfo.identhendelse
 import kotlinx.coroutines.*
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
+import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.pengestopp.Arsak
 import no.nav.syfo.pengestopp.SykepengestoppArsak
-import no.nav.syfo.pengestopp.database.addStatus
-import no.nav.syfo.pengestopp.database.getActiveFlags
 import no.nav.syfo.testutils.generator.generateKafkaIdenthendelseDTO
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.generator.generateStatusEndringer
@@ -32,8 +31,9 @@ object IdenthendelseServiceSpek : Spek({
             httpClient = externalMockEnvironment.mockHttpClient
         )
 
+        val repository = PengestoppRepository(database = database)
         val identhendelseService = IdenthendelseService(
-            database = database,
+            pengestoppRepository = repository,
             pdlClient = pdlClient,
         )
 
@@ -57,26 +57,18 @@ object IdenthendelseServiceSpek : Spek({
                     arsakList = arsakList,
                 )
                 statusList.forEach {
-                    database.addStatus(
-                        it.uuid,
-                        it.personIdent,
-                        it.veilederIdent,
-                        it.enhetNr,
-                        it.arsakList,
-                        it.virksomhetNr,
-                        it.opprettet,
-                    )
+                    repository.createStatusEndring(statusEndring = it)
                 }
 
                 runBlocking {
                     identhendelseService.handleIdenthendelse(kafkaIdenthendelseDTO)
                 }
 
-                val updatedStatusEndring = database.getActiveFlags(newIdent)
+                val updatedStatusEndring = repository.getStatusEndringer(newIdent)
                 updatedStatusEndring.size shouldBeEqualTo 3
                 updatedStatusEndring.first().sykmeldtFnr shouldBeEqualTo newIdent
 
-                val oldStatusEndring = database.getActiveFlags(oldIdent)
+                val oldStatusEndring = repository.getStatusEndringer(oldIdent)
                 oldStatusEndring.size shouldBeEqualTo 0
             }
         }
@@ -95,15 +87,7 @@ object IdenthendelseServiceSpek : Spek({
                     arsakList = arsakList,
                 )
                 statusList.forEach {
-                    database.addStatus(
-                        it.uuid,
-                        it.personIdent,
-                        it.veilederIdent,
-                        it.enhetNr,
-                        it.arsakList,
-                        it.virksomhetNr,
-                        it.opprettet,
-                    )
+                    repository.createStatusEndring(statusEndring = it)
                 }
 
                 runBlocking {
