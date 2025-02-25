@@ -16,8 +16,8 @@ class PengestoppRepository(private val database: DatabaseInterface) : IPengestop
             it.setString(2, statusEndring.sykmeldtFnr.value)
             it.setString(3, statusEndring.veilederIdent.value)
             it.setString(4, statusEndring.status.name)
-            it.setString(5, statusEndring.virksomhetNr.value)
-            it.setString(6, statusEndring.enhetNr.value)
+            it.setObject(5, statusEndring.virksomhetNr?.value)
+            it.setObject(6, statusEndring.enhetNr?.value)
             it.setObject(7, Timestamp.from(statusEndring.opprettet.toInstant()))
             it.executeQuery().toList { getInt("id") }.single()
         }
@@ -145,7 +145,7 @@ internal fun ResultSet.statusEndring(): PStatusEndring =
         veilederIdent = VeilederIdent(getString("veileder_ident")),
         personIdent = PersonIdent(getString("sykmeldt_fnr")),
         status = Status.valueOf(getString("status")),
-        virksomhetNr = VirksomhetNr(getString("virksomhet_nr")),
+        virksomhetNr = getString("virksomhet_nr")?.let { VirksomhetNr(it) },
         opprettet = getTimestamp("opprettet").toInstant().atOffset(ZoneOffset.UTC),
-        enhetNr = EnhetNr(getString("enhet_nr"))
+        enhetNr = getString("enhet_nr")?.let { EnhetNr(it) }
     )

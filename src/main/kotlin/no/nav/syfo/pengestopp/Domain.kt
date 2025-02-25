@@ -26,9 +26,9 @@ data class StatusEndring(
     val sykmeldtFnr: PersonIdent,
     val status: Status,
     val arsakList: List<Arsak>,
-    val virksomhetNr: VirksomhetNr,
+    val virksomhetNr: VirksomhetNr?,
     val opprettet: OffsetDateTime,
-    val enhetNr: EnhetNr // For å holde oversikt over hvem som bruker tjenesten
+    val enhetNr: EnhetNr? // For å holde oversikt over hvem som bruker tjenesten
 )
 
 enum class SykepengestoppArsak {
