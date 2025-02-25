@@ -10,9 +10,9 @@ data class PStatusEndring(
     val personIdent: PersonIdent,
     val veilederIdent: VeilederIdent,
     val status: Status,
-    val virksomhetNr: VirksomhetNr,
+    val virksomhetNr: VirksomhetNr?,
     val opprettet: OffsetDateTime,
-    val enhetNr: EnhetNr
+    val enhetNr: EnhetNr?
 )
 
 fun PStatusEndring.toStatusEndring(arsaker: List<Arsak>): StatusEndring =
