@@ -4,6 +4,7 @@ import io.ktor.server.application.*
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
+import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.pengestopp.StatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 
@@ -23,6 +24,7 @@ fun Application.testApiModule(
         env = externalMockEnvironment.environment,
         personFlagget84Producer = personFlagget84Producer,
         wellKnownInternADV2 = externalMockEnvironment.wellKnownInternADV2Mock,
+        pengestoppRepository = PengestoppRepository(database = externalMockEnvironment.database),
         tilgangskontrollClient = TilgangskontrollClient(
             azureAdClient = azureAdClient,
             tilgangskontrollClientId = externalMockEnvironment.environment.tilgangskontrollClientId,

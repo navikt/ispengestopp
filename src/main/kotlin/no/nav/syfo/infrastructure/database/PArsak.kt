@@ -1,4 +1,4 @@
-package no.nav.syfo.pengestopp.database.domain
+package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.pengestopp.Arsak
 import no.nav.syfo.pengestopp.SykepengestoppArsak

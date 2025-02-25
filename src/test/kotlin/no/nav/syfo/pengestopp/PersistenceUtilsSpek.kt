@@ -1,9 +1,9 @@
 package no.nav.syfo.pengestopp
 
 import io.mockk.*
-import no.nav.syfo.application.database.DatabaseInterface
+import no.nav.syfo.application.IPengestoppRepository
+import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.objectMapper
-import no.nav.syfo.pengestopp.database.getActiveFlags
 import no.nav.syfo.testutils.*
 import org.amshove.kluent.shouldBeEqualTo
 import org.apache.kafka.clients.consumer.*
@@ -42,13 +42,14 @@ object PersistenceUtilsSpek : Spek({
     val hendelse = objectMapper.writeValueAsString(incomingStatusEndring)
     val hendelseRecord = ConsumerRecord(env.stoppAutomatikkAivenTopic, partition, 1, "something", hendelse)
 
-    fun verifyEmptyDB(database: DatabaseInterface) {
-        val statusendringListe: List<StatusEndring> = database.getActiveFlags(personIdent = sykmeldtPersonIdent)
+    fun verifyEmptyDB(repository: IPengestoppRepository) {
+        val statusendringListe: List<StatusEndring> = repository.getStatusEndringer(personIdent = sykmeldtPersonIdent)
         statusendringListe.size shouldBeEqualTo 0
     }
 
     describe("PollAndPersist") {
         val database = TestDB()
+        val repository = PengestoppRepository(database = database)
 
         afterGroup {
             database.stop()
@@ -60,7 +61,7 @@ object PersistenceUtilsSpek : Spek({
             unmockkAll()
         }
 
-        beforeEachTest { verifyEmptyDB(database) }
+        beforeEachTest { verifyEmptyDB(repository) }
 
         val mockConsumer = mockk<KafkaConsumer<String, String>>()
         every { mockConsumer.poll(Duration.ofMillis(env.pollTimeOutMs)) } returns ConsumerRecords(
@@ -69,9 +70,9 @@ object PersistenceUtilsSpek : Spek({
         every { mockConsumer.commitSync() } returns Unit
 
         it("Store in database after reading from kafka") {
-            pollAndPersist(mockConsumer, database, env)
+            pollAndPersist(mockConsumer, repository, env)
 
-            val statusendringListe: List<StatusEndring> = database.getActiveFlags(personIdent = sykmeldtPersonIdent)
+            val statusendringListe: List<StatusEndring> = repository.getStatusEndringer(personIdent = sykmeldtPersonIdent)
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe[0]
@@ -85,11 +86,11 @@ object PersistenceUtilsSpek : Spek({
         }
 
         it("Do not store in database after reading already persisted record") {
-            pollAndPersist(mockConsumer, database, env)
+            pollAndPersist(mockConsumer, repository, env)
 
-            pollAndPersist(mockConsumer, database, env)
+            pollAndPersist(mockConsumer, repository, env)
 
-            val statusendringListe: List<StatusEndring> = database.getActiveFlags(personIdent = sykmeldtPersonIdent)
+            val statusendringListe: List<StatusEndring> = repository.getStatusEndringer(personIdent = sykmeldtPersonIdent)
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe.first()

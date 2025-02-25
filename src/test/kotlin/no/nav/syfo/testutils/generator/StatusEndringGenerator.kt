@@ -2,9 +2,9 @@ package no.nav.syfo.testutils.generator
 
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.testutils.DBStatusChangeTest
 import no.nav.syfo.testutils.UserConstants
 import java.time.OffsetDateTime
+import java.util.UUID
 
 fun generateStatusEndringer(
     personIdent: PersonIdent = UserConstants.SYKMELDT_PERSONIDENT,
@@ -18,47 +18,47 @@ fun generateStatusEndringer(
         Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
         Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
     )
-): List<DBStatusChangeTest> {
+): List<StatusEndring> {
     return listOf(
-        DBStatusChangeTest(
-            "1",
-            personIdent,
+        StatusEndring(
+            UUID.randomUUID().toString(),
             veilederIdent,
+            personIdent,
             Status.STOPP_AUTOMATIKK,
             arsakList,
             primaryJob,
-            enhetNr,
             opprettet,
+            enhetNr,
         ),
-        DBStatusChangeTest(
-            "2",
-            personIdent,
+        StatusEndring(
+            UUID.randomUUID().toString(),
             veilederIdent,
+            personIdent,
             Status.STOPP_AUTOMATIKK,
             arsakList,
             primaryJob,
-            enhetNr,
             opprettet,
+            enhetNr,
         ),
-        DBStatusChangeTest(
-            "3",
-            personIdent,
+        StatusEndring(
+            UUID.randomUUID().toString(),
             veilederIdent,
+            personIdent,
             Status.STOPP_AUTOMATIKK,
             arsakList,
             secondaryJob,
-            enhetNr,
             opprettet,
+            enhetNr,
         ),
-        DBStatusChangeTest(
-            "4",
-            personIdentFiller,
+        StatusEndring(
+            UUID.randomUUID().toString(),
             veilederIdent,
+            personIdentFiller,
             Status.STOPP_AUTOMATIKK,
             arsakList,
             primaryJob,
-            enhetNr,
             opprettet,
+            enhetNr,
         )
     )
 }

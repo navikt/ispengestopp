@@ -8,8 +8,8 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
+import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.pengestopp.database.addStatus
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.generator.generateStatusEndringer
 import no.nav.syfo.util.*
@@ -25,6 +25,7 @@ class GetStatusV2Spek : Spek({
 
     val externalMockEnvironment = ExternalMockEnvironment()
     val database = externalMockEnvironment.database
+    val pengestoppRepository = PengestoppRepository(database = database)
 
     val personFlagget84Producer = mockk<KafkaProducer<String, StatusEndring>>()
 
@@ -89,15 +90,7 @@ class GetStatusV2Spek : Spek({
                 arsakList = arsakList,
             )
             statusList.forEach {
-                database.addStatus(
-                    it.uuid,
-                    it.personIdent,
-                    it.veilederIdent,
-                    it.enhetNr,
-                    it.arsakList,
-                    it.virksomhetNr,
-                    it.opprettet,
-                )
+                pengestoppRepository.createStatusEndring(statusEndring = it)
             }
             testApplication {
                 val client = setupApiAndClient()
