@@ -1,4 +1,4 @@
-package no.nav.syfo.application.kafka
+package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.objectMapper
 import org.apache.kafka.common.serialization.Serializer

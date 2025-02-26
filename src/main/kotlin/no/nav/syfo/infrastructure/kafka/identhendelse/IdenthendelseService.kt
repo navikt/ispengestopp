@@ -1,10 +1,8 @@
-package no.nav.syfo.identhendelse
+package no.nav.syfo.infrastructure.kafka.identhendelse
 
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.application.IPengestoppRepository
 import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.identhendelse.kafka.COUNT_KAFKA_CONSUMER_PDL_AKTOR_UPDATES
-import no.nav.syfo.identhendelse.kafka.KafkaIdenthendelseDTO
 import no.nav.syfo.domain.PersonIdent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

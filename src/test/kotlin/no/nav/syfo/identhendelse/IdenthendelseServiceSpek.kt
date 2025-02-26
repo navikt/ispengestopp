@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.PengestoppRepository
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
 import no.nav.syfo.pengestopp.Arsak
 import no.nav.syfo.pengestopp.SykepengestoppArsak
 import no.nav.syfo.testutils.generator.generateKafkaIdenthendelseDTO

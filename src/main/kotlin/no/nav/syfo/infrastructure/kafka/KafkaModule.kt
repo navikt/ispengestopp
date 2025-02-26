@@ -1,4 +1,4 @@
-package no.nav.syfo.pengestopp.kafka
+package no.nav.syfo.infrastructure.kafka
 
 import kotlinx.coroutines.*
 import no.nav.syfo.application.*
