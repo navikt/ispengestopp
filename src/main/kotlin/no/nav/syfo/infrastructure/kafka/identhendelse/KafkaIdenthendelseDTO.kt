@@ -1,4 +1,4 @@
-package no.nav.syfo.identhendelse.kafka
+package no.nav.syfo.infrastructure.kafka.identhendelse
 
 import no.nav.syfo.domain.PersonIdent
 

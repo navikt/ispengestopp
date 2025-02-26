@@ -6,20 +6,21 @@ import io.ktor.server.routing.*
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.IPengestoppRepository
-import no.nav.syfo.application.api.authentication.*
-import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.application.api.authentication.JwtIssuer
+import no.nav.syfo.application.api.authentication.JwtIssuerType
+import no.nav.syfo.application.api.authentication.installJwtAuthentication
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
-import no.nav.syfo.pengestopp.StatusEndring
+import no.nav.syfo.infrastructure.database.DatabaseInterface
+import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
 import no.nav.syfo.pengestopp.api.registerFlaggPerson84V2
-import org.apache.kafka.clients.producer.KafkaProducer
 
 fun Application.apiModule(
     applicationState: ApplicationState,
     database: DatabaseInterface,
     pengestoppRepository: IPengestoppRepository,
     env: Environment,
-    personFlagget84Producer: KafkaProducer<String, StatusEndring>,
+    statusEndringProducer: StatusEndringProducer,
     wellKnownInternADV2: WellKnown,
     tilgangskontrollClient: TilgangskontrollClient,
 ) {
@@ -46,9 +47,8 @@ fun Application.apiModule(
         authenticate(JwtIssuerType.INTERN_AZUREAD_V2.name) {
             registerFlaggPerson84V2(
                 pengestoppRepository = pengestoppRepository,
-                env,
-                personFlagget84Producer,
-                tilgangskontrollClient
+                statusEndringProducer = statusEndringProducer,
+                tilgangskontrollClient = tilgangskontrollClient
             )
         }
     }

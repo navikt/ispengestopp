@@ -1,7 +1,6 @@
-package no.nav.syfo.pengestopp.kafka
+package no.nav.syfo.infrastructure.kafka
 
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.kafka.commonKafkaAivenConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -11,7 +10,6 @@ fun kafkaPersonFlaggetAivenConsumerProperties(
     environment: Environment,
 ) = Properties().apply {
     putAll(commonKafkaAivenConsumerConfig(environment.kafka))
-    this[ConsumerConfig.GROUP_ID_CONFIG] = "ispengestopp-v1"
     this[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.canonicalName
     this[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.canonicalName
 }

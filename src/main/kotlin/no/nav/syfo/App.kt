@@ -17,11 +17,13 @@ import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.client.wellknown.getWellKnown
-import no.nav.syfo.identhendelse.IdenthendelseService
-import no.nav.syfo.identhendelse.kafka.IdenthendelseConsumerService
-import no.nav.syfo.identhendelse.kafka.launchKafkaTaskIdenthendelse
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
+import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerService
+import no.nav.syfo.infrastructure.kafka.identhendelse.launchKafkaTaskIdenthendelse
 import no.nav.syfo.infrastructure.database.PengestoppRepository
-import no.nav.syfo.pengestopp.kafka.*
+import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
+import no.nav.syfo.infrastructure.kafka.createPersonFlagget84AivenConsumer
+import no.nav.syfo.infrastructure.kafka.launchKafkaTask
 import no.nav.syfo.util.configure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -62,6 +64,10 @@ fun main() {
         pdlClientId = environment.pdlClientId,
     )
 
+    val statusEndringProducer = StatusEndringProducer(
+        environment = environment,
+    )
+
     val applicationEnvironment = applicationEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
         config = HoconApplicationConfig(ConfigFactory.load())
@@ -83,7 +89,7 @@ fun main() {
                 applicationState = applicationState,
                 database = database,
                 env = environment,
-                personFlagget84Producer = createPersonFlagget84AivenProducer(environment),
+                statusEndringProducer = statusEndringProducer,
                 wellKnownInternADV2 = wellKnownInternADV2,
                 pengestoppRepository = pengestoppRepository,
                 tilgangskontrollClient = TilgangskontrollClient(

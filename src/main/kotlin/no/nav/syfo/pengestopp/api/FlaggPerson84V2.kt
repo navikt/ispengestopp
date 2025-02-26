@@ -4,15 +4,16 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.application.Environment
 import no.nav.syfo.application.IPengestoppRepository
 import no.nav.syfo.application.api.authentication.getVeilederIdentFromToken
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.domain.PersonIdent
+import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.util.*
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerRecord
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.callIdArgument
+import no.nav.syfo.util.getBearerHeader
+import no.nav.syfo.util.getCallId
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
@@ -27,8 +28,7 @@ const val apiV2PersonFlaggPath = "/person/flagg"
 
 fun Route.registerFlaggPerson84V2(
     pengestoppRepository: IPengestoppRepository,
-    env: Environment,
-    personFlagget84Producer: KafkaProducer<String, StatusEndring>,
+    statusEndringProducer: StatusEndringProducer,
     tilgangskontrollClient: TilgangskontrollClient,
 ) {
     route(apiV2BasePath) {
@@ -67,7 +67,6 @@ fun Route.registerFlaggPerson84V2(
             try {
                 val stoppAutomatikk: StoppAutomatikk = call.receive()
                 val ident = getVeilederIdentFromToken(token)
-                val topic = env.stoppAutomatikkAivenTopic
                 val harTilgang = tilgangskontrollClient.harTilgangTilBrukerMedOBO(stoppAutomatikk.sykmeldtFnr, token)
                 if (harTilgang) {
                     stoppAutomatikk.virksomhetNr.forEach {
@@ -81,14 +80,9 @@ fun Route.registerFlaggPerson84V2(
                             OffsetDateTime.now(ZoneOffset.UTC),
                             stoppAutomatikk.enhetNr
                         )
-                        personFlagget84Producer.send(
-                            ProducerRecord(
-                                topic,
-                                "${stoppAutomatikk.sykmeldtFnr}-$it",
-                                kFlaggperson84Hendelse,
-                            )
+                        statusEndringProducer.send(
+                            statusEndring = kFlaggperson84Hendelse
                         )
-                        log.info("Lagt melding på kafka: topic: $topic")
                     }
                     COUNT_ENDRE_PERSON_STATUS_SUCCESS.increment()
                     call.respond(HttpStatusCode.Created)

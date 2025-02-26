@@ -2,7 +2,7 @@ package no.nav.syfo.testutils
 
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
-import no.nav.syfo.application.kafka.KafkaEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 import java.util.*
 
 fun testEnvironment(): Environment {

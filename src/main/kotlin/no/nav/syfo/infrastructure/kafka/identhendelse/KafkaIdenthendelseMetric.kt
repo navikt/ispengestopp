@@ -1,4 +1,4 @@
-package no.nav.syfo.identhendelse.kafka
+package no.nav.syfo.infrastructure.kafka.identhendelse
 
 import io.micrometer.core.instrument.Counter
 import no.nav.syfo.application.metric.METRICS_NS
