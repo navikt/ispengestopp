@@ -21,8 +21,8 @@ import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerService
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchKafkaTaskIdenthendelse
 import no.nav.syfo.infrastructure.database.PengestoppRepository
+import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
 import no.nav.syfo.infrastructure.kafka.createPersonFlagget84AivenConsumer
-import no.nav.syfo.infrastructure.kafka.createPersonFlagget84AivenProducer
 import no.nav.syfo.infrastructure.kafka.launchKafkaTask
 import no.nav.syfo.util.configure
 import org.slf4j.Logger
@@ -64,6 +64,10 @@ fun main() {
         pdlClientId = environment.pdlClientId,
     )
 
+    val statusEndringProducer = StatusEndringProducer(
+        environment = environment,
+    )
+
     val applicationEnvironment = applicationEnvironment {
         log = LoggerFactory.getLogger("ktor.application")
         config = HoconApplicationConfig(ConfigFactory.load())
@@ -85,7 +89,7 @@ fun main() {
                 applicationState = applicationState,
                 database = database,
                 env = environment,
-                personFlagget84Producer = createPersonFlagget84AivenProducer(environment),
+                statusEndringProducer = statusEndringProducer,
                 wellKnownInternADV2 = wellKnownInternADV2,
                 pengestoppRepository = pengestoppRepository,
                 tilgangskontrollClient = TilgangskontrollClient(
