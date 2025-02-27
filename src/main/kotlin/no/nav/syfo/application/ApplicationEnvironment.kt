@@ -1,6 +1,6 @@
 package no.nav.syfo.application
 
-import no.nav.syfo.application.kafka.KafkaEnvironment
+import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 
 data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "ispengestopp"),

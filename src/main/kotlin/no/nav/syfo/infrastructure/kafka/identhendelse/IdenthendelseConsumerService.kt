@@ -1,7 +1,6 @@
-package no.nav.syfo.identhendelse.kafka
+package no.nav.syfo.infrastructure.kafka.identhendelse
 
 import kotlinx.coroutines.delay
-import no.nav.syfo.identhendelse.IdenthendelseService
 import org.apache.avro.generic.GenericData
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer

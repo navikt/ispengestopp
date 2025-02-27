@@ -1,4 +1,4 @@
-package no.nav.syfo.application.kafka
+package no.nav.syfo.infrastructure.kafka
 
 data class KafkaEnvironment(
     val aivenBootstrapServers: String,
