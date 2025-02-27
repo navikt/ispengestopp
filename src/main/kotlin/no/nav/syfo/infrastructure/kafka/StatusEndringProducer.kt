@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.kafka
 import no.nav.syfo.application.Environment
+import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.StatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -18,7 +19,7 @@ class StatusEndringProducer(
         kafkaProducer.send(
             ProducerRecord(
                 topic,
-                statusEndring.sykmeldtFnr.value,
+                statusEndring.sykmeldtFnr.asProducerRecordKey(),
                 statusEndring,
             )
         )
@@ -29,6 +30,8 @@ class StatusEndringProducer(
         private val log = LoggerFactory.getLogger(this::class.java)
     }
 }
+
+fun PersonIdent.asProducerRecordKey(): String = UUID.nameUUIDFromBytes(value.toByteArray()).toString()
 
 private fun createPersonFlagget84AivenProducer(kafkaEnvironment: KafkaEnvironment): KafkaProducer<String, StatusEndring> {
     val kafkaProducerProperties = Properties().apply {
