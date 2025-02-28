@@ -50,6 +50,7 @@ object PersistenceUtilsSpek : Spek({
     describe("PollAndPersist") {
         val database = TestDB()
         val repository = PengestoppRepository(database = database)
+        val mockConsumer = mockk<KafkaConsumer<String, String>>()
 
         afterGroup {
             database.stop()
@@ -61,13 +62,13 @@ object PersistenceUtilsSpek : Spek({
             unmockkAll()
         }
 
-        beforeEachTest { verifyEmptyDB(repository) }
-
-        val mockConsumer = mockk<KafkaConsumer<String, String>>()
-        every { mockConsumer.poll(Duration.ofMillis(env.pollTimeOutMs)) } returns ConsumerRecords(
-            mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecord))
-        )
-        every { mockConsumer.commitSync() } returns Unit
+        beforeEachTest {
+            verifyEmptyDB(repository)
+            every { mockConsumer.poll(Duration.ofMillis(env.pollTimeOutMs)) } returns ConsumerRecords(
+                mapOf(stoppAutomatikkTopicPartition to listOf(hendelseRecord))
+            )
+            every { mockConsumer.commitSync() } returns Unit
+        }
 
         it("Store in database after reading from kafka") {
             pollAndPersist(mockConsumer, repository, env)
