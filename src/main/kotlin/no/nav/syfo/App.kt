@@ -10,6 +10,7 @@ import io.ktor.server.netty.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
+import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.infrastructure.database.Database
 import no.nav.syfo.infrastructure.database.DatabaseConfig
@@ -24,6 +25,7 @@ import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
 import no.nav.syfo.infrastructure.kafka.createPersonFlagget84AivenConsumer
 import no.nav.syfo.infrastructure.kafka.launchKafkaTask
+import no.nav.syfo.infrastructure.kafka.manglendemedvirkning.launchKafkaTaskManglendeMedvirkning
 import no.nav.syfo.util.configure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -85,6 +87,10 @@ fun main() {
         },
         module = {
             val pengestoppRepository = PengestoppRepository(database = database)
+            val pengestoppService = PengestoppService(
+                pengestoppRepository = pengestoppRepository,
+                statusEndringProducer = statusEndringProducer,
+            )
             apiModule(
                 applicationState = applicationState,
                 database = database,
@@ -120,6 +126,11 @@ fun main() {
                     applicationState = applicationState,
                     environment = environment,
                     kafkaIdenthendelseConsumerService = kafkaIdenthendelseConsumerService,
+                )
+                launchKafkaTaskManglendeMedvirkning(
+                    applicationState = applicationState,
+                    environment = environment,
+                    pengestoppService = pengestoppService,
                 )
             }
         }

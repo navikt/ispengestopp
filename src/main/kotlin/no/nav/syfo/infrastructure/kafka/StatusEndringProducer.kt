@@ -1,5 +1,6 @@
 package no.nav.syfo.infrastructure.kafka
 import no.nav.syfo.application.Environment
+import no.nav.syfo.application.IStatusEndringProducer
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.StatusEndring
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -12,10 +13,10 @@ import java.util.*
 class StatusEndringProducer(
     private val environment: Environment,
     private val kafkaProducer: KafkaProducer<String, StatusEndring> = createPersonFlagget84AivenProducer(kafkaEnvironment = environment.kafka)
-) {
+) : IStatusEndringProducer {
     private val topic = environment.stoppAutomatikkAivenTopic
 
-    fun send(statusEndring: StatusEndring) {
+    override fun send(statusEndring: StatusEndring) {
         kafkaProducer.send(
             ProducerRecord(
                 topic,

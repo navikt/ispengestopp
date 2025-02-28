@@ -11,7 +11,19 @@ import java.util.*
 
 class PengestoppRepository(private val database: DatabaseInterface) : IPengestoppRepository {
     override fun createStatusEndring(statusEndring: StatusEndring) = database.connection.use { connection ->
-        val statusEndringId = connection.prepareStatement(INSERT_STATUS_ENDRING).use {
+        connection.createStatusEndring(statusEndring)
+        connection.commit()
+    }
+
+    override fun createStatusEndringer(statusEndringer: List<StatusEndring>) = database.connection.use { connection ->
+        statusEndringer.forEach { statusEndring ->
+            connection.createStatusEndring(statusEndring)
+        }
+        connection.commit()
+    }
+
+    private fun Connection.createStatusEndring(statusEndring: StatusEndring) {
+        val statusEndringId = this.prepareStatement(INSERT_STATUS_ENDRING).use {
             it.setString(1, statusEndring.uuid)
             it.setString(2, statusEndring.sykmeldtFnr.value)
             it.setString(3, statusEndring.veilederIdent.value)
@@ -23,7 +35,7 @@ class PengestoppRepository(private val database: DatabaseInterface) : IPengestop
         }
 
         statusEndring.arsakList.forEach { arsak ->
-            connection.prepareStatement(INSERT_ARSAK).use {
+            this.prepareStatement(INSERT_ARSAK).use {
                 it.setString(1, UUID.randomUUID().toString())
                 it.setInt(2, statusEndringId)
                 it.setString(3, arsak.type.name)
@@ -31,7 +43,6 @@ class PengestoppRepository(private val database: DatabaseInterface) : IPengestop
                 it.execute()
             }
         }
-        connection.commit()
     }
 
     override fun getStatusEndringer(personIdent: PersonIdent): List<StatusEndring> =
