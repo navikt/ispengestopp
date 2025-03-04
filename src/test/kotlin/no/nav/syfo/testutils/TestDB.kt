@@ -4,6 +4,7 @@ import io.zonky.test.db.postgres.embedded.EmbeddedPostgres
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import org.flywaydb.core.Flyway
 import java.sql.Connection
+import javax.xml.crypto.Data
 
 class TestDB : DatabaseInterface {
 
@@ -30,6 +31,8 @@ class TestDB : DatabaseInterface {
         pg.close()
     }
 }
+
+fun DatabaseInterface.dropData() = this.connection.use { it.dropData() }
 
 fun Connection.dropData() {
     val queryList = listOf(
