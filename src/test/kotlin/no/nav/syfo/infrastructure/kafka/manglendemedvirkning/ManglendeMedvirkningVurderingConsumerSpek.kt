@@ -4,12 +4,10 @@ import io.mockk.*
 import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
+import no.nav.syfo.infrastructure.kafka.arbeidsuforhet.ArbeidsuforhetVurderingRecord
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.testutils.TestDB
-import no.nav.syfo.testutils.UserConstants
-import no.nav.syfo.testutils.dropData
+import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.generator.genereateManglendeMedvirkningVurdering
-import no.nav.syfo.testutils.testEnvironment
 import org.amshove.kluent.shouldBeEmpty
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeNull
@@ -97,9 +95,3 @@ class ManglendeMedvirkningVurderingConsumerSpek : Spek({
     }
 })
 
-private fun mockRecords(records: List<ManglendeMedvirkningVurderingRecord>): ConsumerRecords<String, ManglendeMedvirkningVurderingRecord> {
-    val consumerRecords = records.mapIndexed { index, record ->
-        ConsumerRecord("topic", 0, index.toLong(), "key$index", record)
-    }
-    return ConsumerRecords(mapOf(TopicPartition("topic", 0) to consumerRecords))
-}
