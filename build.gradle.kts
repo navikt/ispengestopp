@@ -179,9 +179,7 @@ tasks {
     }
 
     test {
-        useJUnitPlatform {
-            includeEngines("spek2")
-        }
+        useJUnitPlatform()
         testLogging.showStandardStreams = true
     }
 }

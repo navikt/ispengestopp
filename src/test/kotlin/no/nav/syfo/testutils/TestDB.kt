@@ -31,6 +31,8 @@ class TestDB : DatabaseInterface {
     }
 }
 
+fun DatabaseInterface.dropData() = this.connection.use { it.dropData() }
+
 fun Connection.dropData() {
     val queryList = listOf(
         """
