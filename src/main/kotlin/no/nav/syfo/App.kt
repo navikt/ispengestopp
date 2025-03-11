@@ -23,6 +23,7 @@ import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerServi
 import no.nav.syfo.infrastructure.kafka.identhendelse.launchKafkaTaskIdenthendelse
 import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
+import no.nav.syfo.infrastructure.kafka.aktivitetskrav.launchKafkaTaskAktivitetskrav
 import no.nav.syfo.infrastructure.kafka.arbeidsuforhet.launchKafkaTaskArbeidsuforhet
 import no.nav.syfo.infrastructure.kafka.createPersonFlagget84AivenConsumer
 import no.nav.syfo.infrastructure.kafka.launchKafkaTask
@@ -134,6 +135,11 @@ fun main() {
                     pengestoppService = pengestoppService,
                 )
                 launchKafkaTaskArbeidsuforhet(
+                    applicationState = applicationState,
+                    environment = environment,
+                    pengestoppService = pengestoppService,
+                )
+                launchKafkaTaskAktivitetskrav(
                     applicationState = applicationState,
                     environment = environment,
                     pengestoppService = pengestoppService,

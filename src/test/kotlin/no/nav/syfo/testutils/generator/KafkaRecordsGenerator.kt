@@ -1,5 +1,7 @@
 package no.nav.syfo.testutils.generator
 
+import no.nav.syfo.infrastructure.kafka.aktivitetskrav.AktivitetskravStatus
+import no.nav.syfo.infrastructure.kafka.aktivitetskrav.AktivitetskravVurderingRecord
 import no.nav.syfo.infrastructure.kafka.arbeidsuforhet.ArbeidsuforhetVurderingRecord
 import no.nav.syfo.infrastructure.kafka.manglendemedvirkning.ManglendeMedvirkningVurderingRecord
 import no.nav.syfo.infrastructure.kafka.manglendemedvirkning.VurderingType
@@ -30,4 +32,21 @@ fun generateArbeidsuforhetVurdering(type: ArbeidsuforhetVurderingType) =
         begrunnelse = "tekst",
         gjelderFom = LocalDate.now(),
         isFinal = true,
+    )
+
+fun generateAktivitetskravVurdering(status: AktivitetskravStatus) =
+    AktivitetskravVurderingRecord(
+        uuid = UUID.randomUUID(),
+        personIdent = UserConstants.SYKMELDT_PERSONIDENT.value,
+        createdAt = OffsetDateTime.now(),
+        status = status.name,
+        isFinal = false,
+        beskrivelse = "beskrivelse",
+        arsaker = listOf("arsak"),
+        stoppunktAt = LocalDate.now(),
+        updatedBy = "Z999999",
+        sisteVurderingUuid = UUID.randomUUID(),
+        sistVurdert = OffsetDateTime.now(),
+        frist = LocalDate.now(),
+        previousAktivitetskravUuid = UUID.randomUUID(),
     )
