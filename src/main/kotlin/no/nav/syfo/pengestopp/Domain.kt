@@ -43,13 +43,6 @@ data class Arsak(
     val type: SykepengestoppArsak
 )
 
-data class StoppAutomatikk(
-    val sykmeldtFnr: PersonIdent,
-    val arsakList: List<Arsak>,
-    val virksomhetNr: List<VirksomhetNr>,
-    val enhetNr: EnhetNr
-)
-
 data class VeilederIdent(val value: String)
 data class VirksomhetNr(val value: String) {
     init {
