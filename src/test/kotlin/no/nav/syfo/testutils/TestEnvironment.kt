@@ -40,8 +40,3 @@ fun testAppState() = ApplicationState(
     alive = true,
     ready = true,
 )
-
-fun Properties.overrideForTest(): Properties = apply {
-    remove("security.protocol")
-    remove("sasl.mechanism")
-}

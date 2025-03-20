@@ -47,7 +47,6 @@ fun Application.apiModule(
         authenticate(JwtIssuerType.INTERN_AZUREAD_V2.name) {
             registerFlaggPerson84V2(
                 pengestoppRepository = pengestoppRepository,
-                statusEndringProducer = statusEndringProducer,
                 tilgangskontrollClient = tilgangskontrollClient
             )
         }

@@ -4,7 +4,6 @@ package no.nav.syfo.util
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import io.ktor.util.pipeline.*
 import net.logstash.logback.argument.StructuredArguments
 
 const val NAV_PERSONIDENT_HEADER = "nav-personident"

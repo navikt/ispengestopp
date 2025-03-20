@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
-import no.nav.syfo.application.api.authentication.JWT_CLAIM_NAVIDENT
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -14,7 +13,8 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
-const val keyId = "localhost-signer"
+private const val keyId = "localhost-signer"
+private const val JWT_CLAIM_NAVIDENT = "NAVident"
 
 /* Utsteder en Bearer-token (En slik vi ber AzureAd om). OBS: Det er viktig at KeyId matcher kid i jwkset.json
  */
