@@ -1,17 +1,14 @@
 package no.nav.syfo.testutils
 
 import io.ktor.server.application.*
+import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.application.api.apiModule
 import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
-import no.nav.syfo.infrastructure.database.PengestoppRepository
-import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
-import no.nav.syfo.pengestopp.StatusEndring
-import org.apache.kafka.clients.producer.KafkaProducer
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
-    personFlagget84Producer: KafkaProducer<String, StatusEndring>,
+    pengestoppService: PengestoppService,
 ) {
     val azureAdClient = AzureAdClient(
         azureAppClientId = externalMockEnvironment.environment.azureAppClientId,
@@ -23,12 +20,8 @@ fun Application.testApiModule(
         applicationState = externalMockEnvironment.applicationState,
         database = externalMockEnvironment.database,
         env = externalMockEnvironment.environment,
-        statusEndringProducer = StatusEndringProducer(
-            environment = externalMockEnvironment.environment,
-            kafkaProducer = personFlagget84Producer,
-        ),
         wellKnownInternADV2 = externalMockEnvironment.wellKnownInternADV2Mock,
-        pengestoppRepository = PengestoppRepository(database = externalMockEnvironment.database),
+        pengestoppService = pengestoppService,
         tilgangskontrollClient = TilgangskontrollClient(
             azureAdClient = azureAdClient,
             tilgangskontrollClientId = externalMockEnvironment.environment.tilgangskontrollClientId,

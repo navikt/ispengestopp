@@ -8,7 +8,9 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.testing.*
 import io.mockk.mockk
+import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.infrastructure.database.PengestoppRepository
+import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.generator.generateStatusEndringer
@@ -17,6 +19,10 @@ import org.amshove.kluent.*
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class GetStatusV2Spek : Spek({
 
@@ -27,13 +33,19 @@ class GetStatusV2Spek : Spek({
     val database = externalMockEnvironment.database
     val pengestoppRepository = PengestoppRepository(database = database)
 
-    val personFlagget84Producer = mockk<KafkaProducer<String, StatusEndring>>()
+    val pengestoppService = PengestoppService(
+        pengestoppRepository = pengestoppRepository,
+        statusEndringProducer = StatusEndringProducer(
+            environment = externalMockEnvironment.environment,
+            kafkaProducer = mockk<KafkaProducer<String, StatusEndring>>()
+        ),
+    )
 
     fun ApplicationTestBuilder.setupApiAndClient(): HttpClient {
         application {
             testApiModule(
+                pengestoppService = pengestoppService,
                 externalMockEnvironment = externalMockEnvironment,
-                personFlagget84Producer = personFlagget84Producer,
             )
         }
         val client = createClient {
@@ -83,11 +95,11 @@ class GetStatusV2Spek : Spek({
         }
         it("return correct content") {
             val arsakList = listOf(
-                Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
-                Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
+                Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV),
             )
             val statusList = generateStatusEndringer(
                 arsakList = arsakList,
+                opprettet = OffsetDateTime.of(2025, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC),
             )
             statusList.forEach {
                 pengestoppRepository.createStatusEndring(statusEndring = it)
@@ -108,6 +120,29 @@ class GetStatusV2Spek : Spek({
                 flags.first().arsakList shouldBeEqualTo arsakList
                 flags.first().opprettet.toEpochSecond()
                     .shouldBeGreaterOrEqualTo(flags.last().opprettet.toEpochSecond())
+            }
+        }
+
+        it("return no content when statusendringer after cutoff date") {
+            val arsakList = listOf(
+                Arsak(type = SykepengestoppArsak.MANGLENDE_MEDVIRKING),
+            )
+            val statusList = generateStatusEndringer(
+                arsakList = arsakList,
+                opprettet = OffsetDateTime.of(LocalDate.of(2025, 3, 10), LocalTime.now(), ZoneOffset.UTC),
+            )
+            statusList.forEach {
+                pengestoppRepository.createStatusEndring(statusEndring = it)
+            }
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.get(endpointPath) {
+                    bearerAuth(validToken)
+                    header(NAV_PERSONIDENT_HEADER, sykmeldtPersonIdent.value)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                }
+
+                response.status shouldBe HttpStatusCode.NoContent
             }
         }
     }

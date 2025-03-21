@@ -1,7 +1,8 @@
 package no.nav.syfo.testutils
 
 import no.nav.syfo.application.ApplicationState
-import no.nav.syfo.testutils.mock.*
+import no.nav.syfo.testutils.mock.mockHttpClient
+import no.nav.syfo.testutils.mock.wellKnownInternADMock
 
 class ExternalMockEnvironment {
     val applicationState: ApplicationState = testAppState()
