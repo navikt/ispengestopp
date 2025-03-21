@@ -3,7 +3,7 @@ package no.nav.syfo.pengestopp.api
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import no.nav.syfo.application.IPengestoppRepository
+import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
@@ -20,7 +20,7 @@ const val apiV2BasePath = "/api/v2"
 const val apiV2PersonStatusPath = "/person/status"
 
 fun Route.registerFlaggPerson84V2(
-    pengestoppRepository: IPengestoppRepository,
+    pengestoppService: PengestoppService,
     tilgangskontrollClient: TilgangskontrollClient,
 ) {
     route(apiV2BasePath) {
@@ -36,7 +36,7 @@ fun Route.registerFlaggPerson84V2(
                 val personIdent = PersonIdent(sykmeldtPersonident)
                 val hasAccess = tilgangskontrollClient.harTilgangTilBrukerMedOBO(personIdent, token)
                 if (hasAccess) {
-                    val flags: List<StatusEndring> = pengestoppRepository.getStatusEndringer(personIdent)
+                    val flags: List<StatusEndring> = pengestoppService.getStatusendringer(personIdent)
                     when {
                         flags.isNotEmpty() -> call.respond(flags)
                         else -> call.respond(HttpStatusCode.NoContent)

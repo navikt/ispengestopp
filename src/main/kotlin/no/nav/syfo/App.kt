@@ -97,9 +97,8 @@ fun main() {
                 applicationState = applicationState,
                 database = database,
                 env = environment,
-                statusEndringProducer = statusEndringProducer,
                 wellKnownInternADV2 = wellKnownInternADV2,
-                pengestoppRepository = pengestoppRepository,
+                pengestoppService = pengestoppService,
                 tilgangskontrollClient = TilgangskontrollClient(
                     azureAdClient = azureAdClient,
                     tilgangskontrollClientId = environment.tilgangskontrollClientId,
