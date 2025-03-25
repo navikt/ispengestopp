@@ -14,7 +14,7 @@ class PengestoppService(
         statusEndringer.forEach { statusEndringProducer.send(it) }
     }
 
-    fun getStatusendringer(personIdent: PersonIdent): List<StatusEndring> {
+    fun getOldStatusendringer(personIdent: PersonIdent): List<StatusEndring> {
         return pengestoppRepository
             .getStatusEndringer(personIdent)
             .filter { isOldStatusendring(it) }
