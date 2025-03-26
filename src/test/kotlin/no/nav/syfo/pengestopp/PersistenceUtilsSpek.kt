@@ -95,7 +95,7 @@ object PersistenceUtilsSpek : Spek({
             statusendringListe.size shouldBeEqualTo 1
 
             val statusEndring = statusendringListe.first()
-            statusEndring.arsakList shouldBeEqualTo arsakList
+            statusEndring.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.AKTIVITETSKRAV))
             statusEndring.sykmeldtFnr shouldBeEqualTo sykmeldtPersonIdent
             statusEndring.veilederIdent shouldBeEqualTo veilederIdent
             statusEndring.virksomhetNr shouldBeEqualTo primaryJob

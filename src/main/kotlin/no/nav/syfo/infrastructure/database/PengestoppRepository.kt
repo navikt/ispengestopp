@@ -49,9 +49,19 @@ class PengestoppRepository(private val database: DatabaseInterface) : IPengestop
         database.connection.use { connection ->
             connection.prepareStatement(GET_STATUS_ENDRING_BY_PERSONIDENT).use {
                 it.setString(1, personIdent.value)
-                it.executeQuery().toList { statusEndring() }.map { pStatusEndring ->
-                    pStatusEndring.toStatusEndring(arsaker = connection.getArsaker(pStatusEndring.id))
-                }
+                it.executeQuery()
+                    .toList { statusEndring() }
+                    .map { pStatusEndring ->
+                        pStatusEndring.toStatusEndring(arsaker = connection.getArsaker(pStatusEndring.id))
+                    }
+                    .map { statusEndring ->
+                        statusEndring.copy(
+                            arsakList = statusEndring.arsakList.filter { sykepengestoppArsak ->
+                                !sykepengestoppArsak.type.isDeprecated
+                            }
+                        )
+                    }
+                    .filter { statusEndring -> statusEndring.arsakList.isNotEmpty() }
             }
         }
 

@@ -16,12 +16,14 @@ import no.nav.syfo.pengestopp.StatusEndring
 import no.nav.syfo.pengestopp.SykepengestoppArsak
 import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.generator.generateAutomaticStatusEndring
+import no.nav.syfo.testutils.generator.generateStatusEndring
 import no.nav.syfo.testutils.generator.generateStatusEndringer
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldBeGreaterOrEqualTo
+import org.amshove.kluent.shouldBeLessOrEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
@@ -167,6 +169,63 @@ class GetStatusV2Spek : Spek({
                     header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 }
                 response.status shouldBe HttpStatusCode.NoContent
+            }
+        }
+
+        it("return correct content - remove statusEndringer with only deprecated arsaker") {
+            val opprettet = OffsetDateTime.of(2025, 2, 10, 0, 0, 0, 0, ZoneOffset.UTC)
+
+            val statusList = listOf(
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
+                        Arsak(type = SykepengestoppArsak.MEDISINSK_VILKAR)
+                    ),
+                    opprettet = opprettet.plusSeconds(3),
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
+                    ),
+                    opprettet = opprettet.plusSeconds(2),
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.TILBAKEDATERT_SYKMELDING)
+                    ),
+                    opprettet = opprettet.plusSeconds(1),
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING)
+                    ),
+                    opprettet = opprettet,
+                ),
+            )
+            statusList.forEach {
+                pengestoppRepository.createStatusEndring(statusEndring = it)
+            }
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.get(endpointPath) {
+                    bearerAuth(validToken)
+                    header(NAV_PERSONIDENT_HEADER, sykmeldtPersonIdent.value)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                }
+                response.status shouldBe HttpStatusCode.OK
+
+                val flags: List<StatusEndring> = response.body()
+
+                flags.size shouldBeEqualTo 2
+                flags.first().sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                flags.first().arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.MEDISINSK_VILKAR))
+                flags.first().opprettet.toEpochSecond()
+                    .shouldBeGreaterOrEqualTo(flags.last().opprettet.toEpochSecond())
+
+                flags.last().sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                flags.last().arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.AKTIVITETSKRAV))
+                flags.last().opprettet.toEpochSecond()
+                    .shouldBeLessOrEqualTo(flags.first().opprettet.toEpochSecond())
             }
         }
     }
