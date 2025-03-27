@@ -181,22 +181,33 @@ class GetStatusV2Spek : Spek({
                         Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
                         Arsak(type = SykepengestoppArsak.MEDISINSK_VILKAR)
                     ),
-                    opprettet = opprettet.plusSeconds(3),
+                    opprettet = opprettet.plusSeconds(10),
                 ),
                 generateStatusEndring(
                     arsakList = listOf(
                         Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
                     ),
-                    opprettet = opprettet.plusSeconds(2),
+                    opprettet = opprettet.plusSeconds(9),
                 ),
                 generateStatusEndring(
                     arsakList = listOf(
                         Arsak(type = SykepengestoppArsak.TILBAKEDATERT_SYKMELDING)
                     ),
-                    opprettet = opprettet.plusSeconds(1),
+                    opprettet = opprettet.plusSeconds(8),
+                ),
+                generateStatusEndring(
+                    arsakList = emptyList(),
+                    opprettet = opprettet.plusSeconds(7),
                 ),
                 generateStatusEndring(
                     arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING)
+                    ),
+                    opprettet = opprettet,
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.TILBAKEDATERT_SYKMELDING),
                         Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING)
                     ),
                     opprettet = opprettet,
@@ -216,16 +227,28 @@ class GetStatusV2Spek : Spek({
 
                 val flags: List<StatusEndring> = response.body()
 
-                flags.size shouldBeEqualTo 2
-                flags.first().sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
-                flags.first().arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.MEDISINSK_VILKAR))
-                flags.first().opprettet.toEpochSecond()
-                    .shouldBeGreaterOrEqualTo(flags.last().opprettet.toEpochSecond())
+                flags.size shouldBeEqualTo 3
+                val fjernetAvvikletArsak = flags[0]
+                fjernetAvvikletArsak.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                fjernetAvvikletArsak.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.MEDISINSK_VILKAR))
 
-                flags.last().sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
-                flags.last().arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.AKTIVITETSKRAV))
-                flags.last().opprettet.toEpochSecond()
-                    .shouldBeLessOrEqualTo(flags.first().opprettet.toEpochSecond())
+                val kunAktivitetskrav = flags[1]
+                fjernetAvvikletArsak.opprettet.toEpochSecond()
+                    .shouldBeGreaterOrEqualTo(kunAktivitetskrav.opprettet.toEpochSecond())
+
+                kunAktivitetskrav.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                kunAktivitetskrav.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.AKTIVITETSKRAV))
+                kunAktivitetskrav.opprettet.toEpochSecond()
+                    .shouldBeLessOrEqualTo(fjernetAvvikletArsak.opprettet.toEpochSecond())
+
+                val tomArsaksliste = flags[2]
+                kunAktivitetskrav.opprettet.toEpochSecond()
+                    .shouldBeGreaterOrEqualTo(tomArsaksliste.opprettet.toEpochSecond())
+
+                tomArsaksliste.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                tomArsaksliste.arsakList shouldBeEqualTo emptyList()
+                tomArsaksliste.opprettet.toEpochSecond()
+                    .shouldBeLessOrEqualTo(kunAktivitetskrav.opprettet.toEpochSecond())
             }
         }
     }
