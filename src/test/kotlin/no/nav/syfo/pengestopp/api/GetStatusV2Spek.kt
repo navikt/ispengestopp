@@ -145,5 +145,31 @@ class GetStatusV2Spek : Spek({
                 response.status shouldBe HttpStatusCode.NoContent
             }
         }
+        
+        it("returns statusendring without arsaker") {
+            val statusEndringer = generateStatusEndringer(
+                arsakList = emptyList(),
+                opprettet = OffsetDateTime.now(),
+            )
+            statusEndringer.forEach {
+                pengestoppRepository.createStatusEndring(statusEndring = it)
+            }
+            
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.get(endpointPath) {
+                    bearerAuth(validToken)
+                    header(NAV_PERSONIDENT_HEADER, sykmeldtPersonIdent.value)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                }
+                response.status shouldBe HttpStatusCode.OK
+
+                val flags: List<StatusEndring> = response.body()
+
+                flags.size shouldBeEqualTo 3
+                flags.first().sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                flags.all { it.arsakList.isEmpty() } shouldBeEqualTo true
+            }
+        }
     }
 })

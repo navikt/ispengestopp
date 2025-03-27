@@ -21,7 +21,7 @@ class PengestoppService(
     }
 
     private fun isOldStatusendring(statusEndring: StatusEndring): Boolean {
-        return when (statusEndring.arsakList.first().type) {
+        return when (statusEndring.arsakList.firstOrNull()?.type) {
             SykepengestoppArsak.MANGLENDE_MEDVIRKING -> statusEndring.opprettet.toLocalDate().isBefore(
                 CUTOFF_DATE_MANGLENDE_MEDVIRKNING
             )
