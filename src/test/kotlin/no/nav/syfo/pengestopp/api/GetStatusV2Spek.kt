@@ -13,6 +13,7 @@ import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
 import no.nav.syfo.pengestopp.*
 import no.nav.syfo.testutils.*
+import no.nav.syfo.testutils.generator.generateStatusEndring
 import no.nav.syfo.testutils.generator.generateStatusEndringer
 import no.nav.syfo.util.*
 import org.amshove.kluent.*
@@ -143,6 +144,86 @@ class GetStatusV2Spek : Spek({
                 }
 
                 response.status shouldBe HttpStatusCode.NoContent
+            }
+        }
+
+        it("return correct content - remove statusEndringer with only deprecated arsaker") {
+            val opprettet = OffsetDateTime.of(LocalDate.of(2025, 2, 10), LocalTime.now(), ZoneOffset.UTC)
+
+            val statusList = listOf(
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING),
+                        Arsak(type = SykepengestoppArsak.MEDISINSK_VILKAR)
+                    ),
+                    opprettet = opprettet.plusSeconds(10),
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV)
+                    ),
+                    opprettet = opprettet.plusSeconds(9),
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.TILBAKEDATERT_SYKMELDING)
+                    ),
+                    opprettet = opprettet.plusSeconds(8),
+                ),
+                generateStatusEndring(
+                    arsakList = emptyList(),
+                    opprettet = opprettet.plusSeconds(7),
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING)
+                    ),
+                    opprettet = opprettet,
+                ),
+                generateStatusEndring(
+                    arsakList = listOf(
+                        Arsak(type = SykepengestoppArsak.TILBAKEDATERT_SYKMELDING),
+                        Arsak(type = SykepengestoppArsak.BESTRIDELSE_SYKMELDING)
+                    ),
+                    opprettet = opprettet,
+                ),
+            )
+            statusList.forEach {
+                pengestoppRepository.createStatusEndring(statusEndring = it)
+            }
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.get(endpointPath) {
+                    bearerAuth(validToken)
+                    header(NAV_PERSONIDENT_HEADER, sykmeldtPersonIdent.value)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                }
+                response.status shouldBe HttpStatusCode.OK
+
+                val flags: List<StatusEndring> = response.body()
+
+                flags.size shouldBeEqualTo 3
+                val fjernetAvvikletArsak = flags[0]
+                fjernetAvvikletArsak.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                fjernetAvvikletArsak.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.MEDISINSK_VILKAR))
+
+                val kunAktivitetskrav = flags[1]
+                fjernetAvvikletArsak.opprettet.toEpochSecond()
+                    .shouldBeGreaterOrEqualTo(kunAktivitetskrav.opprettet.toEpochSecond())
+
+                kunAktivitetskrav.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                kunAktivitetskrav.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.AKTIVITETSKRAV))
+                kunAktivitetskrav.opprettet.toEpochSecond()
+                    .shouldBeLessOrEqualTo(fjernetAvvikletArsak.opprettet.toEpochSecond())
+
+                val tomArsaksliste = flags[2]
+                kunAktivitetskrav.opprettet.toEpochSecond()
+                    .shouldBeGreaterOrEqualTo(tomArsaksliste.opprettet.toEpochSecond())
+
+                tomArsaksliste.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                tomArsaksliste.arsakList shouldBeEqualTo emptyList()
+                tomArsaksliste.opprettet.toEpochSecond()
+                    .shouldBeLessOrEqualTo(kunAktivitetskrav.opprettet.toEpochSecond())
             }
         }
     }

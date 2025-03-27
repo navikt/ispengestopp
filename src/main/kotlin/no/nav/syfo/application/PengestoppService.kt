@@ -15,9 +15,10 @@ class PengestoppService(
     }
 
     fun getOldStatusendringer(personIdent: PersonIdent): List<StatusEndring> {
-        return pengestoppRepository
-            .getStatusEndringer(personIdent)
+        return pengestoppRepository.getStatusEndringer(personIdent)
             .filter { isOldStatusendring(it) }
+            .filter { atLeastOneValidArsak(it) }
+            .map { removeDeprecatedArsak(it) }
     }
 
     private fun isOldStatusendring(statusEndring: StatusEndring): Boolean {
@@ -33,6 +34,16 @@ class PengestoppService(
             )
             else -> true
         }
+    }
+
+    private fun atLeastOneValidArsak(statusEndring: StatusEndring): Boolean {
+        return !statusEndring.arsakList.all { it.type.isDeprecated } || statusEndring.arsakList.isNotEmpty()
+    }
+
+    private fun removeDeprecatedArsak(statusEndring: StatusEndring): StatusEndring {
+        return statusEndring.copy(
+            arsakList = statusEndring.arsakList.filter { !it.type.isDeprecated }
+        )
     }
 
     companion object {
