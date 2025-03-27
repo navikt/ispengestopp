@@ -42,9 +42,7 @@ class PengestoppService(
 
     private fun removeDeprecatedArsak(statusEndring: StatusEndring): StatusEndring {
         return statusEndring.copy(
-            arsakList = statusEndring.arsakList.filter {
-                !it.type.isDeprecated
-            }
+            arsakList = statusEndring.arsakList.filter { !it.type.isDeprecated }
         )
     }
 
