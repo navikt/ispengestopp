@@ -11,16 +11,20 @@ import io.mockk.mockk
 import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
-import no.nav.syfo.pengestopp.*
+import no.nav.syfo.pengestopp.Arsak
+import no.nav.syfo.pengestopp.StatusEndring
+import no.nav.syfo.pengestopp.SykepengestoppArsak
 import no.nav.syfo.testutils.*
+import no.nav.syfo.testutils.generator.generateAutomaticStatusEndring
 import no.nav.syfo.testutils.generator.generateStatusEndringer
-import no.nav.syfo.util.*
-import org.amshove.kluent.*
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.configure
+import org.amshove.kluent.shouldBe
+import org.amshove.kluent.shouldBeEqualTo
+import org.amshove.kluent.shouldBeGreaterOrEqualTo
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.time.LocalDate
-import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
@@ -123,29 +127,6 @@ class GetStatusV2Spek : Spek({
             }
         }
 
-        it("return no content when statusendringer after cutoff date") {
-            val arsakList = listOf(
-                Arsak(type = SykepengestoppArsak.MANGLENDE_MEDVIRKING),
-            )
-            val statusList = generateStatusEndringer(
-                arsakList = arsakList,
-                opprettet = OffsetDateTime.of(LocalDate.of(2025, 3, 10), LocalTime.now(), ZoneOffset.UTC),
-            )
-            statusList.forEach {
-                pengestoppRepository.createStatusEndring(statusEndring = it)
-            }
-            testApplication {
-                val client = setupApiAndClient()
-                val response = client.get(endpointPath) {
-                    bearerAuth(validToken)
-                    header(NAV_PERSONIDENT_HEADER, sykmeldtPersonIdent.value)
-                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                }
-
-                response.status shouldBe HttpStatusCode.NoContent
-            }
-        }
-        
         it("returns statusendring without arsaker") {
             val statusEndringer = generateStatusEndringer(
                 arsakList = emptyList(),
@@ -154,7 +135,7 @@ class GetStatusV2Spek : Spek({
             statusEndringer.forEach {
                 pengestoppRepository.createStatusEndring(statusEndring = it)
             }
-            
+
             testApplication {
                 val client = setupApiAndClient()
                 val response = client.get(endpointPath) {
@@ -169,6 +150,23 @@ class GetStatusV2Spek : Spek({
                 flags.size shouldBeEqualTo 3
                 flags.first().sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
                 flags.all { it.arsakList.isEmpty() } shouldBeEqualTo true
+            }
+        }
+
+        it("returns no statusendring when it was created automatically") {
+            val statusEndring = generateAutomaticStatusEndring(
+                arsakList = listOf(Arsak(type = SykepengestoppArsak.AKTIVITETSKRAV))
+            )
+            pengestoppRepository.createStatusEndring(statusEndring)
+
+            testApplication {
+                val client = setupApiAndClient()
+                val response = client.get(endpointPath) {
+                    bearerAuth(validToken)
+                    header(NAV_PERSONIDENT_HEADER, sykmeldtPersonIdent.value)
+                    header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                }
+                response.status shouldBe HttpStatusCode.NoContent
             }
         }
     }
