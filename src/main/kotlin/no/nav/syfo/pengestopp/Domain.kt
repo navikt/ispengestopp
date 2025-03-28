@@ -1,6 +1,7 @@
 package no.nav.syfo.pengestopp
 
 import no.nav.syfo.domain.PersonIdent
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 data class EnhetNr(val value: String) {
@@ -28,8 +29,25 @@ data class StatusEndring(
     val arsakList: List<Arsak>,
     val virksomhetNr: VirksomhetNr?,
     val opprettet: OffsetDateTime,
-    val enhetNr: EnhetNr? // For å holde oversikt over hvem som bruker tjenesten
-)
+    val enhetNr: EnhetNr?
+) {
+    private val CUTOFF_DATE_MANGLENDE_MEDVIRKNING = LocalDate.of(2025, 3, 10)
+    private val CUTOFF_DATE_ARBEIDSUFORHET = LocalDate.of(2025, 3, 11)
+    private val CUTOFF_DATE_AKTIVITETSKRAV = LocalDate.of(2025, 3, 12)
+
+    val isManuell: Boolean = arsakList.isEmpty() || arsakList.size > 1 || isBeforeCutoffDate()
+
+    private fun isBeforeCutoffDate(): Boolean {
+        val arsak = arsakList.firstOrNull()
+        val opprettetDate = opprettet.toLocalDate()
+        return when (arsak?.type) {
+            SykepengestoppArsak.MANGLENDE_MEDVIRKING -> opprettetDate.isBefore(CUTOFF_DATE_MANGLENDE_MEDVIRKNING)
+            SykepengestoppArsak.MEDISINSK_VILKAR -> opprettetDate.isBefore(CUTOFF_DATE_ARBEIDSUFORHET)
+            SykepengestoppArsak.AKTIVITETSKRAV -> opprettetDate.isBefore(CUTOFF_DATE_AKTIVITETSKRAV)
+            else -> true
+        }
+    }
+}
 
 enum class SykepengestoppArsak {
     BESTRIDELSE_SYKMELDING,

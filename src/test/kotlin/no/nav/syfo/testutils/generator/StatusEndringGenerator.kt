@@ -62,3 +62,20 @@ fun generateStatusEndringer(
         )
     )
 }
+
+fun generateAutomaticStatusEndring(
+    personIdent: PersonIdent = UserConstants.SYKMELDT_PERSONIDENT,
+    veilederIdent: VeilederIdent = VeilederIdent("Z999999"),
+    opprettet: OffsetDateTime = OffsetDateTime.now(),
+    arsakList: List<Arsak>,
+): StatusEndring =
+    StatusEndring(
+        uuid = UUID.randomUUID().toString(),
+        veilederIdent = veilederIdent,
+        sykmeldtFnr = personIdent,
+        status = Status.STOPP_AUTOMATIKK,
+        arsakList = arsakList,
+        virksomhetNr = null,
+        opprettet = opprettet,
+        enhetNr = null,
+    )

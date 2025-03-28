@@ -36,7 +36,7 @@ fun Route.registerFlaggPerson84V2(
                 val personIdent = PersonIdent(sykmeldtPersonident)
                 val hasAccess = tilgangskontrollClient.harTilgangTilBrukerMedOBO(personIdent, token)
                 if (hasAccess) {
-                    val flags: List<StatusEndring> = pengestoppService.getOldStatusendringer(personIdent)
+                    val flags: List<StatusEndring> = pengestoppService.getManuelleStatusendringer(personIdent)
                     when {
                         flags.isNotEmpty() -> call.respond(flags)
                         else -> call.respond(HttpStatusCode.NoContent)
