@@ -21,7 +21,7 @@ class PengestoppService(
     }
 
     private fun atLeastOneValidArsak(statusEndring: StatusEndring): Boolean {
-        return !statusEndring.arsakList.all { it.type.isDeprecated } || statusEndring.arsakList.isNotEmpty()
+        return !statusEndring.arsakList.all { it.type.isDeprecated } || statusEndring.arsakList.isEmpty()
     }
 
     private fun removeDeprecatedArsak(statusEndring: StatusEndring): StatusEndring {
