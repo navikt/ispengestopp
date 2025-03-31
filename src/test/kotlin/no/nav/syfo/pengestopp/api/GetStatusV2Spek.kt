@@ -228,27 +228,27 @@ class GetStatusV2Spek : Spek({
                 val flags: List<StatusEndring> = response.body()
 
                 flags.size shouldBeEqualTo 3
-                val fjernetAvvikletArsak = flags[0]
-                fjernetAvvikletArsak.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
-                fjernetAvvikletArsak.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.MEDISINSK_VILKAR))
+                val deprecatedArsakRemoved = flags[0]
+                deprecatedArsakRemoved.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                deprecatedArsakRemoved.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.MEDISINSK_VILKAR))
 
-                val kunAktivitetskrav = flags[1]
-                fjernetAvvikletArsak.opprettet.toEpochSecond()
-                    .shouldBeGreaterOrEqualTo(kunAktivitetskrav.opprettet.toEpochSecond())
+                val aktivitetskravOnly = flags[1]
+                deprecatedArsakRemoved.opprettet.toEpochSecond()
+                    .shouldBeGreaterOrEqualTo(aktivitetskravOnly.opprettet.toEpochSecond())
 
-                kunAktivitetskrav.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
-                kunAktivitetskrav.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.AKTIVITETSKRAV))
-                kunAktivitetskrav.opprettet.toEpochSecond()
-                    .shouldBeLessOrEqualTo(fjernetAvvikletArsak.opprettet.toEpochSecond())
+                aktivitetskravOnly.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                aktivitetskravOnly.arsakList shouldBeEqualTo listOf(Arsak(SykepengestoppArsak.AKTIVITETSKRAV))
+                aktivitetskravOnly.opprettet.toEpochSecond()
+                    .shouldBeLessOrEqualTo(deprecatedArsakRemoved.opprettet.toEpochSecond())
 
-                val tomArsaksliste = flags[2]
-                kunAktivitetskrav.opprettet.toEpochSecond()
-                    .shouldBeGreaterOrEqualTo(tomArsaksliste.opprettet.toEpochSecond())
+                val arsakslisteEmpty = flags[2]
+                aktivitetskravOnly.opprettet.toEpochSecond()
+                    .shouldBeGreaterOrEqualTo(arsakslisteEmpty.opprettet.toEpochSecond())
 
-                tomArsaksliste.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
-                tomArsaksliste.arsakList shouldBeEqualTo emptyList()
-                tomArsaksliste.opprettet.toEpochSecond()
-                    .shouldBeLessOrEqualTo(kunAktivitetskrav.opprettet.toEpochSecond())
+                arsakslisteEmpty.sykmeldtFnr.value shouldBeEqualTo sykmeldtPersonIdent.value
+                arsakslisteEmpty.arsakList shouldBeEqualTo emptyList()
+                arsakslisteEmpty.opprettet.toEpochSecond()
+                    .shouldBeLessOrEqualTo(aktivitetskravOnly.opprettet.toEpochSecond())
             }
         }
     }
