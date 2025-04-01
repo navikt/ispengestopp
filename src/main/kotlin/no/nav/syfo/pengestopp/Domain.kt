@@ -49,11 +49,11 @@ data class StatusEndring(
     }
 }
 
-enum class SykepengestoppArsak {
-    BESTRIDELSE_SYKMELDING,
+enum class SykepengestoppArsak(val isDeprecated: Boolean = false) {
+    BESTRIDELSE_SYKMELDING(true),
     MEDISINSK_VILKAR,
     AKTIVITETSKRAV,
-    TILBAKEDATERT_SYKMELDING,
+    TILBAKEDATERT_SYKMELDING(true),
     MANGLENDE_MEDVIRKING,
 }
 

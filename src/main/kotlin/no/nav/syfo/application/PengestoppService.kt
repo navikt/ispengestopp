@@ -16,5 +16,17 @@ class PengestoppService(
         return pengestoppRepository
             .getStatusEndringer(personIdent)
             .filter { it.isManuell }
+            .filter { atLeastOneValidArsak(it) }
+            .map { removeDeprecatedArsak(it) }
+    }
+
+    private fun atLeastOneValidArsak(statusEndring: StatusEndring): Boolean {
+        return !statusEndring.arsakList.all { it.type.isDeprecated } || statusEndring.arsakList.isEmpty()
+    }
+
+    private fun removeDeprecatedArsak(statusEndring: StatusEndring): StatusEndring {
+        return statusEndring.copy(
+            arsakList = statusEndring.arsakList.filter { !it.type.isDeprecated }
+        )
     }
 }
