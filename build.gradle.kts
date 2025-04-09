@@ -2,26 +2,25 @@
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val confluent = "7.8.0"
-val flyway = "11.3.0"
-val hikari = "6.2.1"
-val jackson = "2.18.2"
-val jetty = "9.4.57.v20241219"
+val confluent = "7.9.0"
+val flyway = "11.5.0"
+val hikari = "6.3.0"
+val jackson = "2.18.3"
 val kafka = "3.9.0"
 val kluent = "1.73"
-val ktor = "3.0.3"
-val logback = "1.5.16"
+val ktor = "3.1.2"
+val logback = "1.5.18"
 val logstashEncoder = "8.0"
 val micrometerRegistry = "1.12.13"
 val mockk = "1.13.16"
-val nimbusjosejwt = "10.0.1"
+val nimbusjosejwt = "10.0.2"
 val postgres = "42.7.5"
 val postgresEmbedded = "2.1.0"
 val spek = "2.0.19"
 
 plugins {
-    kotlin("jvm") version "2.1.10"
-    id("com.gradleup.shadow") version "8.3.5"
+    kotlin("jvm") version "2.1.20"
+    id("com.gradleup.shadow") version "8.3.6"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
@@ -84,12 +83,6 @@ dependencies {
     }
     implementation("io.confluent:kafka-avro-serializer:$confluent", excludeLog4j)
     constraints {
-        implementation("org.apache.avro:avro") {
-            because("io.confluent:kafka-avro-serializer:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-39410")
-            version {
-                require("1.11.4")
-            }
-        }
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
@@ -117,43 +110,14 @@ dependencies {
                 require("2.2.4")
             }
         }
-        implementation("org.eclipse.jetty:jetty-server") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jetty)
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-xml") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jetty)
-            }
-        }
-        implementation("org.eclipse.jetty:jetty-servlets") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jetty)
-            }
-        }
-        implementation("org.eclipse.jetty.http2:http2-server") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-36478")
-            version {
-                require(jetty)
-            }
-        }
     }
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
-    testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("io.mockk:mockk:$mockk")
     testImplementation("org.amshove.kluent:kluent:$kluent")
     testImplementation("io.ktor:ktor-client-mock:$ktor")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek") {
-        exclude(group = "org.jetbrains.kotlin}")
-    }
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spek") {
-        exclude(group = "org.jetbrains.kotlin}")
-    }
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek")
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spek")
 }
 
 kotlin {
@@ -179,7 +143,9 @@ tasks {
     }
 
     test {
-        useJUnitPlatform()
+        useJUnitPlatform() {
+            includeEngines("spek2")
+        }
         testLogging.showStandardStreams = true
     }
 }
