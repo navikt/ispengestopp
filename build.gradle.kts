@@ -1,4 +1,3 @@
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -6,6 +5,8 @@ val confluent = "7.9.0"
 val flyway = "11.5.0"
 val hikari = "6.3.0"
 val jackson = "2.18.3"
+val jupiter = "5.13.1"
+val jupiterTestFramework = "1.13.1"
 val kafka = "3.9.0"
 val kluent = "1.73"
 val ktor = "3.1.2"
@@ -111,6 +112,9 @@ dependencies {
             }
         }
     }
+    testImplementation("org.junit.jupiter:junit-jupiter:$jupiter")
+    testImplementation("org.junit.platform:junit-platform-engine:$jupiterTestFramework")
+    testImplementation("org.junit.platform:junit-platform-launcher:$jupiterTestFramework")
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
     testImplementation("io.mockk:mockk:$mockk")
@@ -144,7 +148,7 @@ tasks {
 
     test {
         useJUnitPlatform() {
-            includeEngines("spek2")
+            includeEngines("spek2", "junit-jupiter")
         }
         testLogging.showStandardStreams = true
     }

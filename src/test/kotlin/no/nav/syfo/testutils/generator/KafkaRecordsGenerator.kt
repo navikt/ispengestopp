@@ -3,6 +3,7 @@ package no.nav.syfo.testutils.generator
 import no.nav.syfo.infrastructure.kafka.aktivitetskrav.AktivitetskravStatus
 import no.nav.syfo.infrastructure.kafka.aktivitetskrav.AktivitetskravVurderingRecord
 import no.nav.syfo.infrastructure.kafka.arbeidsuforhet.ArbeidsuforhetVurderingRecord
+import no.nav.syfo.infrastructure.kafka.arbeidsuforhet.VurderingArsak
 import no.nav.syfo.infrastructure.kafka.manglendemedvirkning.ManglendeMedvirkningVurderingRecord
 import no.nav.syfo.infrastructure.kafka.manglendemedvirkning.VurderingType
 import no.nav.syfo.infrastructure.kafka.manglendemedvirkning.VurderingTypeDTO
@@ -21,14 +22,17 @@ fun genereateManglendeMedvirkningVurdering(type: VurderingType): ManglendeMedvir
         vurderingType = VurderingTypeDTO(type)
     )
 
-fun generateArbeidsuforhetVurdering(type: ArbeidsuforhetVurderingType) =
+fun generateArbeidsuforhetVurdering(
+    type: ArbeidsuforhetVurderingType,
+    arsak: VurderingArsak? = null,
+) =
     ArbeidsuforhetVurderingRecord(
         uuid = UUID.randomUUID(),
         createdAt = OffsetDateTime.now(),
         personident = UserConstants.SYKMELDT_PERSONIDENT.value,
         veilederident = "Z999999",
         type = type,
-        arsak = null,
+        arsak = arsak,
         begrunnelse = "tekst",
         gjelderFom = LocalDate.now(),
         isFinal = true,

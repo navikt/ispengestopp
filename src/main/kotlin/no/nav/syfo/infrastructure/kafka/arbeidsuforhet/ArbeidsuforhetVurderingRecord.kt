@@ -17,10 +17,17 @@ data class ArbeidsuforhetVurderingRecord(
 )
 
 enum class VurderingType(val isFinal: Boolean) {
-    FORHANDSVARSEL(false), OPPFYLT(true), AVSLAG(true), IKKE_AKTUELL(true);
+    FORHANDSVARSEL(false),
+    OPPFYLT(true),
+    OPPFYLT_UTEN_FORHANDSVARSEL(true),
+    AVSLAG(true),
+    AVSLAG_UTEN_FORHANDSVARSEL(true),
+    IKKE_AKTUELL(true);
 }
 
 enum class VurderingArsak {
     FRISKMELDT,
     FRISKMELDING_TIL_ARBEIDSFORMIDLING,
+    SYKEPENGER_IKKE_UTBETALT,
+    NAY_BER_OM_NY_VURDERING,
 }
