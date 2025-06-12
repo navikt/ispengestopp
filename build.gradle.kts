@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -150,6 +152,43 @@ tasks {
         useJUnitPlatform() {
             includeEngines("spek2", "junit-jupiter")
         }
-        testLogging.showStandardStreams = true
+        testLogging {
+            events("passed", "skipped", "failed")
+            exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+        }
+
+        val failedTests = mutableListOf<String>()
+        var passedCount = 0
+        var failedCount = 0
+        var skippedCount = 0
+
+        addTestListener(object : TestListener {
+            override fun beforeSuite(suite: TestDescriptor) {}
+            override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+                if (suite.parent == null) {
+                    println("Test summary: $passedCount passed, $failedCount failed, $skippedCount skipped")
+                    if (failedTests.isNotEmpty()) {
+                        println("Failed tests:")
+                        failedTests.forEach { println(" - $it") }
+                    }
+                }
+            }
+            override fun beforeTest(testDescriptor: TestDescriptor) {}
+            override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+                when (result.resultType) {
+                    TestResult.ResultType.SUCCESS -> passedCount++
+                    TestResult.ResultType.FAILURE -> {
+                        failedCount++
+                        failedTests.add(testDescriptor.displayName)
+                    }
+                    TestResult.ResultType.SKIPPED -> skippedCount++
+                    else -> {}
+                }
+            }
+        })
     }
 }
