@@ -17,7 +17,9 @@ class ArbeidsuforhetVurderingConsumer(
     fun pollAndProcessRecords() {
         val records = kafkaConsumer.poll(Duration.ofSeconds(POLL_DURATION_SECONDS))
         if (records.count() > 0) {
-            val avslagVurderinger = records.mapNotNull { it.value() }.filter { it.type == VurderingType.AVSLAG }
+            val avslagVurderinger = records.mapNotNull { it.value() }.filter {
+                it.type == VurderingType.AVSLAG || it.type == VurderingType.AVSLAG_UTEN_FORHANDSVARSEL
+            }
             if (avslagVurderinger.isNotEmpty()) {
                 val statusEndringer = avslagVurderinger.map {
                     StatusEndring(

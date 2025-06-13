@@ -1,3 +1,4 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 group = "no.nav.syfo"
 version = "1.0.0"
@@ -6,6 +7,8 @@ val confluent = "7.9.0"
 val flyway = "11.5.0"
 val hikari = "6.3.0"
 val jackson = "2.18.3"
+val jupiter = "5.13.1"
+val jupiterTestFramework = "1.13.1"
 val kafka = "3.9.0"
 val kluent = "1.73"
 val ktor = "3.1.2"
@@ -111,6 +114,9 @@ dependencies {
             }
         }
     }
+    testImplementation("org.junit.jupiter:junit-jupiter:$jupiter")
+    testImplementation("org.junit.platform:junit-platform-engine:$jupiterTestFramework")
+    testImplementation("org.junit.platform:junit-platform-launcher:$jupiterTestFramework")
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
     testImplementation("io.mockk:mockk:$mockk")
@@ -144,8 +150,45 @@ tasks {
 
     test {
         useJUnitPlatform() {
-            includeEngines("spek2")
+            includeEngines("spek2", "junit-jupiter")
         }
-        testLogging.showStandardStreams = true
+        testLogging {
+            events("passed", "skipped", "failed")
+            exceptionFormat = TestExceptionFormat.FULL
+            showStandardStreams = true
+            showExceptions = true
+            showCauses = true
+            showStackTraces = true
+        }
+
+        val failedTests = mutableListOf<String>()
+        var passedCount = 0
+        var failedCount = 0
+        var skippedCount = 0
+
+        addTestListener(object : TestListener {
+            override fun beforeSuite(suite: TestDescriptor) {}
+            override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+                if (suite.parent == null) {
+                    println("Test summary: $passedCount passed, $failedCount failed, $skippedCount skipped")
+                    if (failedTests.isNotEmpty()) {
+                        println("Failed tests:")
+                        failedTests.forEach { println(" - $it") }
+                    }
+                }
+            }
+            override fun beforeTest(testDescriptor: TestDescriptor) {}
+            override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+                when (result.resultType) {
+                    TestResult.ResultType.SUCCESS -> passedCount++
+                    TestResult.ResultType.FAILURE -> {
+                        failedCount++
+                        failedTests.add(testDescriptor.displayName)
+                    }
+                    TestResult.ResultType.SKIPPED -> skippedCount++
+                    else -> {}
+                }
+            }
+        })
     }
 }

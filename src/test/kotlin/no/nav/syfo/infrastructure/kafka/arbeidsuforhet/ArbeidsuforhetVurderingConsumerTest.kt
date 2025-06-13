@@ -69,6 +69,27 @@ class ArbeidsuforhetVurderingConsumerTest {
     }
 
     @Test
+    fun `creates statusendring and publish to kafka when arbeidsuforhetvurdering is AVSLAG_UTEN_FORHANDSVARSEL`() {
+        val vurdering = generateArbeidsuforhetVurdering(
+            type = VurderingType.AVSLAG_UTEN_FORHANDSVARSEL,
+            arsak = VurderingArsak.NAY_BER_OM_NY_VURDERING,
+        )
+        val records = mockRecords(listOf(vurdering))
+        every { kafkaConsumer.poll(any<Duration>()) } returns records
+
+        arbeidsuforhetVurderingConsumer.pollAndProcessRecords()
+
+        val statusEndring = repository.getStatusEndringer(personIdent = PersonIdent(vurdering.personident)).firstOrNull()
+        assertEquals(statusEndring?.arsakList?.get(0)?.type, SykepengestoppArsak.MEDISINSK_VILKAR)
+        assertEquals(statusEndring?.sykmeldtFnr?.value, vurdering.personident)
+        assertEquals(statusEndring?.status, Status.STOPP_AUTOMATIKK)
+        assertEquals(statusEndring?.veilederIdent?.value, vurdering.veilederident)
+
+        verify(exactly = 1) { kafkaProducer.send(any()) }
+        verify(exactly = 1) { kafkaConsumer.commitSync() }
+    }
+
+    @Test
     fun `creates several statusendinger when multiple arbeidsuforhetvurderinger are AVSLAG`() {
         val vurdering1 = generateArbeidsuforhetVurdering(VurderingType.AVSLAG)
         val vurdering2 = generateArbeidsuforhetVurdering(VurderingType.AVSLAG)
