@@ -5,7 +5,7 @@ version = "1.0.0"
 
 val confluent = "7.9.0"
 val flyway = "11.11.2"
-val hikari = "6.3.0"
+val hikari = "7.0.2"
 val jackson = "2.19.2"
 val jupiter = "5.13.4"
 val jupiterTestFramework = "1.13.4"
