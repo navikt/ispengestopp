@@ -74,13 +74,13 @@ dependencies {
     implementation("org.apache.kafka:kafka_2.13:$kafka", excludeLog4j)
     constraints {
         implementation("org.bitbucket.b_c:jose4j") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
+            because("org.apache.kafka:kafka_2.13:$kafka -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
             version {
                 require("0.9.6")
             }
         }
         implementation("commons-beanutils:commons-beanutils") {
-            because("org.apache.kafka:kafka_2.13:$kafkaVersion -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            because("org.apache.kafka:kafka_2.13:$kafka -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
             version {
                 require("1.11.0")
             }
