@@ -4,26 +4,26 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val confluent = "7.9.0"
-val flyway = "11.11.2"
+val flyway = "11.13.1"
 val hikari = "6.3.0"
-val jackson = "2.19.2"
+val jackson = "2.20.0"
 val jupiter = "5.13.4"
 val jupiterTestFramework = "1.13.4"
 val kafka = "3.9.0"
 val kluent = "1.73"
-val ktor = "3.2.3"
+val ktor = "3.3.0"
 val logback = "1.5.18"
 val logstashEncoder = "8.1"
 val micrometerRegistry = "1.12.13"
 val mockk = "1.14.5"
-val nimbusjosejwt = "10.4.2"
-val postgres = "42.7.7"
+val nimbusjosejwt = "10.5"
+val postgres = "42.7.8"
 val postgresEmbedded = "2.1.1"
 val postgresRuntimeVersion = "17.6.0"
 val spek = "2.0.19"
 
 plugins {
-    kotlin("jvm") version "2.2.10"
+    kotlin("jvm") version "2.2.20"
     id("com.gradleup.shadow") version "8.3.6"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
@@ -73,16 +73,16 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$kafka", excludeLog4j)
     constraints {
-        implementation("org.apache.zookeeper:zookeeper") {
-            because("org.apache.kafka:kafka_2.13:$kafka -> https://www.cve.org/CVERecord?id=CVE-2023-44981")
-            version {
-                require("3.9.3")
-            }
-        }
         implementation("org.bitbucket.b_c:jose4j") {
             because("org.apache.kafka:kafka_2.13:$kafka -> https://github.com/advisories/GHSA-6qvw-249j-h44c")
             version {
                 require("0.9.6")
+            }
+        }
+        implementation("commons-beanutils:commons-beanutils") {
+            because("org.apache.kafka:kafka_2.13:$kafka -> https://www.cve.org/CVERecord?id=CVE-2025-48734")
+            version {
+                require("1.11.0")
             }
         }
     }
