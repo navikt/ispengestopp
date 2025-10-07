@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val confluent = "7.9.0"
+val confluent = "8.0.0"
 val flyway = "11.13.1"
 val hikari = "6.3.0"
 val jackson = "2.20.0"
