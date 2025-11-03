@@ -9,7 +9,7 @@ val hikari = "7.0.2"
 val jackson = "2.20.0"
 val jupiter = "5.13.4"
 val jupiterTestFramework = "1.13.4"
-val kafka = "3.9.1"
+val kafka = "4.1.0"
 val kluent = "1.73"
 val ktor = "3.3.1"
 val logback = "1.5.20"
@@ -91,7 +91,7 @@ dependencies {
         implementation("org.apache.commons:commons-compress") {
             because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
             version {
-                require("1.27.1")
+                require("1.28.0")
             }
         }
     }
@@ -100,13 +100,13 @@ dependencies {
         implementation("io.github.classgraph:classgraph") {
             because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
             version {
-                require("4.8.179")
+                require("4.8.184")
             }
         }
         implementation("org.json:json") {
             because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
             version {
-                require("20250107")
+                require("20250517")
             }
         }
         implementation("org.apache.mina:mina-core") {
