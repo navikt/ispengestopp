@@ -15,6 +15,18 @@ class TestDB : DatabaseInterface {
         }
 
     init {
+        pg = PostgresDatabase.getDatabase()
+    }
+
+    fun stop() {
+        pg.close()
+    }
+}
+
+object PostgresDatabase {
+    private val pg: EmbeddedPostgres
+
+    init {
         pg = try {
             EmbeddedPostgres.start()
         } catch (e: Exception) {
@@ -26,9 +38,7 @@ class TestDB : DatabaseInterface {
         }
     }
 
-    fun stop() {
-        pg.close()
-    }
+    fun getDatabase() = pg
 }
 
 fun DatabaseInterface.dropData() = this.connection.use { it.dropData() }
