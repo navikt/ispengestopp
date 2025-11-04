@@ -1,4 +1,4 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import com.adarshr.gradle.testlogger.theme.ThemeType
 
 group = "no.nav.syfo"
 version = "1.0.0"
@@ -7,10 +7,7 @@ val confluent = "8.1.0"
 val flyway = "11.15.0"
 val hikari = "7.0.2"
 val jackson = "2.20.0"
-val jupiter = "5.13.4"
-val jupiterTestFramework = "1.13.4"
 val kafka = "4.1.0"
-val kluent = "1.73"
 val ktor = "3.3.1"
 val logback = "1.5.20"
 val logstashEncoder = "9.0"
@@ -20,12 +17,12 @@ val nimbusjosejwt = "10.5"
 val postgres = "42.7.8"
 val postgresEmbedded = "2.1.1"
 val postgresRuntimeVersion = "17.6.0"
-val spek = "2.0.19"
 
 plugins {
     kotlin("jvm") version "2.2.20"
     id("com.gradleup.shadow") version "8.3.6"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
+    id("com.adarshr.test-logger") version "4.0.0"
 }
 
 repositories {
@@ -116,16 +113,11 @@ dependencies {
             }
         }
     }
-    testImplementation("org.junit.jupiter:junit-jupiter:$jupiter")
-    testImplementation("org.junit.platform:junit-platform-engine:$jupiterTestFramework")
-    testImplementation("org.junit.platform:junit-platform-launcher:$jupiterTestFramework")
+    testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
     testImplementation("io.mockk:mockk:$mockk")
-    testImplementation("org.amshove.kluent:kluent:$kluent")
     testImplementation("io.ktor:ktor-client-mock:$ktor")
-    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek")
-    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spek")
 }
 
 kotlin {
@@ -151,46 +143,11 @@ tasks {
     }
 
     test {
-        useJUnitPlatform() {
-            includeEngines("spek2", "junit-jupiter")
+        useJUnitPlatform()
+        testlogger {
+            theme = ThemeType.STANDARD_PARALLEL
+            showFullStackTraces = true
+            showPassed = false
         }
-        testLogging {
-            events("passed", "skipped", "failed")
-            exceptionFormat = TestExceptionFormat.FULL
-            showStandardStreams = true
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-        }
-
-        val failedTests = mutableListOf<String>()
-        var passedCount = 0
-        var failedCount = 0
-        var skippedCount = 0
-
-        addTestListener(object : TestListener {
-            override fun beforeSuite(suite: TestDescriptor) {}
-            override fun afterSuite(suite: TestDescriptor, result: TestResult) {
-                if (suite.parent == null) {
-                    println("Test summary: $passedCount passed, $failedCount failed, $skippedCount skipped")
-                    if (failedTests.isNotEmpty()) {
-                        println("Failed tests:")
-                        failedTests.forEach { println(" - $it") }
-                    }
-                }
-            }
-            override fun beforeTest(testDescriptor: TestDescriptor) {}
-            override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
-                when (result.resultType) {
-                    TestResult.ResultType.SUCCESS -> passedCount++
-                    TestResult.ResultType.FAILURE -> {
-                        failedCount++
-                        failedTests.add(testDescriptor.displayName)
-                    }
-                    TestResult.ResultType.SKIPPED -> skippedCount++
-                    else -> {}
-                }
-            }
-        })
     }
 }

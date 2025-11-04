@@ -16,11 +16,11 @@ import no.nav.syfo.testutils.testEnvironment
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.RecordMetadata
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.Future
-import kotlin.test.assertEquals
 
 class ArbeidsuforhetVurderingConsumerTest {
 
