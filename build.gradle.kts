@@ -7,8 +7,6 @@ val confluent = "8.1.0"
 val flyway = "11.15.0"
 val hikari = "7.0.2"
 val jackson = "2.20.0"
-val jupiter = "5.13.4"
-val jupiterTestFramework = "1.13.4"
 val kafka = "4.1.0"
 val ktor = "3.3.1"
 val logback = "1.5.20"
@@ -116,9 +114,6 @@ dependencies {
         }
     }
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:$jupiter")
-    testImplementation("org.junit.platform:junit-platform-engine:$jupiterTestFramework")
-    testImplementation("org.junit.platform:junit-platform-launcher:$jupiterTestFramework")
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
     testImplementation("io.mockk:mockk:$mockk")
