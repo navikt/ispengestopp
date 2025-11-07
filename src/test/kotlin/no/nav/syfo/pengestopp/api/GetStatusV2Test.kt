@@ -33,7 +33,7 @@ class GetStatusV2Test {
     private val sykmeldtPersonIdent = UserConstants.SYKMELDT_PERSONIDENT
     private val sykmeldtPersonIdentIkkeTilgang = UserConstants.SYKMELDT_PERSONIDENT_IKKE_TILGANG
 
-    private val externalMockEnvironment = ExternalMockEnvironment()
+    private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
     private val pengestoppRepository = PengestoppRepository(database = database)
 

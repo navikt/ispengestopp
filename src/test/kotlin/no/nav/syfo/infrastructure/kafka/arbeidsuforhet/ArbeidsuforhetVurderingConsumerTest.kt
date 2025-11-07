@@ -8,7 +8,7 @@ import no.nav.syfo.infrastructure.kafka.StatusEndringProducer
 import no.nav.syfo.pengestopp.Status
 import no.nav.syfo.pengestopp.StatusEndring
 import no.nav.syfo.pengestopp.SykepengestoppArsak
-import no.nav.syfo.testutils.TestDB
+import no.nav.syfo.testutils.ExternalMockEnvironment
 import no.nav.syfo.testutils.dropData
 import no.nav.syfo.testutils.generator.generateArbeidsuforhetVurdering
 import no.nav.syfo.testutils.mockRecords
@@ -24,7 +24,7 @@ import java.util.concurrent.Future
 
 class ArbeidsuforhetVurderingConsumerTest {
 
-    val database = TestDB()
+    val database = ExternalMockEnvironment.instance.database
     val env = testEnvironment()
 
     val kafkaProducer = mockk<KafkaProducer<String, StatusEndring>>()

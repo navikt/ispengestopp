@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class IdenthendelseServiceTest {
-    private val externalMockEnvironment = ExternalMockEnvironment()
+    private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
     private val azureAdClient = AzureAdClient(
         azureAppClientId = externalMockEnvironment.environment.azureAppClientId,
