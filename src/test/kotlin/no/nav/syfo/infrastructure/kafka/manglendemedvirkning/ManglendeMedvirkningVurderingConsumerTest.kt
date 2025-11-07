@@ -17,7 +17,7 @@ import java.time.Duration
 import java.util.concurrent.Future
 
 class ManglendeMedvirkningVurderingConsumerTest {
-    private val database = TestDB()
+    private val database = ExternalMockEnvironment.instance.database
     private val env = testEnvironment()
 
     private val kafkaProducer = mockk<KafkaProducer<String, StatusEndring>>()

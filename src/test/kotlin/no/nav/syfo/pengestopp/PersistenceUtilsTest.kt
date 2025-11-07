@@ -43,7 +43,7 @@ class PersistenceUtilsTest {
     private val hendelse = objectMapper.writeValueAsString(incomingStatusEndring)
     private val hendelseRecord = ConsumerRecord(env.stoppAutomatikkAivenTopic, partition, 1, "something", hendelse)
 
-    private val database = TestDB()
+    private val database = ExternalMockEnvironment.instance.database
     private val repository = PengestoppRepository(database = database)
     private val mockConsumer = mockk<KafkaConsumer<String, String>>()
 

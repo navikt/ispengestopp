@@ -1,7 +1,7 @@
 package no.nav.syfo.infrastructure.database
 
 import no.nav.syfo.pengestopp.*
-import no.nav.syfo.testutils.TestDB
+import no.nav.syfo.testutils.ExternalMockEnvironment
 import no.nav.syfo.testutils.UserConstants
 import no.nav.syfo.testutils.dropData
 import org.junit.jupiter.api.AfterEach
@@ -13,7 +13,7 @@ import java.util.UUID
 
 class PengestoppRepositoryTest {
 
-    private val database = TestDB()
+    private val database = ExternalMockEnvironment.instance.database
     private val repository = PengestoppRepository(database = database)
 
     @AfterEach
