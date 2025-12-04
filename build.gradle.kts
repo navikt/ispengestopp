@@ -4,23 +4,23 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val confluent = "8.1.0"
-val flyway = "11.15.0"
+val flyway = "11.17.1"
 val hikari = "7.0.2"
 val jackson = "2.20.0"
 val kafka = "4.1.0"
-val ktor = "3.3.1"
-val logback = "1.5.20"
+val ktor = "3.3.3"
+val logback = "1.5.21"
 val logstashEncoder = "9.0"
 val micrometerRegistry = "1.12.13"
 val mockk = "1.14.6"
-val nimbusjosejwt = "10.5"
+val nimbusjosejwt = "10.6"
 val postgres = "42.7.8"
 val postgresEmbedded = "2.1.1"
 val postgresRuntimeVersion = "17.6.0"
 
 plugins {
-    kotlin("jvm") version "2.2.20"
-    id("com.gradleup.shadow") version "8.3.6"
+    kotlin("jvm") version "2.2.21"
+    id("com.gradleup.shadow") version "8.3.8"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
     id("com.adarshr.test-logger") version "4.0.0"
 }
@@ -111,6 +111,17 @@ dependencies {
             because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2024-52046")
             version {
                 require("2.2.4")
+            }
+        }
+        implementation("org.glassfish.jersey.core:jersey-client") {
+            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2025-12383")
+            version {
+                require("3.1.11")
+            }
+        }
+        implementation("com.nimbusds:nimbus-jose-jwt") {
+            version {
+                require(nimbusjosejwt)
             }
         }
     }
