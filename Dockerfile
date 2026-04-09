@@ -5,4 +5,4 @@ ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=75 -Dlogback.configurationFile=logbac
 ENV TZ="Europe/Oslo"
 EXPOSE 8080
 USER nonroot
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
