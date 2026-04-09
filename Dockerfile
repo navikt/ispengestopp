@@ -1,8 +1,8 @@
 FROM europe-north1-docker.pkg.dev/cgr-nav/pull-through/nav.no/jre:openjdk-21
 WORKDIR /app
 COPY build/libs/app.jar app.jar
-ENV JDK_JAVA_OPTIONS="-Dlogback.configurationFile=logback.xml"
+ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=75 -Dlogback.configurationFile=logback.xml"
 ENV TZ="Europe/Oslo"
 EXPOSE 8080
 USER nonroot
-CMD [ "app.jar" ]
+CMD ["java", "-jar", "app.jar"]
