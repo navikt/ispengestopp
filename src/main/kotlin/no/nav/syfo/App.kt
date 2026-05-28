@@ -7,16 +7,18 @@ import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.micrometer.core.instrument.Metrics
 import kotlinx.coroutines.InternalCoroutinesApi
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.Environment
 import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.application.api.apiModule
+import no.nav.syfo.application.metric.METRICS_REGISTRY
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.infrastructure.database.Database
 import no.nav.syfo.infrastructure.database.DatabaseConfig
-import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
 import no.nav.syfo.client.wellknown.getWellKnown
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseConsumerService
@@ -43,6 +45,11 @@ const val applicationPort = 8080
 fun main() {
     val environment = Environment()
 
+    // Wire METRICS_REGISTRY into Micrometer's global registry so that counters registered
+    // on Metrics.globalRegistry (e.g. by shared libraries like isyfo-backend-common) are
+    // also exposed at /internal/metrics and scraped by Prometheus.
+    Metrics.addRegistry(METRICS_REGISTRY)
+
     val applicationState = ApplicationState()
     val database = Database(
         DatabaseConfig(
@@ -53,17 +60,13 @@ fun main() {
     )
 
     val wellKnownInternADV2 = getWellKnown(
-        wellKnownUrl = environment.azureAppWellKnownUrl,
+        wellKnownUrl = environment.azure.appWellKnownUrl,
     )
 
-    val azureAdClient = AzureAdClient(
-        azureAppClientId = environment.azureAppClientId,
-        azureAppClientSecret = environment.azureAppClientSecret,
-        azureTokenEndpoint = environment.azureTokenEndpoint,
-    )
+    val azureAdClient = AzureAdClient()
 
     val pdlClient = PdlClient(
-        azureAdClient = azureAdClient,
+        systemTokenProvider = azureAdClient,
         pdlUrl = environment.pdlUrl,
         pdlClientId = environment.pdlClientId,
     )
@@ -100,9 +103,8 @@ fun main() {
                 wellKnownInternADV2 = wellKnownInternADV2,
                 pengestoppService = pengestoppService,
                 tilgangskontrollClient = TilgangskontrollClient(
-                    azureAdClient = azureAdClient,
-                    tilgangskontrollClientId = environment.tilgangskontrollClientId,
-                    tilgangskontrollBaseUrl = environment.tilgangskontrollUrl,
+                    oboTokenProvider = azureAdClient,
+                    clientConfig = environment.tilgangskontroll,
                 ),
             )
             monitor.subscribe(ApplicationStarted) {

@@ -18,7 +18,7 @@ import no.nav.syfo.testutils.*
 import no.nav.syfo.testutils.generator.generateAutomaticStatusEndring
 import no.nav.syfo.testutils.generator.generateStatusEndring
 import no.nav.syfo.testutils.generator.generateStatusEndringer
-import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.common.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.configure
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.junit.jupiter.api.AfterEach
@@ -67,7 +67,7 @@ class GetStatusV2Test {
 
     private val endpointPath = "$apiV2BasePath$apiV2PersonStatusPath"
     private val validToken = generateJWT(
-        audience = externalMockEnvironment.environment.azureAppClientId,
+        audience = externalMockEnvironment.environment.azure.appClientId,
         issuer = externalMockEnvironment.wellKnownInternADV2Mock.issuer,
     )
 

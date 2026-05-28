@@ -14,7 +14,10 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import no.nav.syfo.application.metric.METRICS_REGISTRY
-import no.nav.syfo.util.*
+import no.nav.syfo.common.tilgangskontroll.ktor.VeilederTilgangForbiddenException
+import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.common.util.ktor.getCallId
+import no.nav.syfo.common.util.ktor.getConsumerClientId
 import java.time.Duration
 import java.util.*
 
@@ -51,9 +54,22 @@ fun Application.installMetrics() {
 fun Application.installStatusPages() {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            call.respond(HttpStatusCode.InternalServerError, cause.message ?: "Unknown error")
-            call.application.log.error("Caught exception {} {} {}", cause, call.getCallId(), call.getConsumerId())
-            throw cause
+            val callId = call.getCallId()
+            val consumerClientId = call.getConsumerClientId()
+            val logMessage = "Caught exception, callId=$callId, consumerClientId=$consumerClientId"
+            val log = call.application.log
+            when (cause) {
+                is VeilederTilgangForbiddenException,
+                is IllegalArgumentException -> log.warn(logMessage, cause)
+                else -> log.error(logMessage, cause)
+            }
+
+            val responseStatus = when (cause) {
+                is IllegalArgumentException -> HttpStatusCode.BadRequest
+                is VeilederTilgangForbiddenException -> HttpStatusCode.Forbidden
+                else -> HttpStatusCode.InternalServerError
+            }
+            call.respond(responseStatus, cause.message ?: "Unknown error")
         }
     }
 }

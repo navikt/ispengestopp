@@ -9,7 +9,7 @@ import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.application.api.authentication.JwtIssuer
 import no.nav.syfo.application.api.authentication.JwtIssuerType
 import no.nav.syfo.application.api.authentication.installJwtAuthentication
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
 import no.nav.syfo.client.wellknown.WellKnown
 import no.nav.syfo.infrastructure.database.DatabaseInterface
 import no.nav.syfo.pengestopp.api.registerFlaggPerson84V2
@@ -25,7 +25,7 @@ fun Application.apiModule(
     installJwtAuthentication(
         jwtIssuerList = listOf(
             JwtIssuer(
-                acceptedAudienceList = listOf(env.azureAppClientId),
+                acceptedAudienceList = listOf(env.azure.appClientId),
                 jwtIssuerType = JwtIssuerType.INTERN_AZUREAD_V2,
                 wellKnown = wellKnownInternADV2,
             ),
