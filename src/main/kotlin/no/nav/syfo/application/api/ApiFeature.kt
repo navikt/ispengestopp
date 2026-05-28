@@ -14,7 +14,7 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.micrometer.core.instrument.distribution.DistributionStatisticConfig
 import no.nav.syfo.application.metric.METRICS_REGISTRY
-import no.nav.syfo.common.tilgangskontroll.ktor.VeilederTilgangForbiddenException
+import no.nav.syfo.common.tilgangskontroll.VeilederTilgangForbiddenException
 import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.common.util.ktor.getCallId
 import no.nav.syfo.common.util.ktor.getConsumerClientId

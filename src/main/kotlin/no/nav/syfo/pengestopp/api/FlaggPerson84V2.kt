@@ -5,7 +5,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
-import no.nav.syfo.common.tilgangskontroll.ktor.checkVeilederTilgang
+import no.nav.syfo.common.tilgangskontroll.ktor.checkVeilederTilgangToPerson
 import no.nav.syfo.common.util.ktor.getPersonIdent
 import no.nav.syfo.domain.PersonIdent
 import no.nav.syfo.pengestopp.*
@@ -21,7 +21,7 @@ fun Route.registerFlaggPerson84V2(
         get(apiV2PersonStatusPath) {
             val personIdentStr = call.getPersonIdent()
                 ?: throw IllegalArgumentException("No Personident for sykmeldt supplied")
-            checkVeilederTilgang(
+            checkVeilederTilgangToPerson(
                 action = "get person status",
                 personIdent = personIdentStr,
                 tilgangskontrollClient = tilgangskontrollClient,
