@@ -31,7 +31,6 @@ import no.nav.syfo.infrastructure.kafka.manglendemedvirkning.launchKafkaTaskMang
 import no.nav.syfo.util.configure
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
 
 val objectMapper: ObjectMapper = jacksonObjectMapper().configure()
 
@@ -144,12 +143,9 @@ fun main() {
                     pengestoppService = pengestoppService,
                 )
             }
-        }
-    )
-
-    Runtime.getRuntime().addShutdownHook(
-        Thread {
-            server.stop(10, 10, TimeUnit.SECONDS)
+            monitor.subscribe(ApplicationStopPreparing) {
+                applicationState.ready = false
+            }
         }
     )
 
