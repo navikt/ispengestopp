@@ -3,6 +3,7 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "1.0.0"
 
+val isyfoBackendCommonVersion = "0.0.31"
 val confluent = "8.2.0"
 val flyway = "11.20.3"
 val hikari = "7.0.2"
@@ -31,9 +32,18 @@ repositories {
     maven(url = "https://packages.confluent.io/maven/")
     maven(url = "https://jitpack.io")
     maven(url = "https://repository.mulesoft.org/nexus/content/repositories/public/")
+    maven {
+        url = uri("https://maven.pkg.github.com/navikt/isyfo-backend-common")
+        credentials {
+            username = project.findProperty("githubUser") as String? ?: "x-access-token"
+            password = project.findProperty("githubPassword") as String? ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
+    implementation("no.nav.syfo:isyfo-backend-common:$isyfoBackendCommonVersion")
+
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
 

@@ -1,7 +1,7 @@
 package no.nav.syfo.identhendelse
 
 import kotlinx.coroutines.*
-import no.nav.syfo.client.azuread.AzureAdClient
+import no.nav.syfo.common.token.azuread.AzureAdClient
 import no.nav.syfo.client.pdl.PdlClient
 import no.nav.syfo.infrastructure.database.PengestoppRepository
 import no.nav.syfo.infrastructure.kafka.identhendelse.IdenthendelseService
@@ -21,13 +21,11 @@ class IdenthendelseServiceTest {
     private val externalMockEnvironment = ExternalMockEnvironment.instance
     private val database = externalMockEnvironment.database
     private val azureAdClient = AzureAdClient(
-        azureAppClientId = externalMockEnvironment.environment.azureAppClientId,
-        azureAppClientSecret = externalMockEnvironment.environment.azureAppClientSecret,
-        azureTokenEndpoint = externalMockEnvironment.environment.azureTokenEndpoint,
+        config = externalMockEnvironment.environment.azure,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
     private val pdlClient = PdlClient(
-        azureAdClient = azureAdClient,
+        systemTokenProvider = azureAdClient,
         pdlClientId = externalMockEnvironment.environment.pdlClientId,
         pdlUrl = externalMockEnvironment.environment.pdlUrl,
         httpClient = externalMockEnvironment.mockHttpClient

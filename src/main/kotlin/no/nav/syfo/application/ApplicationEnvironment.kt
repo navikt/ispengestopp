@@ -1,14 +1,13 @@
 package no.nav.syfo.application
 
+import no.nav.syfo.common.token.azuread.AzureAdClientConfig
+import no.nav.syfo.common.util.ClientConfig
 import no.nav.syfo.infrastructure.kafka.KafkaEnvironment
 
 data class Environment(
     val applicationName: String = getEnvVar("NAIS_APP_NAME", "ispengestopp"),
 
-    val azureAppClientId: String = getEnvVar("AZURE_APP_CLIENT_ID"),
-    val azureAppClientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
-    val azureTokenEndpoint: String = getEnvVar("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
-    val azureAppWellKnownUrl: String = getEnvVar("AZURE_APP_WELL_KNOWN_URL"),
+    val azure: AzureAdClientConfig = AzureAdClientConfig.fromEnv(),
 
     val ispengestoppDbHost: String = getEnvVar("NAIS_DATABASE_ISPENGESTOPP_ISPENGESTOPP_DB_HOST"),
     val ispengestoppDbPort: String = getEnvVar("NAIS_DATABASE_ISPENGESTOPP_ISPENGESTOPP_DB_PORT"),
@@ -20,8 +19,10 @@ data class Environment(
     val pdlUrl: String = getEnvVar("PDL_URL"),
 
     val developmentMode: Boolean = getEnvVar("DEVELOPMENT_MODE", "false").toBoolean(),
-    val tilgangskontrollClientId: String = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID"),
-    val tilgangskontrollUrl: String = getEnvVar("ISTILGANGSKONTROLL_URL"),
+    val tilgangskontroll: ClientConfig = ClientConfig(
+        baseUrl = getEnvVar("ISTILGANGSKONTROLL_URL"),
+        clientId = getEnvVar("ISTILGANGSKONTROLL_CLIENT_ID"),
+    ),
     val pollTimeOutMs: Long = 0,
     val stoppAutomatikkAivenTopic: String = "teamsykefravr.apen-isyfo-stoppautomatikk",
     val kafka: KafkaEnvironment = KafkaEnvironment(

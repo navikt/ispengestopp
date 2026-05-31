@@ -3,17 +3,15 @@ package no.nav.syfo.testutils
 import io.ktor.server.application.*
 import no.nav.syfo.application.PengestoppService
 import no.nav.syfo.application.api.apiModule
-import no.nav.syfo.client.azuread.AzureAdClient
-import no.nav.syfo.client.tilgangskontroll.TilgangskontrollClient
+import no.nav.syfo.common.tilgangskontroll.client.TilgangskontrollClient
+import no.nav.syfo.common.token.azuread.AzureAdClient
 
 fun Application.testApiModule(
     externalMockEnvironment: ExternalMockEnvironment,
     pengestoppService: PengestoppService,
 ) {
     val azureAdClient = AzureAdClient(
-        azureAppClientId = externalMockEnvironment.environment.azureAppClientId,
-        azureAppClientSecret = externalMockEnvironment.environment.azureAppClientSecret,
-        azureTokenEndpoint = externalMockEnvironment.environment.azureTokenEndpoint,
+        config = externalMockEnvironment.environment.azure,
         httpClient = externalMockEnvironment.mockHttpClient,
     )
     this.apiModule(
@@ -23,9 +21,8 @@ fun Application.testApiModule(
         wellKnownInternADV2 = externalMockEnvironment.wellKnownInternADV2Mock,
         pengestoppService = pengestoppService,
         tilgangskontrollClient = TilgangskontrollClient(
-            azureAdClient = azureAdClient,
-            tilgangskontrollClientId = externalMockEnvironment.environment.tilgangskontrollClientId,
-            tilgangskontrollBaseUrl = externalMockEnvironment.environment.tilgangskontrollUrl,
+            oboTokenProvider = azureAdClient,
+            clientConfig = externalMockEnvironment.environment.tilgangskontroll,
             httpClient = externalMockEnvironment.mockHttpClient,
         ),
     )

@@ -5,13 +5,14 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
-import no.nav.syfo.client.azuread.AzureAdClient
 import no.nav.syfo.client.httpClientDefault
-import no.nav.syfo.util.*
+import no.nav.syfo.common.token.SystemTokenProvider
+import no.nav.syfo.common.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.common.util.bearerHeader
 import org.slf4j.LoggerFactory
 
 class PdlClient(
-    private val azureAdClient: AzureAdClient,
+    private val systemTokenProvider: SystemTokenProvider,
     private val pdlClientId: String,
     private val pdlUrl: String,
     private val httpClient: HttpClient = httpClientDefault(),
@@ -21,7 +22,7 @@ class PdlClient(
         nyPersonIdent: String,
         callId: String? = null,
     ): PdlIdenter? {
-        val systemToken = azureAdClient.getSystemToken(pdlClientId)
+        val systemToken = systemTokenProvider.getSystemToken(pdlClientId)
             ?: throw RuntimeException("Failed to send request to PDL: No token was found")
 
         val query = getPdlQuery("/pdl/hentIdenter.graphql")
@@ -39,7 +40,7 @@ class PdlClient(
         val response: HttpResponse = httpClient.post(pdlUrl) {
             setBody(request)
             header(HttpHeaders.ContentType, "application/json")
-            header(HttpHeaders.Authorization, bearerHeader(systemToken.accessToken))
+            header(HttpHeaders.Authorization, bearerHeader(systemToken))
             header(BEHANDLINGSNUMMER_HEADER_KEY, BEHANDLINGSNUMMER_HEADER_VALUE)
             header(NAV_CALL_ID_HEADER, callId)
         }
