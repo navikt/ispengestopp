@@ -21,7 +21,7 @@ class AktivitetskravVurderingConsumer(
             if (stansVurderinger.isNotEmpty()) {
                 val statusEndringer = stansVurderinger.map { vurdering ->
                     StatusEndring(
-                        uuid = UUID.randomUUID().toString(),
+                        uuid = vurdering.uuid.toString(),
                         veilederIdent = vurdering.updatedBy?.let { VeilederIdent(it) }
                             ?: throw IllegalStateException("Stans-vurderingen mangler veilederIdent og kan ikke lagres"),
                         sykmeldtFnr = PersonIdent(vurdering.personIdent),

@@ -86,4 +86,19 @@ class ManglendeMedvirkningVurderingConsumerTest {
         val statusEndringer = repository.getStatusEndringer(UserConstants.SYKMELDT_PERSONIDENT)
         assertTrue(statusEndringer.isEmpty())
     }
+
+    @Test
+    fun `does not create duplicate statusendring when pod crashes before offset commit and the same records are redelivered`() {
+        val records = mockRecords(listOf(genereateManglendeMedvirkningVurdering(VurderingType.STANS)))
+        every { kafkaConsumer.poll(any<Duration>()) } returns records
+
+        manglendeMedvirkningVurderingConsumer.pollAndProcessRecords()
+        manglendeMedvirkningVurderingConsumer.pollAndProcessRecords()
+
+        val statusEndringer = repository.getStatusEndringer(UserConstants.SYKMELDT_PERSONIDENT)
+        assertEquals(1, statusEndringer.size)
+
+        verify(exactly = 1) { kafkaProducer.send(any()) }
+        verify(exactly = 2) { kafkaConsumer.commitSync() }
+    }
 }

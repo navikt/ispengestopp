@@ -19,7 +19,7 @@ class ManglendeMedvirkningVurderingConsumer(private val pengestoppService: Penge
                     .filter { it.vurderingType.value == VurderingType.STANS }
             val statusEndringer = stansVurderinger.map {
                 StatusEndring(
-                    uuid = UUID.randomUUID().toString(),
+                    uuid = it.uuid.toString(),
                     veilederIdent = VeilederIdent(it.veilederident),
                     sykmeldtFnr = PersonIdent(it.personident),
                     status = Status.STOPP_AUTOMATIKK,
