@@ -23,7 +23,7 @@ class ArbeidsuforhetVurderingConsumer(
             if (avslagVurderinger.isNotEmpty()) {
                 val statusEndringer = avslagVurderinger.map {
                     StatusEndring(
-                        uuid = UUID.randomUUID().toString(),
+                        uuid = it.uuid.toString(),
                         veilederIdent = VeilederIdent(it.veilederident),
                         sykmeldtFnr = PersonIdent(it.personident),
                         status = Status.STOPP_AUTOMATIKK,

@@ -104,6 +104,22 @@ class AktivitetskravVurderingConsumerTest {
     }
 
     @Test
+    fun `does not create duplicate statusendring when pod crashes before offset commit and the same records are redelivered`() {
+        val vurdering = generateAktivitetskravVurdering(AktivitetskravStatus.INNSTILLING_OM_STANS)
+        val records = mockRecords(listOf(vurdering))
+        every { kafkaConsumer.poll(any<Duration>()) } returns records
+
+        aktivitetskravVurderingConsumer.pollAndProcessRecords()
+        aktivitetskravVurderingConsumer.pollAndProcessRecords()
+
+        val statusEndringer = repository.getStatusEndringer(personIdent = PersonIdent(vurdering.personIdent))
+        assertEquals(1, statusEndringer.size)
+
+        verify(exactly = 1) { kafkaProducer.send(any()) }
+        verify(exactly = 2) { kafkaConsumer.commitSync() }
+    }
+
+    @Test
     fun `throws error when aktivitetskravvurdering is missing veilederIdent`() {
         val vurdering = generateAktivitetskravVurdering(AktivitetskravStatus.INNSTILLING_OM_STANS).copy(updatedBy = null)
         val records = mockRecords(listOf(vurdering))

@@ -119,4 +119,20 @@ class ArbeidsuforhetVurderingConsumerTest {
         verify(exactly = 0) { kafkaProducer.send(any()) }
         verify(exactly = 1) { kafkaConsumer.commitSync() }
     }
+
+    @Test
+    fun `does not create duplicate statusendring when pod crashes before offset commit and the same records are redelivered`() {
+        val vurdering = generateArbeidsuforhetVurdering(VurderingType.AVSLAG)
+        val records = mockRecords(listOf(vurdering))
+        every { kafkaConsumer.poll(any<Duration>()) } returns records
+
+        arbeidsuforhetVurderingConsumer.pollAndProcessRecords()
+        arbeidsuforhetVurderingConsumer.pollAndProcessRecords()
+
+        val statusEndringer = repository.getStatusEndringer(personIdent = PersonIdent(vurdering.personident))
+        assertEquals(1, statusEndringer.size)
+
+        verify(exactly = 1) { kafkaProducer.send(any()) }
+        verify(exactly = 2) { kafkaConsumer.commitSync() }
+    }
 }

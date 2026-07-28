@@ -88,6 +88,7 @@ class PersistenceUtilsTest {
 
     @Test
     fun `Do not store in database after reading already persisted record`() {
+        val countBefore = COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.count()
         pollAndPersist(mockConsumer, repository, env)
 
         pollAndPersist(mockConsumer, repository, env)
@@ -107,6 +108,6 @@ class PersistenceUtilsTest {
         )
         assertEquals(enhetNr, statusEndring.enhetNr)
 
-        assertEquals(1.0, COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.count())
+        assertEquals(1.0, COUNT_ENDRE_PERSON_STATUS_DB_ALREADY_STORED.count() - countBefore)
     }
 }
