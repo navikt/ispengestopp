@@ -72,45 +72,7 @@ dependencies {
     }
     implementation("org.apache.kafka:kafka_2.13:$kafka", excludeLog4j)
     implementation("io.confluent:kafka-avro-serializer:$confluent", excludeLog4j)
-    constraints {
-        implementation("org.apache.commons:commons-compress") {
-            because("org.apache.commons:commons-compress:1.22 -> https://www.cve.org/CVERecord?id=CVE-2012-2098")
-            version {
-                require("1.28.0")
-            }
-        }
-    }
-    implementation("io.confluent:kafka-schema-registry:$confluent", excludeLog4j)
-    constraints {
-        implementation("io.github.classgraph:classgraph") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2021-47621")
-            version {
-                require("4.8.184")
-            }
-        }
-        implementation("org.json:json") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2023-5072")
-            version {
-                require("20250517")
-            }
-        }
-        implementation("org.glassfish.jersey.core:jersey-client") {
-            because("io.confluent:kafka-schema-registry:$confluent -> https://www.cve.org/CVERecord?id=CVE-2025-12383")
-            version {
-                require("3.1.11")
-            }
-        }
-        implementation("com.nimbusds:nimbus-jose-jwt") {
-            version {
-                require(nimbusjosejwt)
-            }
-        }
-        implementation("org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jakarta-server") {
-            version {
-                require("12.0.33")
-            }
-        }
-    }
+
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusjosejwt")
