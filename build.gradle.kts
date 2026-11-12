@@ -3,8 +3,8 @@ import com.adarshr.gradle.testlogger.theme.ThemeType
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val confluent = "8.3.0"
-val flyway = "11.20.3"
+val confluent = "8.4.0"
+val flyway = "13.12.1"
 val hikari = "7.1.0"
 val jackson = "2.22.4"
 val jacksonDatabindVersion = "3.2.4"
@@ -71,7 +71,22 @@ dependencies {
         exclude(group = "org.apache.logging.log4j")
     }
     implementation("org.apache.kafka:kafka_2.13:$kafka", excludeLog4j)
+    constraints {
+        implementation("at.yawk.lz4:lz4-java") {
+            version {
+                require("1.11.4")
+            }
+        }
+    }
+
     implementation("io.confluent:kafka-avro-serializer:$confluent", excludeLog4j)
+    constraints {
+        implementation("com.google.guava:guava") {
+            version {
+                require("33.8.0-jre")
+            }
+        }
+    }
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktor")
